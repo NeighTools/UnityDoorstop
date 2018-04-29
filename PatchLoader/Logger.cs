@@ -78,7 +78,7 @@ namespace PatchLoader
 
         public static void Log(string message)
         {
-            Log(LogLevel.Info, message);
+            Log(LogLevel.Message, message);
         }
     }
 }

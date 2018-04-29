@@ -29,12 +29,6 @@
     <None Include="opengl_proxy.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="LICENSE">
-      <Filter>Other</Filter>
-    </None>
-    <None Include="README.md">
-      <Filter>Other</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h">

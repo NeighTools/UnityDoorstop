@@ -26,7 +26,7 @@ namespace PatchLoader
         public static bool TryResolveAssembly(string name, string directory, out Assembly assembly)
         {
             assembly = null;
-            string path = Path.Combine(directory, $"{name}.dll");
+            string path = Path.Combine(directory, $"{new AssemblyName(name).Name}.dll");
 
             if (!File.Exists(path))
                 return false;

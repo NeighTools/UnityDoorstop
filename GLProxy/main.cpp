@@ -1,3 +1,24 @@
+/*
+ * main.cpp -- The main "entry point" and the main logic of the DLL.
+ *
+ * Here, we define and initialize struct Main that contains the main code of this DLL.
+ * 
+ * The main procedure goes as follows:
+ * 1. The loader checks that PatchLoader.dll and mono.dll exist
+ * 2. mono.dll is loaded into memory and some of its functions are looked up
+ * 3. mono_jit_init_version is hooked with the help of MinHook
+ * 
+ * Then, the loader waits until Unity creates its root domain for mono (which is done with mono_jit_init_version).
+ * 
+ * Inside mono_jit_init_version hook:
+ * 1. Call the original mono_jit_init_version to get the Unity root domain
+ * 2. Load PatchLoader.dll into the root domain
+ * 3. Find and invoke PatchLoader.Loader.Run()
+ * 
+ * Rest of the work is done on the managed side.
+ *
+ */
+
 #include <windows.h>
 #include <string>
 #include <vector>
@@ -54,6 +75,7 @@ namespace MonoLoader
 	DEF_MONO_PROC(mono_jit_init_version, void *, const char *, const char *);
 
 
+	// Our original mono_jit_init_version_original
 	mono_jit_init_version_t mono_jit_init_version_original;
 
 	// The hook for mono_jit_init_version
