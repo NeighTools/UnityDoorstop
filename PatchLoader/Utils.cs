@@ -1,29 +1,69 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace PatchLoader
 {
     public static class Utils
     {
-        public static string GameName { get; } =
-            Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
+        static Utils()
+        {
+            // Removed in order to not depend on System.dll (in order to make it patchable)
+            //GameName = Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
+            //GameRootDir = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+            //GameAssembliesDir = Path.Combine(GameRootDir, Path.Combine($"{GameName}_Data", "Managed"));
 
-        public static string GameAssembliesDir { get; } = Path.Combine(".", Path.Combine($"{GameName}_Data", "Managed"));
+            GameAssembliesDir = Path.GetDirectoryName(typeof(Assembly).Assembly.Location);
+            BinariesDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            UnityPrePatcherDir = Path.Combine(BinariesDir, "..");
+            LogsDir = Path.Combine(UnityPrePatcherDir, "logs");
+            PatchesDir = Path.Combine(UnityPrePatcherDir, "patches");
+        }
 
-        public static string BinariesDir { get; } = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        /// <summary>
+        ///     Binaries directory for UnityPrePatcher.
+        /// </summary>
+        public static string BinariesDir { get; }
 
-        public static string UnityPrePatcherDir { get; } = Path.Combine(BinariesDir, "..");
+        /// <summary>
+        ///     Game's Managed directory. Takes in account game's executable name.
+        /// </summary>
+        public static string GameAssembliesDir { get; }
 
-        public static string PatchesDir { get; } = Path.Combine(UnityPrePatcherDir, "patches");
+        ///// <summary>
+        /////     The game's name (read from the process name)
+        ///// </summary>
+        //public static string GameName { get; }
 
-        public static string LogsDir { get; } = Path.Combine(UnityPrePatcherDir, "logs");
+        ///// <summary>
+        /////     Game's root directory (deduced from current process info).
+        ///// </summary>
+        //public static string GameRootDir { get; }
 
-        public static bool TryResolveAssembly(string name, string directory, out Assembly assembly)
+        /// <summary>
+        ///     Logs directory for UnityPrePatcher.
+        /// </summary>
+        public static string LogsDir { get; }
+
+        /// <summary>
+        ///     Patches directory for UnityPrePatcher.
+        /// </summary>
+        public static string PatchesDir { get; }
+
+        /// <summary>
+        ///     Base UnityPrePatcher directory.
+        /// </summary>
+        public static string UnityPrePatcherDir { get; }
+
+        /// <summary>
+        ///     Try to resolve and load the given assembly DLL.
+        /// </summary>
+        /// <param name="name">Name of the assembly. Follows the format of <see cref="AssemblyName" />.</param>
+        /// <param name="directory">Directory to search the assembly from.</param>
+        /// <param name="assembly">The loaded assembly.</param>
+        /// <returns>True, if the assembly was found and loaded. Otherwise, false.</returns>
+        public static bool TryResolveDllAssembly(string name, string directory, out Assembly assembly)
         {
             assembly = null;
             string path = Path.Combine(directory, $"{new AssemblyName(name).Name}.dll");

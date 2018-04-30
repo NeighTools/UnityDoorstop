@@ -6,10 +6,33 @@ using Mono.Cecil;
 
 namespace PatchLoader
 {
+    /// <summary>
+    ///     The entry point class of patch loader.
+    ///     The GLProxy invokes <see cref="Run" /> in the Unity Root Domain right after it gets created.
+    /// </summary>
+    /// <remarks>
+    ///  At the moment this loader requires to System.dll being loaded into memroy to work, which is why it cannot be patched with this method.
+    /// </remarks>
     public static class Loader
     {
         private static Dictionary<string, List<MethodInfo>> patchersDictionary;
 
+        /// <summary>
+        /// Loads working patches.
+        /// </summary>
+        /// <remarks>
+        /// Currently the loader mimicks the patcher layout of Sybaris:
+        /// 
+        /// A patcher is a <see cref="Type"/> that has the following members:
+        /// 
+        /// static string[] TargetAssemblyNames;
+        /// static void Patch(AssemblyDefinition);
+        /// 
+        /// TargetAssemblyNames is an array of assemblies (with extension) to patch.
+        /// Patch is a method that will be called on each requested target assembly.
+        /// 
+        /// The patcher may use Cecil to carry out patching however needed.
+        /// </remarks>
         public static void LoadPatchers()
         {
             patchersDictionary = new Dictionary<string, List<MethodInfo>>();
@@ -74,6 +97,9 @@ namespace PatchLoader
             }
         }
 
+        /// <summary>
+        /// Carry out patching on the asemblies.
+        /// </summary>
         public static void Patch()
         {
             Logger.Log(LogLevel.Info, "Patching assemblies:");
@@ -119,15 +145,29 @@ namespace PatchLoader
 
                 MemoryStream ms = new MemoryStream();
 
+                // Write the patched assembly into memory
                 assemblyDefinition.Write(ms);
                 assemblyDefinition.Dispose();
 
+                // Load the patched assembly directly from memory
+                // Since .NET loads all assemblies only once,
+                // any further attempts by Unity to load the patched assemblies
+                // will do nothing. Thus we achieve the same "dynamic patching" effect as with Sybaris.
                 Assembly.Load(ms.ToArray());
 
                 ms.Dispose();
             }
         }
 
+        /// <summary>
+        ///     The entry point of the loader called by GLProxy.
+        /// </summary>
+        /// <remarks>
+        ///     This is the entry point of the patch loader.
+        ///     The method is invoked right after Unity Root Domain has been created,
+        ///     which means only the minimal set of managed assemblies is loaded.
+        ///     Since assemblies cannot be unloaded, you create hooks and event handlers.
+        /// </remarks>
         public static void Run()
         {
             if (!Directory.Exists(Utils.LogsDir))
@@ -138,6 +178,8 @@ namespace PatchLoader
 
             Logger.Log("===Unity PrePatcher Loader===");
             Logger.Log($"Started on {DateTime.Now:R}");
+            Logger.Log($"Game assembly directory: {Utils.GameAssembliesDir}");
+            Logger.Log($"UnityPrePatcher directory: {Utils.UnityPrePatcherDir}");
 
             if (!Directory.Exists(Utils.PatchesDir))
             {
@@ -149,6 +191,9 @@ namespace PatchLoader
 
             Logger.Log(LogLevel.Info, "Adding ResolveAssembly Handler");
 
+            // We add a custom assembly resolver
+            // Since assemblies don't unload, this event handler will be called always there is an assembly to resolve
+            // This allows us to put our patchers and plug-ins in our own folders.
             AppDomain.CurrentDomain.AssemblyResolve += ResolvePatchers;
 
             LoadPatchers();
@@ -168,9 +213,11 @@ namespace PatchLoader
 
         private static Assembly ResolvePatchers(object sender, ResolveEventArgs args)
         {
-            if (Utils.TryResolveAssembly(args.Name, Utils.PatchesDir, out Assembly patchAssembly))
+            // Try to resolve from patches directory
+            if (Utils.TryResolveDllAssembly(args.Name, Utils.PatchesDir, out Assembly patchAssembly))
                 return patchAssembly;
-            if (Utils.TryResolveAssembly(args.Name, Utils.BinariesDir, out Assembly binaryAssembly))
+            // Try to resolve from binaries directory
+            if (Utils.TryResolveDllAssembly(args.Name, Utils.BinariesDir, out Assembly binaryAssembly))
                 return binaryAssembly;
             return null;
         }
