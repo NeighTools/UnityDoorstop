@@ -2,27 +2,31 @@
 
 UnityPrePatcher (or **UPP** for short) is a tool to patch managed Mono assemblies in Unity games with the use of Cecil.Inject.
 
-Currently the tool is WIP and thus does not yet have prebuilt binaries.
+## Features
 
+* **Uses Mono.Cecil** to patch assemblies: get all the benefits of direct assembly manipulation
+* **In-memory patching**: does not patch any files!
+* **Very simple loader**: loading done through an OpenGL proxy. Works well with locale emulators!
+* **Compatible with Sybaris patchers** (with some minor differences)
+* **Open source!**
+
+## Guides for users and developers on [the wiki](https://github.com/denikson/UnityPrePatcher/wiki)
 
 ## Building
 
-First, clone the repository with submodules.
+To build, you will need:
 
-To build, you'll need Visual Studio (preferably 2017) with Visual C++ compiler toolset with Windows XP support (needed for minhook to compile).
-Alternatively, you can try to use minhook from NuGet or download prebuilt libraries.
+* Visual Studio 2017 (2015 might work as well with some modifications)
+* Visual C++ Toolset v140_xp (WIP: _xp only needed to compile minhook; might replace it with prebuilt library)
+* .NET Framework 3.5 or newer
+* Mono.Cecil (installed via NuGet on build)
 
-Open in Visual Studio, and build for your platform.
+First, clone the repository with submodules:
 
+```bash
+git clone --recurse-submodules https://github.com/denikson/UnityPrePatcher.git
+```
 
-## Using the tool
+Open in Visual Studio, select the platform (x86/x64) and build.
 
-> TODO: Update with proper binaries and guide
-
-1. Compile x86 or x64 version depending on the game you want to patch.
-2. Put compiled `opengl32.dll` into the game's root folder
-3. Create folder called `UnityPrePatcher` inside the game's root folder
-4. Put `Mono.Cecil.dll` and `PatcherLoader.dll` into `UnityPrePatcher\bin` folder
-5. Put Sybaris patchers into `UnityPrePatcher\patches`
-6. Run the game
-7. Read the logs (`opengl_proxy.log` in the game's root and `UnityPrePatcher\logs` folder).
+(WIP: Currently all build results are placed in separate folders; will be changed later)

@@ -105,6 +105,10 @@ namespace GLProxy
 
 	static std::wstring getRealGLLibPath()
 	{
+		// Try to look for the alternative opengl32 first in the same directory.
+		if(PathFileExists(L"opengl32_alt.dll"))
+			return L"opengl32_alt.dll";
+
 		wchar_t defaultGLLibName[1024] = {'\0'};
 		GetSystemDirectory(defaultGLLibName, sizeof(defaultGLLibName));
 

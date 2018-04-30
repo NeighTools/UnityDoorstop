@@ -21,10 +21,7 @@
 
 #include <windows.h>
 #include <string>
-#include <vector>
-#include <cstdint>
 #include <atlstr.h>
-#include <cstdlib>
 #include <ctime>
 #include <Psapi.h>
 #include <Shlwapi.h>
