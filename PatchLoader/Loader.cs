@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Mono.Cecil;
+using PatchLoader.Util;
 
 namespace PatchLoader
 {
@@ -11,27 +12,24 @@ namespace PatchLoader
     ///     The GLProxy invokes <see cref="Run" /> in the Unity Root Domain right after it gets created.
     /// </summary>
     /// <remarks>
-    ///  At the moment this loader requires to System.dll being loaded into memroy to work, which is why it cannot be patched with this method.
+    ///     At the moment this loader requires to System.dll being loaded into memroy to work, which is why it cannot be
+    ///     patched with this method.
     /// </remarks>
     public static class Loader
     {
         private static Dictionary<string, List<MethodInfo>> patchersDictionary;
 
         /// <summary>
-        /// Loads working patches.
+        ///     Loads working patches.
         /// </summary>
         /// <remarks>
-        /// Currently the loader mimicks the patcher layout of Sybaris:
-        /// 
-        /// A patcher is a <see cref="Type"/> that has the following members:
-        /// 
-        /// static string[] TargetAssemblyNames;
-        /// static void Patch(AssemblyDefinition);
-        /// 
-        /// TargetAssemblyNames is an array of assemblies (with extension) to patch.
-        /// Patch is a method that will be called on each requested target assembly.
-        /// 
-        /// The patcher may use Cecil to carry out patching however needed.
+        ///     Currently the loader mimicks the patcher layout of Sybaris:
+        ///     A patcher is a <see cref="Type" /> that has the following members:
+        ///     static string[] TargetAssemblyNames;
+        ///     static void Patch(AssemblyDefinition);
+        ///     TargetAssemblyNames is an array of assemblies (with extension) to patch.
+        ///     Patch is a method that will be called on each requested target assembly.
+        ///     The patcher may use Cecil to carry out patching however needed.
         /// </remarks>
         public static void LoadPatchers()
         {
@@ -98,7 +96,7 @@ namespace PatchLoader
         }
 
         /// <summary>
-        /// Carry out patching on the asemblies.
+        ///     Carry out patching on the asemblies.
         /// </summary>
         public static void Patch()
         {
@@ -106,10 +104,10 @@ namespace PatchLoader
 
             foreach (KeyValuePair<string, List<MethodInfo>> patchJob in patchersDictionary)
             {
-                string assembly = patchJob.Key;
+                string assemblyName = patchJob.Key;
                 List<MethodInfo> patchers = patchJob.Value;
 
-                string assemblyPath = Path.Combine(Utils.GameAssembliesDir, assembly);
+                string assemblyPath = Path.Combine(Utils.GameAssembliesDir, assemblyName);
 
                 if (!File.Exists(assemblyPath))
                 {
@@ -136,9 +134,18 @@ namespace PatchLoader
                     {
                         patcher.Invoke(null, new object[] {assemblyDefinition});
                     }
+                    catch (TargetInvocationException te)
+                    {
+                        Exception inner = te.InnerException;
+                        if (inner != null)
+                        {
+                            Logger.Log(LogLevel.Error, $"Error inside the patcher: {inner.Message}");
+                            Logger.Log(LogLevel.Error, $"Stack trace:\n{inner.StackTrace}");
+                        }
+                    }
                     catch (Exception e)
                     {
-                        Logger.Log(LogLevel.Error, $"Failed to patch because: {e.Message}");
+                        Logger.Log(LogLevel.Error, $"By the patcher loader: {e.Message}");
                         Logger.Log(LogLevel.Error, $"Stack trace:\n{e.StackTrace}");
                     }
                 }
@@ -148,6 +155,11 @@ namespace PatchLoader
                 // Write the patched assembly into memory
                 assemblyDefinition.Write(ms);
                 assemblyDefinition.Dispose();
+
+                byte[] assemblyBytes = ms.ToArray();
+
+                // Save the patched assembly to a file for debugging purposes
+                SavePatchedAssembly(assemblyBytes, Path.GetFileNameWithoutExtension(assemblyName));
 
                 // Load the patched assembly directly from memory
                 // Since .NET loads all assemblies only once,
@@ -173,8 +185,12 @@ namespace PatchLoader
             if (!Directory.Exists(Utils.LogsDir))
                 Directory.CreateDirectory(Utils.LogsDir);
 
-            Logger.Enabled = true;
-            Logger.RerouteStandardIO();
+            Configuration.Init();
+
+            if (Configuration.Options["debug"]["logging"]["enabled"])
+                Logger.Enabled = true;
+            if (Configuration.Options["debug"]["logging"]["redirectConsole"])
+                Logger.RerouteStandardIO();
 
             Logger.Log("===Unity PrePatcher Loader===");
             Logger.Log($"Started on {DateTime.Now:R}");
@@ -211,7 +227,7 @@ namespace PatchLoader
             Logger.Dispose();
         }
 
-        private static Assembly ResolvePatchers(object sender, ResolveEventArgs args)
+        public static Assembly ResolvePatchers(object sender, ResolveEventArgs args)
         {
             // Try to resolve from patches directory
             if (Utils.TryResolveDllAssembly(args.Name, Utils.PatchesDir, out Assembly patchAssembly))
@@ -220,6 +236,37 @@ namespace PatchLoader
             if (Utils.TryResolveDllAssembly(args.Name, Utils.BinariesDir, out Assembly binaryAssembly))
                 return binaryAssembly;
             return null;
+        }
+
+        private static void SavePatchedAssembly(byte[] assembly, string name)
+        {
+            if (!Configuration.Options["debug"]["outputAssemblies"]["enabled"]
+                || !Configuration.Options["debug"]["outputAssemblies"]["outputDirectory"].IsString
+                || Configuration.Options["debug"]["outputAssemblies"]["outputDirectory"] == null)
+                return;
+
+            string outDir = Configuration.Options["debug"]["outputAssemblies"]["outputDirectory"];
+
+            string path = Path.Combine(outDir,
+                                       $"{name}_patched.dll");
+
+            if (!Directory.Exists(outDir))
+                try
+                {
+                    Directory.CreateDirectory(outDir);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogLevel.Warning,
+                               $"Failed to create patched assembly directory to {outDir}!\nReason: {e.Message}");
+                    return;
+                }
+
+            
+
+            File.WriteAllBytes(path, assembly);
+
+            Logger.Log(LogLevel.Info, $"Saved patched {name} to {path}");
         }
     }
 }

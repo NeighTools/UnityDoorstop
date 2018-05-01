@@ -18,9 +18,12 @@ namespace Logger
 		return ts;
 	}
 
+	static bool loggerLoaded = false;
+
 	static std::wofstream& getLogStream()
 	{
 		static std::wofstream log("opengl_proxy.log");
+		loggerLoaded = true;
 		return log;
 	}
 

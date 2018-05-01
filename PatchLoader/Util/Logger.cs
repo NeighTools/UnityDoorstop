@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace PatchLoader
+namespace PatchLoader.Util
 {
     public enum LogLevel
     {

@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace PatchLoader
+namespace PatchLoader.Util
 {
     public static class Utils
     {

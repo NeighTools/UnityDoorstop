@@ -181,7 +181,8 @@ namespace MonoLoader
 		~Main()
 		{
 			// Flush the logger to be sure we got everything
-			Logger::getLogStream().flush();
+			if(Logger::loggerLoaded)
+				Logger::getLogStream().flush();
 		}
 	};
 
