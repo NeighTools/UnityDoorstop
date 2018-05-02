@@ -105,19 +105,15 @@ namespace ProxyDll
 		return selfHMod;
 	}
 
-	// A helper class to manage the handle the original dll
-	class RealDll final
+	struct RealDll
 	{
 		HMODULE dllHandle;
 		std::wstring dllFilePath;
-
-	public:
 
 		RealDll(const RealDll&) = delete;
 		RealDll& operator =(const RealDll&) = delete;
 
 		RealDll()
-			: dllHandle{nullptr}
 		{
 			load();
 		}
@@ -135,7 +131,7 @@ namespace ProxyDll
 			}
 
 			const auto originalDllPath = getRealDllPath();
-			LOG(L"Trying to load real DLL from \"" << originalDllPath << L"\"...");
+			//LOG(L"Trying to load real DLL from \"" << originalDllPath << L"\"...");
 
 			dllHandle = LoadLibraryEx(originalDllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 			if (dllHandle == nullptr)
@@ -159,11 +155,11 @@ namespace ProxyDll
 				dllFilePath = tempString;
 			}
 
-			LOG(L"\n--------------------------------------------------------");
+			/*LOG(L"\n--------------------------------------------------------");
 			LOG(L"  Real DLL is loaded!");
 			LOG(L"  Real DLL = " << ptrToString(dllHandle) << L", Proxy DLL = " << ptrToString(selfHMod));
 			LOG(L"  Real DLL path: \"" << dllFilePath << L"\"");
-			LOG(L"--------------------------------------------------------\n");
+			LOG(L"--------------------------------------------------------\n");*/
 		}
 
 		void unload()
@@ -211,7 +207,6 @@ namespace ProxyDll
 	{
 		auto& glDll = RealDll::getInstance();
 		auto addr = glDll.getFuncPtr(funcName);
-		LOG("Loading real func: (" << ptrToString(addr) << ") " << funcName);
 		return addr;
 	}
 }

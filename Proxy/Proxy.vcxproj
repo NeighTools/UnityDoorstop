@@ -166,7 +166,6 @@
     <None Include="winhttp.def" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ini.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="mono.h" />
   </ItemGroup>

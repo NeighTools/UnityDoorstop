@@ -30,10 +30,9 @@
 #include "logger.h"
 
 #define FINI_WIDE_SUPPORT
-#include "ini.h"
 
 #define VERSION "1.0"
-#define CONFIG_NAME "upp_config.ini"
+#define CONFIG_NAME L"upp_config.ini"
 #define DEFAULT_LOADER_PATH L"UnityPrePatcher"
 
 // A helper for cleaner error logging
@@ -63,39 +62,29 @@ namespace MonoLoader
 
 		void loadConfig()
 		{
-			inipp::Ini<wchar_t> ini;
-			std::wifstream is(CONFIG_NAME);
+			wchar_t curPathProcess[MAX_PATH];
+			GetModuleFileNameW(nullptr, curPathProcess, sizeof(curPathProcess));
 
-			if (!is.is_open())
-			{
-				setDefaults(ini);
-				return;
-			}
+			wchar_t curPath[_MAX_DIR];
+			wchar_t drive[_MAX_DRIVE];
+			_wsplitpath_s(curPathProcess, drive, sizeof(drive), curPath, sizeof(curPath), nullptr, 0, nullptr, 0);
 
-			ini.parse(is);
+			CStringW curPathStr = drive;
+			curPathStr += curPath;
+			curPathStr += CONFIG_NAME;
 
-			if (!ini.errors.empty())
-			{
-				setDefaults(ini);
-				return;
-			}
+			wchar_t enabledString[256] = L"true";
+			GetPrivateProfileStringW(L"UnityPrePatcher", L"enabled", L"true", enabledString, sizeof(enabledString), curPathStr);
 
-			ini.interpolate();
+			if (_wcsnicmp(enabledString, L"true", 4) == 0)
+				enabled = true;
+			if (_wcsnicmp(enabledString, L"false", 5) == 0)
+				enabled = false;
 
-			inipp::extract(ini.sections[L"UnityPrePatcher"][L"enabled"], enabled);
-			uppPath = ini.sections[L"UnityPrePatcher"][L"loaderPath"].c_str();
-		}
+			wchar_t uppPathStr[MAX_PATH] = DEFAULT_LOADER_PATH;
+			GetPrivateProfileStringW(L"UnityPrePatcher", L"loaderPath", DEFAULT_LOADER_PATH, uppPathStr, sizeof(uppPathStr), curPathStr);
 
-		void setDefaults(inipp::Ini<wchar_t> &ini)
-		{
-			std::wofstream out(CONFIG_NAME);
-
-			ini.sections[L"UnityPrePatcher"][L"enabled"] = L"true";
-			ini.sections[L"UnityPrePatcher"][L"loaderPath"] = DEFAULT_LOADER_PATH;
-
-			ini.generate(out);
-			out.flush();
-			out.close();
+			uppPath = uppPathStr;
 		}
 	};
 
