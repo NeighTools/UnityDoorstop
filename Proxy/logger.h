@@ -22,14 +22,14 @@ namespace Logger
 
 	static std::wofstream& getLogStream()
 	{
-		static std::wofstream log("opengl_proxy.log");
+		static std::wofstream log("upp_loader.log");
 		loggerLoaded = true;
 		return log;
 	}
 
 	DECLSPEC_NORETURN static void fatalError(const std::wstring& message)
 	{
-		MessageBox(nullptr, message.c_str(), L"GLProxy Fatal Error", MB_OK | MB_ICONERROR);
+		MessageBox(nullptr, message.c_str(), L"Proxy Fatal Error", MB_OK | MB_ICONERROR);
 
 		LOG("Fatal error: " << message);
 		getLogStream().flush();

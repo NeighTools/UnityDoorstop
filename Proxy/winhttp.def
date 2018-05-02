@@ -1,0 +1,3 @@
+LIBRARY WINHTTP
+EXPORTS
+    WinHttpGetIEProxyConfigForCurrentUser

@@ -18,17 +18,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="opengl_proxy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="opengl_proxy.def">
+    <ClCompile Include="winhttp.cpp">
       <Filter>Source Files</Filter>
-    </None>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h">
@@ -40,5 +35,10 @@
     <ClInclude Include="mono.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="winhttp.def">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

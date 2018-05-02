@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "opengl32", "GLProxy\GLProxy.vcxproj", "{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libMinHook", "lib\minhook\build\VC15\libMinHook.vcxproj", "{F142A341-5EE0-442D-A15F-98AE9B48DBAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatchLoader", "PatchLoader\PatchLoader.csproj", "{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "winhttp", "Proxy\Proxy.vcxproj", "{88609E16-731F-46C9-8139-6B1A7A83240D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,16 +19,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Debug|x64.ActiveCfg = Debug|x64
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Debug|x64.Build.0 = Debug|x64
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Debug|x86.ActiveCfg = Debug|Win32
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Debug|x86.Build.0 = Debug|Win32
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Release|Any CPU.ActiveCfg = Release|Win32
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Release|x64.ActiveCfg = Release|x64
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Release|x64.Build.0 = Release|x64
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Release|x86.ActiveCfg = Release|Win32
-		{AAA11FE8-2956-4A34-9563-F2FAFB00D60C}.Release|x86.Build.0 = Release|Win32
 		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Debug|x64.ActiveCfg = Debug|x64
 		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Debug|x64.Build.0 = Debug|x64
@@ -51,6 +41,16 @@ Global
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x64.Build.0 = Release|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x86.ActiveCfg = Release|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x86.Build.0 = Release|Any CPU
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Debug|x64.ActiveCfg = Debug|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Debug|x64.Build.0 = Debug|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Debug|x86.ActiveCfg = Debug|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Debug|x86.Build.0 = Debug|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|Any CPU.ActiveCfg = Release|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x64.ActiveCfg = Release|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x64.Build.0 = Release|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x86.ActiveCfg = Release|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
