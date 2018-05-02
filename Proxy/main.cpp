@@ -31,7 +31,7 @@
 
 #define FINI_WIDE_SUPPORT
 
-#define VERSION "1.0"
+#define VERSION "1.2"
 #define CONFIG_NAME L"upp_config.ini"
 #define DEFAULT_LOADER_PATH L"UnityPrePatcher"
 
