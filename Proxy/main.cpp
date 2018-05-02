@@ -31,7 +31,7 @@
 
 #define FINI_WIDE_SUPPORT
 
-#define VERSION "1.1"
+#define VERSION "1.0"
 #define CONFIG_NAME L"upp_config.ini"
 #define DEFAULT_LOADER_PATH L"UnityPrePatcher"
 
@@ -44,139 +44,126 @@
 	}
 
 #include "mono.h"
+
 using namespace Mono;
 
-namespace MonoLoader
+bool enabled = true;
+std::wstring uppPath = DEFAULT_LOADER_PATH;
+std::wstring loaderPath;
+
+void loadConfig()
 {
-	struct Configuration
-	{
-		bool enabled = true;
-		CStringW uppPath = DEFAULT_LOADER_PATH;
-		CStringW loaderDllPath;
+	wchar_t curPathProcess[MAX_PATH];
+	GetModuleFileNameW(nullptr, curPathProcess, sizeof(curPathProcess));
 
-		void init()
-		{
-			loadConfig();
-			loaderDllPath = uppPath + L"\\bin\\PatchLoader.dll";
-		}
+	wchar_t curPath[_MAX_DIR];
+	wchar_t drive[_MAX_DRIVE];
+	_wsplitpath_s(curPathProcess, drive, sizeof(drive), curPath, sizeof(curPath), nullptr, 0, nullptr, 0);
 
-		void loadConfig()
-		{
-			wchar_t curPathProcess[MAX_PATH];
-			GetModuleFileNameW(nullptr, curPathProcess, sizeof(curPathProcess));
+	std::wstring iniPath;
+	iniPath.append(drive).append(curPath).append(CONFIG_NAME);
 
-			wchar_t curPath[_MAX_DIR];
-			wchar_t drive[_MAX_DRIVE];
-			_wsplitpath_s(curPathProcess, drive, sizeof(drive), curPath, sizeof(curPath), nullptr, 0, nullptr, 0);
+	wchar_t enabledString[256] = L"true";
+	GetPrivateProfileStringW(L"UnityPrePatcher", L"enabled", L"true", enabledString, sizeof(enabledString),
+	                         iniPath.c_str());
 
-			CStringW curPathStr = drive;
-			curPathStr += curPath;
-			curPathStr += CONFIG_NAME;
+	if (_wcsnicmp(enabledString, L"true", 4) == 0)
+		enabled = true;
+	if (_wcsnicmp(enabledString, L"false", 5) == 0)
+		enabled = false;
 
-			wchar_t enabledString[256] = L"true";
-			GetPrivateProfileStringW(L"UnityPrePatcher", L"enabled", L"true", enabledString, sizeof(enabledString), curPathStr);
+	wchar_t uppPathStr[MAX_PATH] = DEFAULT_LOADER_PATH;
+	GetPrivateProfileStringW(L"UnityPrePatcher", L"loaderPath", DEFAULT_LOADER_PATH, uppPathStr, sizeof(uppPathStr),
+	                         iniPath.c_str());
 
-			if (_wcsnicmp(enabledString, L"true", 4) == 0)
-				enabled = true;
-			if (_wcsnicmp(enabledString, L"false", 5) == 0)
-				enabled = false;
+	uppPath = uppPathStr;
+	loaderPath = uppPathStr;
+	loaderPath.append(L"\\bin\\PatchLoader.dll");
+}
 
-			wchar_t uppPathStr[MAX_PATH] = DEFAULT_LOADER_PATH;
-			GetPrivateProfileStringW(L"UnityPrePatcher", L"loaderPath", DEFAULT_LOADER_PATH, uppPathStr, sizeof(uppPathStr), curPathStr);
+// The hook for mono_jit_init_version
+// We use this since it will always be called once to initialize Mono's JIT
+void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_version)
+{
+	// Call the original mono_jit_init_version to initialize the Unity Root Domain
+	const auto domain = mono_jit_init_version_original(root_domain_name, runtime_version);
 
-			uppPath = uppPathStr;
-		}
-	};
+	char dllPathA[MAX_PATH];
+	sprintf_s(dllPathA, "%ws", loaderPath.c_str());
 
-	static Configuration configuration;
+	// Load our custom assembly into the domain
+	const auto assembly = mono_domain_assembly_open(domain, dllPathA);
+	ASSERT(assembly != nullptr, " Failed to load PatchLoader.dll as a CLR assembly!", domain);
 
-	// The hook for mono_jit_init_version
-	// We use this since it will always be called once to initialize Mono's JIT
-	void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_version)
-	{
-		// Call the original mono_jit_init_version to initialize the Unity Root Domain
-		const auto domain = mono_jit_init_version_original(root_domain_name, runtime_version);
+	// Get assembly's image that contains CIL code
+	const auto image = mono_assembly_get_image(assembly);
+	ASSERT(image != nullptr, " Failed to get assembly image for PatchLoader.dll!", domain);
 
-		const CStringA dllPath(configuration.loaderDllPath);
+	// Find our Loader class from the assembly
+	const auto classDef = mono_class_from_name(image, "PatchLoader", "Loader");
+	ASSERT(classDef != nullptr, " Failed to load class PatchLoader.Loader!", domain);
 
-		// Load our custom assembly into the domain
-		const auto assembly = mono_domain_assembly_open(domain, dllPath);
-		ASSERT(assembly != nullptr, " Failed to load PatchLoader.dll as a CLR assembly!", domain);
+	// Create a method descriptor that is used to find the Run() method
+	const auto descriptor = mono_method_desc_new("Loader:Run", FALSE);
 
-		// Get assembly's image that contains CIL code
-		const auto image = mono_assembly_get_image(assembly);
-		ASSERT(image != nullptr, " Failed to get assembly image for PatchLoader.dll!", domain);
+	// Find Run() method from Loader class
+	const auto method = mono_method_desc_search_in_class(descriptor, classDef);
+	ASSERT(method != nullptr, " Failed to locate Loader.Run() method!", domain);
 
-		// Find our Loader class from the assembly
-		const auto classDef = mono_class_from_name(image, "PatchLoader", "Loader");
-		ASSERT(classDef != nullptr, " Failed to load class PatchLoader.Loader!", domain);
+	// Invoke Run() with no parameters
+	mono_runtime_invoke(method, nullptr, nullptr, nullptr);
 
-		// Create a method descriptor that is used to find the Run() method
-		const auto descriptor = mono_method_desc_new("Loader:Run", FALSE);
+	return domain;
+}
 
-		// Find Run() method from Loader class
-		const auto method = mono_method_desc_search_in_class(descriptor, classDef);
-		ASSERT(method != nullptr, " Failed to locate Loader.Run() method!", domain);
 
-		// Invoke Run() with no parameters
-		mono_runtime_invoke(method, nullptr, nullptr, nullptr);
+void Main()
+{
+	loadConfig();
 
-		return domain;
-	}
+	// If the loader is disabled, don't inject anything.
+	if (!enabled)
+		return;
 
-	struct Main
-	{
-		Main()
-		{
-			configuration.init();
+	ASSERT(PathFileExistsW(uppPath.c_str()), " No UnityPrePatcher folder found! Aborting...");
+	ASSERT(PathFileExistsW(loaderPath.c_str()), " No PatchLoader.dll found! Aborting...");
 
-			// If the loader is disabled, don't inject anything.
-			if (!configuration.enabled)
-				return;
+	const auto monoDllPath = getMonoPath();
+	const auto monoDllPathStr = monoDllPath.c_str();
 
-			ASSERT(PathFileExistsW(configuration.uppPath), " No UnityPrePatcher folder found! Aborting...");
-			ASSERT(PathFileExistsW(configuration.loaderDllPath), " No PatchLoader.dll found! Aborting...");
+	ASSERT(PathFileExistsW(monoDllPathStr), " No mono.dll found from " << monoDllPath << "! Aborting...");
 
-			const auto monoDllPath = getMonoPath();
+	// Preload mono into memory so we can start hooking it
+	const auto monoLib = LoadLibrary(monoDllPathStr);
 
-			ASSERT(PathFileExistsW(monoDllPath), " No mono.dll found from" << monoDllPath << "! Aborting...");
+	ASSERT(monoLib != nullptr, " Failed to load mono.dll! Aborting...");
 
-			// Preload mono into memory so we can start hooking it
-			const auto monoLib = LoadLibrary(monoDllPath);
+	loadMonoFunctions(monoLib);
 
-			ASSERT(monoLib != nullptr, " Failed to load mono.dll! Aborting...");
+	// Initialize MinHook
+	// TODO: Error handling
+	auto status = MH_Initialize();
 
-			loadMonoFunctions(monoLib);
+	ASSERT(status == MH_OK, " Failed to initialize MinHook! Error code: " << status);
 
-			// Initialize MinHook
-			// TODO: Error handling
-			auto status = MH_Initialize();
+	// Add a detour to mono_jit_init_version
+	status = MH_CreateHook(mono_jit_init_version, &ownMonoJitInitVersion,
+	                       reinterpret_cast<LPVOID*>(&mono_jit_init_version_original));
 
-			ASSERT(status == MH_OK, " Failed to initialize MinHook! Error code: " << status);
+	ASSERT(status == MH_OK, " Failed to hook onto mono_jit_init_version! Error code: " << status);
 
-			// Add a detour to mono_jit_init_version
-			status = MH_CreateHook(mono_jit_init_version, &ownMonoJitInitVersion,
-			                                  reinterpret_cast<LPVOID*>(&mono_jit_init_version_original));
+	// Enable our hook
+	// TODO: Disable it once it's done?
+	status = MH_EnableHook(mono_jit_init_version);
 
-			ASSERT(status == MH_OK, " Failed to hook onto mono_jit_init_version! Error code: " << status);
+	ASSERT(status == MH_OK, " Failed to enable hook for mono_jit_init_version! Error code: " << status);
+}
 
-			// Enable our hook
-			// TODO: Disable it once it's done?
-			status = MH_EnableHook(mono_jit_init_version);
-
-			ASSERT(status == MH_OK, " Failed to enable hook for mono_jit_init_version! Error code: " << status);
-		}
-
-		~Main()
-		{
-			// Flush the logger to be sure we got everything
-			if(Logger::loggerLoaded)
-				Logger::getLogStream().flush();
-		}
-	};
-
-	// Call main function
-	static Main main;
+void dispose()
+{
+	// Flush the logger to be sure we got everything
+	if (Logger::loggerLoaded)
+		Logger::getLogStream().flush();
 }
 
 // ReSharper disable once CppInconsistentNaming
@@ -185,9 +172,11 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 	switch (reasonForDllLoad)
 	{
 	case DLL_PROCESS_ATTACH:
+		Main();
 		break;
 
 	case DLL_PROCESS_DETACH:
+		dispose();
 		break;
 
 	default:

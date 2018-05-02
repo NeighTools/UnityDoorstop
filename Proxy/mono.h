@@ -11,7 +11,6 @@
 
 #include <windows.h>
 #include <cstdint>
-#include <atlstr.h>
 
 // Define a helper macro that creates a typedef and a variable that will hold address to a mono.dll function
 #define DEF_MONO_PROC(name, returnType, ...)          \
@@ -20,6 +19,7 @@
 
 // A helper macro to load the function address from a library
 #define GET_MONO_PROC(name, lib) name = reinterpret_cast<name##_t>(GetProcAddress(lib, #name))
+
 
 namespace Mono
 {
@@ -64,7 +64,7 @@ namespace Mono
 	// Our original mono_jit_init_version_original
 	static mono_jit_init_version_t mono_jit_init_version_original;
 
-	static CStringW getMonoPath()
+	inline std::wstring getMonoPath()
 	{
 		// Code to get the name of the Game's Executable
 		wchar_t path[MAX_PATH];
@@ -75,10 +75,6 @@ namespace Mono
 
 		// The mono.dll should *usually* be in GameName_Data\Mono
 		// TODO: A better way to find mono.dll?
-		CStringW monoDll = L".\\";
-		monoDll += name;
-		monoDll += L"_Data\\Mono\\mono.dll";
-
-		return monoDll;
+		return std::wstring(L".\\").append(name).append(L"_Data\\Mono\\mono.dll");
 	}
 }
