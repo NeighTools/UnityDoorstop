@@ -6,7 +6,7 @@ UnityPrePatcher (or **UPP** for short) is a tool to patch managed Mono assemblie
 
 * **Uses Mono.Cecil** to patch assemblies: get all the benefits of direct assembly manipulation
 * **In-memory patching**: does not patch any files!
-* **Very simple loader**: loading done through an OpenGL proxy. Works well with locale emulators!
+* **Very simple loader**: loading done through a proxy DLL -- no executables. Works well with locale emulators!
 * **Compatible with Sybaris patchers** (with some minor differences)
 * **Open source!**
 

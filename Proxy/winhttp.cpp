@@ -207,6 +207,7 @@ namespace ProxyDll
 	{
 		auto& glDll = RealDll::getInstance();
 		auto addr = glDll.getFuncPtr(funcName);
+		//LOG("Loading real func: (" << ptrToString(addr) << ") " << funcName);
 		return addr;
 	}
 }
