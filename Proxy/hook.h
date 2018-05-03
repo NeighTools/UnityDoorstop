@@ -6,18 +6,15 @@
  * Creates "hooks" by modifying the module's export address table.
  * The procedure works in three main parts:
  * 
- * 1. Reading the module PE header and get all exported functions.
+ * 1. Reading the module's PE file and getting all exported functions.
  * 2. Finding the right function to "hook" by simple addrress lookup
  * 3. Modify the entry to point to the hook.
- * 
- * To understand how this works, the following description of the PE format helps as
- * reference material:
- * 
- * https://github.com/corkami/docs/blob/master/PE/PE.md
  * 
  * The idea is based on the fact that the export table allows forwarding imports:
  * 
  * https://en.wikibooks.org/wiki/X86_Disassembly/Windows_Executable_Files#Forwarding
+ * 
+ * You can also find some reference material on the same page to understand this code better.
  * 
  */
 
@@ -25,16 +22,21 @@
 
 #include <windows.h>
 
-// A convenience mactro to traverse through the PE header
+// PE format uses RVAs (Relative Virtual Addresses) to save addresses relative to the base of the module
+// More info: https://en.wikibooks.org/wiki/X86_Disassembly/Windows_Executable_Files#Relative_Virtual_Addressing_(RVA)
+//
+// This helper macro converts the saved RVA to a fully valid pointer to the data in the PE file
 #define RVA2PTR(t,base,rva) ((t)(((PCHAR) base) + rva))
 
 // A helper function to write into protected memory
 int wmemcpy(void* dst, void* src, size_t sz)
 {
 	DWORD oldp;
+	// Make the memory page writeable
 	if (!VirtualProtect(dst, sz, PAGE_READWRITE, &oldp))
 		return 1;
 	memcpy(dst, src, sz);
+	// Restore the protection level
 	VirtualProtect(dst, sz, oldp, &oldp);
 	return 0;
 }
@@ -52,11 +54,13 @@ BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
 	/*
 	 * Note that we are not doing any trampoline magic or editing the assembly!
 	 * 
-	 * Instead, we are reading the module's PE header, find its address entry, and replace it with a forward.
-	 * This ultimately will fool the game/executable to call our hook, while keeping original one intact.
+	 * Instead, we are reading the module's PE file, find the original function's entry in the export address table (EAT), 
+	 * and replace it with a forward import.
+	 * 
+	 * This ultimately will fool the game/executable to call our hook, while keeping original function intact.
 	 *
 	 * Thus, in order to work, the proxy DLL has to export the hook, because we are essentially
-	 * asking the game to call our hook without ever going to the original function.
+	 * asking the game to call our hook without ever going to the original function (unlike with trampolines).
 	 */
 
 	size_t fwdlen = strlen(forwardFunctionEntry);
@@ -93,7 +97,7 @@ BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
 			// Update the entry to go the the last entry (which we will populate in the next memcpy)
 			err |= wmemcpy(&addrs[i], &fptr, sizeof(fptr));
 
-			// Add the forwarding import to the exports table
+			// Add the forwarding import to our function at the end of the EAT
 			err |= wmemcpy(((char*)exports + edir.Size), forwardFunctionEntry, fwdlen);
 
 			// Increment the size of the export data directory
