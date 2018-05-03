@@ -4,7 +4,7 @@
 >
 > The project has been divided! Namely,
 > * UPP is now known as Doorstop, and it does not contain any patching tools.
-> * PatcherLoader is now exists as a legacy [SybarisLoader](https://github.com/NeighTools/SybarisLoader)
+> * PatcherLoader now exists as a legacy [SybarisLoader](https://github.com/NeighTools/SybarisLoader)
 
 Doorstop is a tool to sideload and execute managed code in Unity before any of the assemblies are loaded*!
 
