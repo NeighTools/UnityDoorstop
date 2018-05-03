@@ -10,29 +10,9 @@
 
 namespace Logger
 {
-	static std::wstring getTimeString()
-	{
-		const auto rawTime = std::time(nullptr);
-		std::wstring ts = _wctime(&rawTime);
-		ts.pop_back(); // Remove the default '\n' added by ctime.
-		return ts;
-	}
-
-	static bool loggerLoaded = false;
-
-	static std::wofstream& getLogStream()
-	{
-		static std::wofstream log("upp_loader.log");
-		loggerLoaded = true;
-		return log;
-	}
-
 	DECLSPEC_NORETURN static void fatalError(const std::wstring& message)
 	{
 		MessageBox(nullptr, message.c_str(), L"Proxy Fatal Error", MB_OK | MB_ICONERROR);
-
-		LOG("Fatal error: " << message);
-		getLogStream().flush();
 
 		std::exit(EXIT_FAILURE);
 	}

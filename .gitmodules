@@ -1,3 +1,0 @@
-[submodule "lib/minhook"]
-	path = lib/minhook
-	url = https://github.com/TsudaKageyu/minhook.git

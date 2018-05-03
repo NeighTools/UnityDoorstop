@@ -68,9 +68,7 @@ namespace WinHttp
 
 		const auto errorMessageID = GetLastError();
 		if (errorMessageID == 0)
-		{
 			return L"Unknown error";
-		}
 
 		LPWSTR messageBuffer = nullptr;
 		constexpr DWORD fmtFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -87,58 +85,36 @@ namespace WinHttp
 		return message + L"(error " + std::to_wstring(errorMessageID) + L")";
 	}
 
-	bool isLoaded()
-	{
-		return dllHandle != nullptr;
-	}
-
 	void load()
 	{
-		if (isLoaded())
-		{
-			Logger::fatalError(L"The Real DLL is already loaded!");
-		}
-
 		const auto originalDllPath = getRealDllPath();
-		//LOG(L"Trying to load real DLL from \"" << originalDllPath << L"\"...");
-
+		
 		dllHandle = LoadLibraryEx(originalDllPath.c_str(), nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+
 		if (dllHandle == nullptr)
-		{
 			Logger::fatalError(L"Unable to load the real DLL!\n" + lastWinErrorAsString());
-		}
 
 		const auto selfHMod = getSelfModuleHandle();
+
 		if (dllHandle == selfHMod)
-		{
 			Logger::fatalError(L"Trying to load itself as the real DLL!");
-		}
 
 		wchar_t tempString[1024] = {'\0'};
+
 		if (GetModuleFileName(dllHandle, tempString, sizeof(tempString)) == 0)
-			LOG(L"Unable to get Real DLL file path!");
+			Logger::fatalError(L"Unable to get Real DLL file path!");
 		else
 			dllFilePath = tempString;
-
-		/*LOG(L"\n--------------------------------------------------------");
-		LOG(L"  Real DLL is loaded!");
-		LOG(L"  Real DLL = " << ptrToString(dllHandle) << L", Proxy DLL = " << ptrToString(selfHMod));
-		LOG(L"  Real DLL path: \"" << dllFilePath << L"\"");
-		LOG(L"--------------------------------------------------------\n");*/
 	}
 
 	void* getRealDllFunction(const char* funcName)
 	{
-		if (!isLoaded())
+		if (dllHandle == nullptr)
 		{
 			load();
 		}
 
 		const auto fptr = GetProcAddress(dllHandle, funcName);
-		if (fptr == nullptr)
-		{
-			LOG("Error! Unable to find " << funcName);
-		}
 
 		return reinterpret_cast<void *>(fptr);
 	}

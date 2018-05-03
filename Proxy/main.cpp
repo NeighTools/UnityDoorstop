@@ -36,14 +36,20 @@
 #define DEFAULT_LOADER_PATH L"UnityPrePatcher"
 
 // A helper for cleaner error logging
-#define ASSERT(test, message, ...)				  \
+#define ASSERT(test, message)				      \
 	if(!(test))									  \
 	{											  \
-		LOG(Logger::getTimeString() << message);  \
-		return __VA_ARGS__;						  \
+		Logger::fatalError(message);		      \
+	}
+
+#define ASSERT_SOFT(test, ...)		              \
+	if(!(test))									  \
+	{											  \
+		return __VA_ARGS__;         		      \
 	}
 
 #include "mono.h"
+#include "hook.h"
 
 using namespace Mono;
 
@@ -86,29 +92,29 @@ void loadConfig()
 void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_version)
 {
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
-	const auto domain = mono_jit_init_version_original(root_domain_name, runtime_version);
+	const auto domain = mono_jit_init_version(root_domain_name, runtime_version);
 
 	char dllPathA[MAX_PATH];
 	sprintf_s(dllPathA, "%ws", loaderPath.c_str());
 
 	// Load our custom assembly into the domain
 	const auto assembly = mono_domain_assembly_open(domain, dllPathA);
-	ASSERT(assembly != nullptr, " Failed to load PatchLoader.dll as a CLR assembly!", domain);
+	ASSERT_SOFT(assembly != nullptr, domain);
 
 	// Get assembly's image that contains CIL code
 	const auto image = mono_assembly_get_image(assembly);
-	ASSERT(image != nullptr, " Failed to get assembly image for PatchLoader.dll!", domain);
+	ASSERT_SOFT(image != nullptr, domain);
 
 	// Find our Loader class from the assembly
 	const auto classDef = mono_class_from_name(image, "PatchLoader", "Loader");
-	ASSERT(classDef != nullptr, " Failed to load class PatchLoader.Loader!", domain);
+	ASSERT_SOFT(classDef != nullptr, domain);
 
 	// Create a method descriptor that is used to find the Run() method
 	const auto descriptor = mono_method_desc_new("Loader:Run", FALSE);
 
 	// Find Run() method from Loader class
 	const auto method = mono_method_desc_search_in_class(descriptor, classDef);
-	ASSERT(method != nullptr, " Failed to locate Loader.Run() method!", domain);
+	ASSERT_SOFT(method != nullptr, domain);
 
 	// Invoke Run() with no parameters
 	mono_runtime_invoke(method, nullptr, nullptr, nullptr);
@@ -125,45 +131,41 @@ void Main()
 	if (!enabled)
 		return;
 
-	ASSERT(PathFileExistsW(uppPath.c_str()), " No UnityPrePatcher folder found! Aborting...");
-	ASSERT(PathFileExistsW(loaderPath.c_str()), " No PatchLoader.dll found! Aborting...");
+	ASSERT_SOFT(PathFileExistsW(uppPath.c_str()));
+	ASSERT_SOFT(PathFileExistsW(loaderPath.c_str()));
 
 	const auto monoDllPath = getMonoPath();
 	const auto monoDllPathStr = monoDllPath.c_str();
 
-	ASSERT(PathFileExistsW(monoDllPathStr), " No mono.dll found from " << monoDllPath << "! Aborting...");
+	ASSERT(PathFileExistsW(monoDllPathStr), L"No mono.dll found! Cannot continue!");
 
 	// Preload mono into memory so we can start hooking it
 	const auto monoLib = LoadLibrary(monoDllPathStr);
 
-	ASSERT(monoLib != nullptr, " Failed to load mono.dll! Aborting...");
+	ASSERT(monoLib != nullptr, L"Failed to load mono.dll!");
 
 	loadMonoFunctions(monoLib);
 
-	// Initialize MinHook
-	// TODO: Error handling
-	auto status = MH_Initialize();
+	BOOL success = ezHook((intptr_t)monoLib, mono_jit_init_version, "winhttp.ownMonoJitInitVersion");
 
-	ASSERT(status == MH_OK, " Failed to initialize MinHook! Error code: " << status);
 
-	// Add a detour to mono_jit_init_version
-	status = MH_CreateHook(mono_jit_init_version, &ownMonoJitInitVersion,
-	                       reinterpret_cast<LPVOID*>(&mono_jit_init_version_original));
+	//// Initialize MinHook
+	//// TODO: Error handling
+	//auto status = MH_Initialize();
 
-	ASSERT(status == MH_OK, " Failed to hook onto mono_jit_init_version! Error code: " << status);
+	//ASSERT_SOFT(status == MH_OK);
 
-	// Enable our hook
-	// TODO: Disable it once it's done?
-	status = MH_EnableHook(mono_jit_init_version);
+	//// Add a detour to mono_jit_init_version
+	//status = MH_CreateHook(mono_jit_init_version, &ownMonoJitInitVersion,
+	//                       reinterpret_cast<LPVOID*>(&mono_jit_init_version_original));
 
-	ASSERT(status == MH_OK, " Failed to enable hook for mono_jit_init_version! Error code: " << status);
-}
+	//ASSERT_SOFT(status == MH_OK);
 
-void dispose()
-{
-	// Flush the logger to be sure we got everything
-	if (Logger::loggerLoaded)
-		Logger::getLogStream().flush();
+	//// Enable our hook
+	//// TODO: Disable it once it's done?
+	//status = MH_EnableHook(mono_jit_init_version);
+
+	//ASSERT_SOFT(status == MH_OK);
 }
 
 // ReSharper disable once CppInconsistentNaming
@@ -176,7 +178,6 @@ BOOL WINAPI DllMain(HINSTANCE /* hInstDll */, DWORD reasonForDllLoad, LPVOID /* 
 		break;
 
 	case DLL_PROCESS_DETACH:
-		dispose();
 		break;
 
 	default:
