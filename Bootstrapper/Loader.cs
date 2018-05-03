@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace PatcherLoader
+namespace UnityDoorstop.Bootstrap
 {
     public static class Loader
     {

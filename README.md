@@ -1,25 +1,29 @@
-# UnityPrePatcher
+# Untity Doorstop
 
-UnityPrePatcher (or **UPP** for short) is a tool to patch managed Mono assemblies in Unity games with the use of Cecil.Inject.
+> ⚠️ **Note for UPP users**
+>
+> The project has been divided! Namely,
+> * UPP is now known as Doorstop, and it does not contain any patching tools.
+> * PatcherLoader is now exists as a legacy [SybarisLoader](https://github.com/NeighTools/SybarisLoader)
+
+
+Doorstop is a helper tool to prevent Unity from starting directly, and instead sideload your own custom managed code.
 
 ## Features
 
-* **Uses Mono.Cecil** to patch assemblies: get all the benefits of direct assembly manipulation
-* **In-memory patching**: does not patch any files!
-* **Very simple loader**: loading done through a proxy DLL -- no executables. Works well with locale emulators!
-* **Compatible with Sybaris patchers** (with some minor differences)
+* **Runs first**: Doorstop's bootstrapper runs its own code before Unity has an ability to do so.
+* **Modular**: Add your own loaders, and the bootstrapper will execute them!
 * **Open source!**
 
-## Guides for users and developers on [the wiki](https://github.com/denikson/UnityPrePatcher/wiki)
+## Guides for users and developers on [the wiki](https://github.com/denikson/UnityDoorstep/wiki)
 
 ## Building
 
 To build, you will need:
 
 * Visual Studio 2017 (2015 might work as well with some modifications)
-* Visual C++ Toolset v140_xp (WIP: _xp only needed to compile minhook; might replace it with prebuilt library)
+* Visual C++ Toolset v140
 * .NET Framework 3.5 or newer
-* Mono.Cecil (installed via NuGet on build)
 
 First, clone the repository with submodules:
 

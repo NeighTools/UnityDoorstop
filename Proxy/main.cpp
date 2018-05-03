@@ -30,9 +30,9 @@
 
 #define FINI_WIDE_SUPPORT
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 #define CONFIG_NAME L"upp_config.ini"
-#define DEFAULT_LOADER_PATH L"UnityPrePatcher"
+#define DEFAULT_LOADER_PATH L"UnityDoorstop"
 
 // A helper for cleaner error logging
 #define ASSERT(test, message)                    \
@@ -83,7 +83,7 @@ void loadConfig()
 
 	uppPath = uppPathStr;
 	loaderPath = uppPathStr;
-	loaderPath.append(L"\\bin\\PatchLoader.dll");
+	loaderPath.append(L"\\bin\\UnityDoorstop.Bootstrap.dll");
 }
 
 // The hook for mono_jit_init_version
@@ -105,7 +105,7 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	ASSERT_SOFT(image != nullptr, domain);
 
 	// Find our Loader class from the assembly
-	const auto classDef = mono_class_from_name(image, "PatchLoader", "Loader");
+	const auto classDef = mono_class_from_name(image, "UnityDoorstop.Bootstrap", "Loader");
 	ASSERT_SOFT(classDef != nullptr, domain);
 
 	// Create a method descriptor that is used to find the Run() method
