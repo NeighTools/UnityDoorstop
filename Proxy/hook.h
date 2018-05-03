@@ -43,7 +43,7 @@ int wmemcpy(void* dst, void* src, size_t sz)
  * \param forwardFunctionEntry Name of the function to add a forward to. Must be of form `dll.API`.
  * \return TRUE, if hooking succeeded, otherwise, FALSE.
  */
-BOOL ezHook(intptr_t hostDll, void* originalFunction, char* forwardFunctionEntry)
+BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
 {
 	/*
 	 * Note that we are not doing any trampoline magic or editing the assembly!
@@ -55,7 +55,7 @@ BOOL ezHook(intptr_t hostDll, void* originalFunction, char* forwardFunctionEntry
 	 * asking the game to call our hook without ever going to the original function.
 	 */
 
-	int fwdlen = strlen(forwardFunctionEntry);
+	size_t fwdlen = strlen(forwardFunctionEntry);
 
 	// The module always starts with a DOS (or "MZ") header
 	IMAGE_DOS_HEADER* mz = (PIMAGE_DOS_HEADER)hostDll;
@@ -72,12 +72,12 @@ BOOL ezHook(intptr_t hostDll, void* originalFunction, char* forwardFunctionEntry
 
 	// Read the addrress of the function list and the address of function names
 	DWORD* addrs = RVA2PTR(DWORD*, mz, exports->AddressOfFunctions);
-	DWORD* names = RVA2PTR(DWORD*, mz, exports->AddressOfNames);
+//	DWORD* names = RVA2PTR(DWORD*, mz, exports->AddressOfNames);
 
 	// Iterate through all functions
 	for (unsigned i = 0; i < exports->NumberOfFunctions; i++)
 	{
-		char* name = RVA2PTR(char*, mz, names[i]); // Name of the exported function
+		//char* name = RVA2PTR(char*, mz, names[i]); // Name of the exported function
 		void* addr = RVA2PTR(void*, mz, addrs[i]); // Address of the exported function
 
 		// Check if we have the function we need to modify

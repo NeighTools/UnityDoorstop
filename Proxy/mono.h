@@ -64,7 +64,7 @@ namespace Mono
 	// Our original mono_jit_init_version_original
 	static mono_jit_init_version_t mono_jit_init_version_original;
 
-	inline std::wstring getMonoPath()
+	inline std::wstring getMonoPath(std::wstring prefix = L"\\")
 	{
 		// Code to get the name of the Game's Executable
 		wchar_t path[MAX_PATH];
@@ -75,6 +75,6 @@ namespace Mono
 
 		// The mono.dll should *usually* be in GameName_Data\Mono
 		// TODO: A better way to find mono.dll?
-		return std::wstring(L".\\").append(name).append(L"_Data\\Mono\\mono.dll");
+		return std::wstring(L".\\").append(name).append(L"_Data\\Mono").append(prefix).append(L"mono.dll");
 	}
 }

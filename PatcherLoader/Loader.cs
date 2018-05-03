@@ -10,7 +10,7 @@ namespace PatcherLoader
         private static readonly string BinDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         /// <summary>
-        ///     The entry point of the loader called by GLProxy.
+        ///     The entry point of the loader called by proxy.
         /// </summary>
         /// <remarks>
         ///     This is the entry point of the patch loader.
@@ -24,7 +24,7 @@ namespace PatcherLoader
             AppDomain.CurrentDomain.AssemblyResolve += ResolveInBinDirectory;
 
             string uppDir = Path.Combine(BinDir, "..");
-            string patchersDir = Path.Combine(uppDir, "patchers");
+            string patchersDir = Path.Combine(uppDir, "loaders");
 
             if (!Directory.Exists(patchersDir))
             {
@@ -37,9 +37,12 @@ namespace PatcherLoader
                 {
                     Assembly patcher = Assembly.LoadFile(dll);
 
-                    Type entryType = patcher.GetTypes().FirstOrDefault(t => t.Name.ToLower() == "patcherentry");
+                    BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-                    MethodInfo runMethod = entryType?.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
+                    Type entryType =
+                            patcher.GetTypes().FirstOrDefault(t => t.GetMethods(flags).Any(m => m.Name == "Main"));
+
+                    MethodInfo runMethod = entryType?.GetMethods(flags).FirstOrDefault();
                     runMethod?.Invoke(null, new object[0]);
                 }
                 catch (Exception) { }

@@ -110,9 +110,7 @@ namespace WinHttp
 	void* getRealDllFunction(const char* funcName)
 	{
 		if (dllHandle == nullptr)
-		{
 			load();
-		}
 
 		const auto fptr = GetProcAddress(dllHandle, funcName);
 

@@ -25,7 +25,6 @@
 #include <ctime>
 #include <Psapi.h>
 #include <Shlwapi.h>
-#include "../lib/minhook/include/MinHook.h"
 
 #include "logger.h"
 
@@ -36,16 +35,16 @@
 #define DEFAULT_LOADER_PATH L"UnityPrePatcher"
 
 // A helper for cleaner error logging
-#define ASSERT(test, message)				      \
-	if(!(test))									  \
-	{											  \
-		Logger::fatalError(message);		      \
+#define ASSERT(test, message)                    \
+	if(!(test))                                  \
+	{                                            \
+		Logger::fatalError(message);             \
 	}
 
-#define ASSERT_SOFT(test, ...)		              \
-	if(!(test))									  \
-	{											  \
-		return __VA_ARGS__;         		      \
+#define ASSERT_SOFT(test, ...)                   \
+	if(!(test))                                  \
+	{                                            \
+		return __VA_ARGS__;                      \
 	}
 
 #include "mono.h"
@@ -134,10 +133,15 @@ void Main()
 	ASSERT_SOFT(PathFileExistsW(uppPath.c_str()));
 	ASSERT_SOFT(PathFileExistsW(loaderPath.c_str()));
 
-	const auto monoDllPath = getMonoPath();
-	const auto monoDllPathStr = monoDllPath.c_str();
+	auto monoDllPath = getMonoPath();
+	auto monoDllPathStr = monoDllPath.c_str();
 
-	ASSERT(PathFileExistsW(monoDllPathStr), L"No mono.dll found! Cannot continue!");
+	if(!PathFileExistsW(monoDllPathStr))
+	{
+		monoDllPath = getMonoPath(L"\\EmbedRuntime\\");	// Some versions of Unity have mono placed here instead!
+		monoDllPathStr = monoDllPath.c_str();
+		ASSERT(PathFileExistsW(monoDllPathStr), L"No mono.dll found! Cannot continue!");
+	}
 
 	// Preload mono into memory so we can start hooking it
 	const auto monoLib = LoadLibrary(monoDllPathStr);
@@ -146,26 +150,7 @@ void Main()
 
 	loadMonoFunctions(monoLib);
 
-	BOOL success = ezHook((intptr_t)monoLib, mono_jit_init_version, "winhttp.ownMonoJitInitVersion");
-
-
-	//// Initialize MinHook
-	//// TODO: Error handling
-	//auto status = MH_Initialize();
-
-	//ASSERT_SOFT(status == MH_OK);
-
-	//// Add a detour to mono_jit_init_version
-	//status = MH_CreateHook(mono_jit_init_version, &ownMonoJitInitVersion,
-	//                       reinterpret_cast<LPVOID*>(&mono_jit_init_version_original));
-
-	//ASSERT_SOFT(status == MH_OK);
-
-	//// Enable our hook
-	//// TODO: Disable it once it's done?
-	//status = MH_EnableHook(mono_jit_init_version);
-
-	//ASSERT_SOFT(status == MH_OK);
+	ezHook(monoLib, mono_jit_init_version, "winhttp.ownMonoJitInitVersion");
 }
 
 // ReSharper disable once CppInconsistentNaming
