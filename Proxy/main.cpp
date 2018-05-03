@@ -30,7 +30,7 @@
 
 #define FINI_WIDE_SUPPORT
 
-#define VERSION "1.3"
+#define VERSION "2.0"
 #define CONFIG_NAME L"doorstop_config.ini"
 #define DEFAULT_LOADER_PATH L"UnityDoorstop"
 
