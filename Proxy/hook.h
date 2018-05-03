@@ -1,7 +1,7 @@
 /*
  * EAT-based hooking for x86/x64.
  * 
- * Big thanks to ez making this!
+ * Big thanks to ez for making this!
  * 
  * Creates "hooks" by modifying the module's export address table.
  * The procedure works in three main parts:
@@ -14,6 +14,10 @@
  * reference material:
  * 
  * https://github.com/corkami/docs/blob/master/PE/PE.md
+ * 
+ * The idea is based on the fact that the export table allows forwarding imports:
+ * 
+ * https://en.wikibooks.org/wiki/X86_Disassembly/Windows_Executable_Files#Forwarding
  * 
  */
 

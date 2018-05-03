@@ -37,7 +37,7 @@ namespace UnityDoorstop.Bootstrap
                 {
                     Assembly patcher = Assembly.LoadFile(dll);
 
-                    BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+                    const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
                     Type entryType =
                             patcher.GetTypes().FirstOrDefault(t => t.GetMethods(flags).Any(m => m.Name == "Main"));

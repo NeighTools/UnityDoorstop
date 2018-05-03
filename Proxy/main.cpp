@@ -108,11 +108,8 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	const auto classDef = mono_class_from_name(image, "UnityDoorstop.Bootstrap", "Loader");
 	ASSERT_SOFT(classDef != nullptr, domain);
 
-	// Create a method descriptor that is used to find the Run() method
-	const auto descriptor = mono_method_desc_new("Loader:Run", FALSE);
-
 	// Find Run() method from Loader class
-	const auto method = mono_method_desc_search_in_class(descriptor, classDef);
+	const auto method = mono_class_get_method_from_name(classDef, "Run", -1);
 	ASSERT_SOFT(method != nullptr, domain);
 
 	// Invoke Run() with no parameters

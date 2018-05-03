@@ -1,4 +1,4 @@
-# Untity Doorstop
+# Unity Doorstop
 
 > ⚠️ **Note for UPP users**
 >
@@ -6,8 +6,9 @@
 > * UPP is now known as Doorstop, and it does not contain any patching tools.
 > * PatcherLoader is now exists as a legacy [SybarisLoader](https://github.com/NeighTools/SybarisLoader)
 
+Doorstop is a tool to sideload and execute managed code in Unity before any of the assemblies are loaded*!
 
-Doorstop is a helper tool to prevent Unity from starting directly, and instead sideload your own custom managed code.
+*For the exception of `mscorlib.dll`.
 
 ## Features
 
