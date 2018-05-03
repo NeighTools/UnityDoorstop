@@ -23,8 +23,8 @@ namespace UnityDoorstop.Bootstrap
             // Add a resolver for \bin directory for convenience
             AppDomain.CurrentDomain.AssemblyResolve += ResolveInBinDirectory;
 
-            string uppDir = Path.Combine(BinDir, "..");
-            string patchersDir = Path.Combine(uppDir, "loaders");
+            string rootDir = Path.Combine(BinDir, "..");
+            string patchersDir = Path.Combine(rootDir, "loaders");
 
             if (!Directory.Exists(patchersDir))
             {
@@ -42,7 +42,8 @@ namespace UnityDoorstop.Bootstrap
                     Type entryType =
                             patcher.GetTypes().FirstOrDefault(t => t.GetMethods(flags).Any(m => m.Name == "Main"));
 
-                    MethodInfo runMethod = entryType?.GetMethods(flags).FirstOrDefault();
+                    MethodInfo runMethod = entryType?.GetMethods(flags).FirstOrDefault(m => m.Name == "Main");
+
                     runMethod?.Invoke(null, new object[0]);
                 }
                 catch (Exception) { }

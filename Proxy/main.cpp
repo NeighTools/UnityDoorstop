@@ -31,7 +31,7 @@
 #define FINI_WIDE_SUPPORT
 
 #define VERSION "1.3"
-#define CONFIG_NAME L"upp_config.ini"
+#define CONFIG_NAME L"doorstop_config.ini"
 #define DEFAULT_LOADER_PATH L"UnityDoorstop"
 
 // A helper for cleaner error logging
@@ -69,7 +69,7 @@ void loadConfig()
 	iniPath.append(drive).append(curPath).append(CONFIG_NAME);
 
 	wchar_t enabledString[256] = L"true";
-	GetPrivateProfileStringW(L"UnityPrePatcher", L"enabled", L"true", enabledString, sizeof(enabledString),
+	GetPrivateProfileStringW(L"UnityDoorstop", L"enabled", L"true", enabledString, sizeof(enabledString),
 	                         iniPath.c_str());
 
 	if (_wcsnicmp(enabledString, L"true", 4) == 0)
@@ -78,7 +78,7 @@ void loadConfig()
 		enabled = false;
 
 	wchar_t uppPathStr[MAX_PATH] = DEFAULT_LOADER_PATH;
-	GetPrivateProfileStringW(L"UnityPrePatcher", L"loaderPath", DEFAULT_LOADER_PATH, uppPathStr, sizeof(uppPathStr),
+	GetPrivateProfileStringW(L"UnityDoorstop", L"loaderPath", DEFAULT_LOADER_PATH, uppPathStr, sizeof(uppPathStr),
 	                         iniPath.c_str());
 
 	uppPath = uppPathStr;
