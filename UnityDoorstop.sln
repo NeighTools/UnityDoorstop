@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "winhttp", "Proxy\Proxy.vcxproj", "{88609E16-731F-46C9-8139-6B1A7A83240D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bootstrapper", "Bootstrapper\Bootstrapper.csproj", "{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoorstopTest", "DoorstopTest\DoorstopTest.csproj", "{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

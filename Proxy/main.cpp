@@ -32,7 +32,7 @@
 
 #define VERSION "2.0"
 #define CONFIG_NAME L"doorstop_config.ini"
-#define DEFAULT_TARGET_ASSEMBLY L"UnityDoorstop"
+#define DEFAULT_TARGET_ASSEMBLY L"Doorstop.dll"
 
 // A helper for cleaner error logging
 #define ASSERT(test, message)                    \
@@ -121,7 +121,7 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	if (params == 1)
 	{
 		// If there is a parameter, it's most likely a string[].
-		// Poulate it as follows
+		// Populate it as follows
 		// 0 => path to the game's executable
 		// 1 => --doorstop-invoke
 
