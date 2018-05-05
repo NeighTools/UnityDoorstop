@@ -20,6 +20,15 @@
 // A helper macro to load the function address from a library
 #define GET_MONO_PROC(name, lib) name = reinterpret_cast<name##_t>(GetProcAddress(lib, #name))
 
+// Creates a MonoString based from a C wide string
+#define MONO_STRING(str) mono_string_new_utf16(domain, str, wcslen(str))
+
+// Set MonoArray's index to a reference type value (i.e. string)
+#define SET_ARRAY_REF(arr, index, refVal) \
+	{ \
+		const auto p = (void**) mono_array_addr_with_size(arr, sizeof(void*), index); \
+		mono_gc_wbarrier_set_arrayref(arr, p, refVal); \
+	}
 
 namespace Mono
 {
@@ -32,14 +41,35 @@ namespace Mono
 	// MonoObject * mono_runtime_invoke(MonoMethod *method, void *obj, void **params, MonoObject **exc);
 	DEF_MONO_PROC(mono_runtime_invoke, void *, void *, void *, void **, void **);
 
-	// MonoClass * mono_class_from_name(MonoImage *image, const char* name_space, const char *name);
-	DEF_MONO_PROC(mono_class_from_name, void *, void *, const char *, const char *);
-
-	// MonoMethod* mono_class_get_method_from_name (MonoClass *klass, const char *name, int param_count)
-	DEF_MONO_PROC(mono_class_get_method_from_name, void *, void *, const char *, int);
-
 	// MonoDomain * mono_jit_init_version(const char *root_domain_name, const char *runtime_version);
 	DEF_MONO_PROC(mono_jit_init_version, void *, const char *, const char *);
+
+	// MonoMethodDesc* mono_method_desc_new(const char *name, gboolean include_namespace)
+	DEF_MONO_PROC(mono_method_desc_new, void *, const char *, int);
+
+	// MonoMethod* mono_method_desc_search_in_image (MonoMethodDesc *desc, MonoImage *image)
+	DEF_MONO_PROC(mono_method_desc_search_in_image, void *, void *, void *);
+
+	//MonoMethodSignature* mono_method_signature (MonoMethod *m)
+	DEF_MONO_PROC(mono_method_signature, void *, void *);
+
+	//guint32 mono_signature_get_param_count (MonoMethodSignature *sig)
+	DEF_MONO_PROC(mono_signature_get_param_count, uint32_t, void *);
+
+	//MonoArray* mono_array_new (MonoDomain *domain, MonoClass *eclass, uintptr_t n)
+	DEF_MONO_PROC(mono_array_new, void *, void *, void *, uintptr_t);
+
+	//MonoClass* mono_get_string_class (void)
+	DEF_MONO_PROC(mono_get_string_class, void *);
+
+	//MonoString* mono_string_new_utf16 (MonoDomain *domain, const guint16 *text, gint32 len)
+	DEF_MONO_PROC(mono_string_new_utf16, void *, void *, const wchar_t *, int32_t);
+
+	//MONO_API void mono_gc_wbarrier_set_arrayref  (MonoArray *arr, void* slot_ptr, MonoObject* value);
+	DEF_MONO_PROC(mono_gc_wbarrier_set_arrayref, void, void *, void *, void *);
+
+	// MONO_API char* mono_array_addr_with_size(MonoArray *array, int size, uintptr_t idx);
+	DEF_MONO_PROC(mono_array_addr_with_size, char *, void *, int, uintptr_t);
 
 
 	/**
@@ -52,9 +82,16 @@ namespace Mono
 		GET_MONO_PROC(mono_domain_assembly_open, monoLib);
 		GET_MONO_PROC(mono_assembly_get_image, monoLib);
 		GET_MONO_PROC(mono_runtime_invoke, monoLib);
-		GET_MONO_PROC(mono_class_from_name, monoLib);
-		GET_MONO_PROC(mono_class_get_method_from_name, monoLib);
 		GET_MONO_PROC(mono_jit_init_version, monoLib);
+		GET_MONO_PROC(mono_method_desc_new, monoLib);
+		GET_MONO_PROC(mono_method_desc_search_in_image, monoLib);
+		GET_MONO_PROC(mono_method_signature, monoLib);
+		GET_MONO_PROC(mono_signature_get_param_count, monoLib);
+		GET_MONO_PROC(mono_array_new, monoLib);
+		GET_MONO_PROC(mono_get_string_class, monoLib);
+		GET_MONO_PROC(mono_string_new_utf16, monoLib);
+		GET_MONO_PROC(mono_gc_wbarrier_set_arrayref, monoLib);
+		GET_MONO_PROC(mono_array_addr_with_size, monoLib);
 	}
 
 	// Our original mono_jit_init_version_original

@@ -32,7 +32,7 @@
 
 #define VERSION "2.0"
 #define CONFIG_NAME L"doorstop_config.ini"
-#define DEFAULT_LOADER_PATH L"UnityDoorstop"
+#define DEFAULT_TARGET_ASSEMBLY L"UnityDoorstop"
 
 // A helper for cleaner error logging
 #define ASSERT(test, message)                    \
@@ -53,8 +53,7 @@
 using namespace Mono;
 
 bool enabled = true;
-std::wstring uppPath = DEFAULT_LOADER_PATH;
-std::wstring loaderPath;
+std::wstring targetAssembly = DEFAULT_TARGET_ASSEMBLY;
 
 void loadConfig()
 {
@@ -77,13 +76,11 @@ void loadConfig()
 	if (_wcsnicmp(enabledString, L"false", 5) == 0)
 		enabled = false;
 
-	wchar_t uppPathStr[MAX_PATH] = DEFAULT_LOADER_PATH;
-	GetPrivateProfileStringW(L"UnityDoorstop", L"loaderPath", DEFAULT_LOADER_PATH, uppPathStr, sizeof(uppPathStr),
+	wchar_t uppPathStr[MAX_PATH] = DEFAULT_TARGET_ASSEMBLY;
+	GetPrivateProfileStringW(L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY, uppPathStr, sizeof(uppPathStr),
 	                         iniPath.c_str());
 
-	uppPath = uppPathStr;
-	loaderPath = uppPathStr;
-	loaderPath.append(L"\\bin\\UnityDoorstop.Bootstrap.dll");
+	targetAssembly = uppPathStr;
 }
 
 // The hook for mono_jit_init_version
@@ -94,7 +91,7 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	const auto domain = mono_jit_init_version(root_domain_name, runtime_version);
 
 	char dllPathA[MAX_PATH];
-	sprintf_s(dllPathA, "%ws", loaderPath.c_str());
+	sprintf_s(dllPathA, "%ws", targetAssembly.c_str());
 
 	// Load our custom assembly into the domain
 	const auto assembly = mono_domain_assembly_open(domain, dllPathA);
@@ -104,16 +101,52 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	const auto image = mono_assembly_get_image(assembly);
 	ASSERT_SOFT(image != nullptr, domain);
 
-	// Find our Loader class from the assembly
-	const auto classDef = mono_class_from_name(image, "UnityDoorstop.Bootstrap", "Loader");
-	ASSERT_SOFT(classDef != nullptr, domain);
+	// Note: we use the runtime_invoke route since jit_exec will not work on DLLs
 
-	// Find Run() method from Loader class
-	const auto method = mono_class_get_method_from_name(classDef, "Run", -1);
+	// Create a descriptor for a random Main method
+	const auto desc = mono_method_desc_new("*:Main", FALSE);
+	ASSERT_SOFT(desc != nullptr, domain);
+
+	// Find the first possible Main method in the assembly
+	const auto method = mono_method_desc_search_in_image(desc, image);
 	ASSERT_SOFT(method != nullptr, domain);
 
-	// Invoke Run() with no parameters
-	mono_runtime_invoke(method, nullptr, nullptr, nullptr);
+	const auto signature = mono_method_signature(method);
+	ASSERT_SOFT(signature != nullptr, domain);
+
+	// Get the number of parameters in the signature
+	const auto params = mono_signature_get_param_count(signature);
+
+	void** args = nullptr;
+	if (params == 1)
+	{
+		// If there is a parameter, it's most likely a string[].
+		// Poulate it as follows
+		// 0 => path to the game's executable
+		// 1 => --doorstop-invoke
+
+		wchar_t path[MAX_PATH];
+		GetModuleFileName(nullptr, path, sizeof(path));
+
+		const auto exe_path = MONO_STRING(path);
+		const auto doorstop_handle = MONO_STRING(L"--doorstop-invoke");
+
+		const auto args_array = mono_array_new(domain, mono_get_string_class(), 2);
+
+		SET_ARRAY_REF(args_array, 0, exe_path);
+		SET_ARRAY_REF(args_array, 1, doorstop_handle);
+
+		args = new void*[1];
+		args[0] = args_array;
+	}
+
+	mono_runtime_invoke(method, nullptr, args, nullptr);
+
+	if (args != nullptr)
+	{
+		delete[] args;
+		args = nullptr;
+	}
 
 	return domain;
 }
@@ -127,15 +160,14 @@ void Main()
 	if (!enabled)
 		return;
 
-	ASSERT_SOFT(PathFileExistsW(uppPath.c_str()));
-	ASSERT_SOFT(PathFileExistsW(loaderPath.c_str()));
+	ASSERT_SOFT(PathFileExistsW(targetAssembly.c_str()));
 
 	auto monoDllPath = getMonoPath();
 	auto monoDllPathStr = monoDllPath.c_str();
 
-	if(!PathFileExistsW(monoDllPathStr))
+	if (!PathFileExistsW(monoDllPathStr))
 	{
-		monoDllPath = getMonoPath(L"\\EmbedRuntime\\");	// Some versions of Unity have mono placed here instead!
+		monoDllPath = getMonoPath(L"\\EmbedRuntime\\"); // Some versions of Unity have mono placed here instead!
 		monoDllPathStr = monoDllPath.c_str();
 		ASSERT(PathFileExistsW(monoDllPathStr), L"No mono.dll found! Cannot continue!");
 	}
