@@ -16,7 +16,7 @@ Doorstop is a tool to sideload and execute managed code in Unity before any of t
 * **Modular**: Add your own loaders, and the bootstrapper will execute them!
 * **Open source!**
 
-## Guides for users and developers on [the wiki](https://github.com/denikson/UnityDoorstop/wiki)
+## Guides for users and developers on [the wiki](https://github.com/NeighTools/UnityDoorstop/wiki)
 
 ## Building
 
