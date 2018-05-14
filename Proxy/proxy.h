@@ -61,9 +61,3 @@ inline void loadProxy()
 
 	loadFunctions(dllHandle);
 }
-
-#define PROXY(call, name, i) \
-	ULONG call name() \
-	{ \
-		return originalFunctions[i](); \
-	}

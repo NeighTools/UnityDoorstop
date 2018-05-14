@@ -11,8 +11,8 @@
 
 #define ADD_ORIGINAL(i, name) originalFunctions[i] = GetProcAddress(dll, #name)
 
-#define PROXY(call, name, i) \
-	ULONG call name() \
+#define PROXY(name, i) \
+	ULONG name() \
 	{ \
 		return originalFunctions[i](); \
 	}
@@ -24,4 +24,4 @@ void loadFunctions(HMODULE dll)
 	ADD_ORIGINAL(0, WinHttpGetIEProxyConfigForCurrentUser);
 }
 
-PROXY(__stdcall, WinHttpGetIEProxyConfigForCurrentUser, 0);
+PROXY(WinHttpGetIEProxyConfigForCurrentUser, 0);
