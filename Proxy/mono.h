@@ -62,7 +62,7 @@ inline void loadMonoFunctions(HMODULE monoLib)
 {
 	// Enjoy the fact that C allows such sloppy casting
 	// In C++ you would have to cast to the precise function pointer type
-	#define GET_MONO_PROC(name) name = (void*)(GetProcAddress(monoLib, #name))
+	#define GET_MONO_PROC(name) name = (void*)GetProcAddress(monoLib, #name)
 
 	// Find and assign all our functions that we are going to use
 	GET_MONO_PROC(mono_domain_assembly_open);

@@ -35,6 +35,7 @@
 
 BOOL enabled = TRUE;
 wchar_t* targetAssembly[MAX_PATH + 1];
+EXTERN_C IMAGE_DOS_HEADER __ImageBase; // This is provided by MSVC with the infomration about this DLL
 
 void loadConfig()
 {
@@ -134,7 +135,17 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 {
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
 		return TRUE;
-	loadProxy();
+
+	wchar_t path[MAX_PATH + 1]; // Path to this DLL
+	wchar_t dllName[_MAX_FNAME + 1]; // The name of the DLL
+	char hookName[_MAX_FNAME + 30];	//Name of the hook method that will be added to mono's EAT
+
+	GetModuleFileName((HINSTANCE)&__ImageBase, path, MAX_PATH + 1);
+	_wsplitpath_s(path, NULL, 0, NULL, 0, dllName, _MAX_FNAME + 1, NULL, 0);
+
+	sprintf_s(hookName, _MAX_FNAME + 30, "%S.ownMonoJitInitVersion", dllName);
+
+	loadProxy(dllName);
 	loadConfig();
 
 	// If the loader is disabled, don't inject anything.
@@ -144,8 +155,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 	ASSERT_SOFT(PathFileExistsW(targetAssembly), TRUE);
 
 	HMODULE monoLib = initMonoLib();
-
-	ezHook(monoLib, mono_jit_init_version, "winhttp.ownMonoJitInitVersion");
+	ezHook(monoLib, mono_jit_init_version, hookName);
 
 	return TRUE;
 }

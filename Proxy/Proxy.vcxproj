@@ -97,7 +97,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;GLPROXY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <PrecompiledHeaderCompileAs>CompileAsC</PrecompiledHeaderCompileAs>
       <CompileAs>CompileAsC</CompileAs>
@@ -115,7 +115,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;GLPROXY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeaderCompileAs>CompileAsC</PrecompiledHeaderCompileAs>
@@ -135,7 +135,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;GLPROXY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <PrecompiledHeaderCompileAs>CompileAsC</PrecompiledHeaderCompileAs>
       <CompileAs>CompileAsC</CompileAs>
@@ -157,7 +157,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeaderCompileAs>CompileAsC</PrecompiledHeaderCompileAs>

@@ -1,20 +1,15 @@
 # Unity Doorstop
 
-> ⚠️ **Note for UPP users**
->
-> The project has been divided! Namely,
-> * UPP is now known as Doorstop, and it does not contain any patching tools.
-> * PatcherLoader now exists as a legacy [SybarisLoader](https://github.com/NeighTools/SybarisLoader)
+Doorstop is a tool to execute managed assemblies inside Unity as early as possible!
 
-Doorstop is a tool to sideload and execute managed code in Unity before any of the assemblies are loaded*!
-
-*For the exception of `mscorlib.dll`.
+This repository is indented mainly for developers!  
+Developers should package Doorstop into their applications for the end-users.
 
 ## Features
 
 * **Runs first**: Doorstop's bootstrapper runs its own code before Unity has an ability to do so.
-* **Modular**: Add your own loaders, and the bootstrapper will execute them!
-* **Open source!**
+* **Configurable**: A very basic configuration file allows to specify your own assembly to execute!
+* **Public domain!** You are fully free to embed Doorstop into your application!
 
 ## Guides for users and developers on [the wiki](https://github.com/NeighTools/UnityDoorstop/wiki)
 
@@ -24,14 +19,20 @@ To build, you will need:
 
 * Visual Studio 2017 (2015 might work as well with some modifications)
 * Visual C++ Toolset v140
-* .NET Framework 3.5 or newer
+* .NET Framework 3.5 or newer (only for the example, not used by the proxy)
+* Python (only to generate proxy functions; not needed to build)
 
-First, clone the repository with submodules:
+Clone, open in Visual Studio, select the platform (x86/x64) and build.
 
-```bash
-git clone --recurse-submodules https://github.com/denikson/UnityPrePatcher.git
-```
+#### Custom proxy functions
 
-Open in Visual Studio, select the platform (x86/x64) and build.
+Doorstop's proxy is flexible and allows to be load as different DLLs.
+You can modify which functions you want to proxy by adding/removing function names in `Proxy/proxydefs.txt` and running `proxygen/proxy_gen.py ../Proxy/proxydefs.txt` to generate an appropriate proxy functions.
+
+The current set up allows to use the proxy for the following DLLs:
+
+* `opengl32.dll`
+* `winhttp.dll`
+* `iphlpapi.dll`
 
 (WIP: Currently all build results are placed in separate folders; will be changed later)

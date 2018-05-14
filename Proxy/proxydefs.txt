@@ -1,5 +1,3 @@
-EXPORTS
-ownMonoJitInitVersion
 WinHttpGetIEProxyConfigForCurrentUser
 glIsTexture
 glGetTexParameteriv
