@@ -10,15 +10,13 @@
 #pragma once
 
 #include <windows.h>
-#include <cstdint>
+#include <stdint.h>
+#include "assert_util.h"
 
 // Define a helper macro that creates a typedef and a variable that will hold address to a mono.dll function
 #define DEF_MONO_PROC(name, returnType, ...)          \
 	typedef returnType (__cdecl * name##_t)(__VA_ARGS__); \
 	static name##_t name
-
-// A helper macro to load the function address from a library
-#define GET_MONO_PROC(name, lib) name = reinterpret_cast<name##_t>(GetProcAddress(lib, #name))
 
 // Creates a MonoString based from a C wide string
 #define MONO_STRING(str) mono_string_new_utf16(domain, str, wcslen(str))
@@ -26,88 +24,82 @@
 // Set MonoArray's index to a reference type value (i.e. string)
 #define SET_ARRAY_REF(arr, index, refVal) \
 	{ \
-		const auto p = (void**) mono_array_addr_with_size(arr, sizeof(void*), index); \
+		void **p = (void**) mono_array_addr_with_size(arr, sizeof(void*), index); \
 		mono_gc_wbarrier_set_arrayref(arr, p, refVal); \
 	}
 
-namespace Mono
+// Here we define the pointers to some functions within mono.dll
+// Note to C learners: these are not signature definitions, but rather "variable"
+// definitions with the function pointer type.
+
+// Note: we use void* instead of the real intented structs defined in mono API
+// This way we don't need to include or define any of Mono's structs, which saves space
+// This, obviously, comes with a drawback of not being able to easily access the contents of the structs
+
+void *(*mono_jit_init_version)(const char *root_domain_name, const char *runtime_version);
+void *(*mono_domain_assembly_open)(void *domain, const char *name);
+void *(*mono_assembly_get_image)(void *assembly);
+void *(*mono_runtime_invoke)(void *method, void *obj, void **params, void **exc);
+
+void *(*mono_method_desc_new)(const char *name, int include_namespace);
+void *(*mono_method_desc_search_in_image)(void *desc, void *image);
+void *(*mono_method_signature)(void *method);
+uint32_t (*mono_signature_get_param_count)(void *sig);
+
+void *(*mono_array_new)(void *domain, void *eclass, uintptr_t n);
+void (*mono_gc_wbarrier_set_arrayref)(void *arr, void *slot_ptr, void *value);
+char *(*mono_array_addr_with_size)(void *arr, int size, uintptr_t idx);
+
+void *(*mono_get_string_class)();
+void *(*mono_string_new_utf16)(void *domain, const wchar_t *text, int32_t len);
+
+
+/**
+* \brief Loads Mono C API function pointers so that the above definitions can be called.
+* \param monoLib Mono.dll module.
+*/
+inline void loadMonoFunctions(HMODULE monoLib)
 {
-	// MonoAssembly * mono_domain_assembly_open  (MonoDomain *domain, const char *name);
-	DEF_MONO_PROC(mono_domain_assembly_open, void *, void *, const char *);
+	// Enjoy the fact that C allows such sloppy casting
+	// In C++ you would have to cast to the precise function pointer type
+	#define GET_MONO_PROC(name) name = (void*)(GetProcAddress(monoLib, #name))
 
-	// MonoImage * mono_assembly_get_image(MonoAssembly *assembly);
-	DEF_MONO_PROC(mono_assembly_get_image, void *, void *);
+	// Find and assign all our functions that we are going to use
+	GET_MONO_PROC(mono_domain_assembly_open);
+	GET_MONO_PROC(mono_assembly_get_image);
+	GET_MONO_PROC(mono_runtime_invoke);
+	GET_MONO_PROC(mono_jit_init_version);
+	GET_MONO_PROC(mono_method_desc_new);
+	GET_MONO_PROC(mono_method_desc_search_in_image);
+	GET_MONO_PROC(mono_method_signature);
+	GET_MONO_PROC(mono_signature_get_param_count);
+	GET_MONO_PROC(mono_array_new);
+	GET_MONO_PROC(mono_get_string_class);
+	GET_MONO_PROC(mono_string_new_utf16);
+	GET_MONO_PROC(mono_gc_wbarrier_set_arrayref);
+	GET_MONO_PROC(mono_array_addr_with_size);
+}
 
-	// MonoObject * mono_runtime_invoke(MonoMethod *method, void *obj, void **params, MonoObject **exc);
-	DEF_MONO_PROC(mono_runtime_invoke, void *, void *, void *, void **, void **);
+inline HMODULE initMonoLib()
+{
+	// Resolve path to mono.dll
+	wchar_t monoPath[MAX_PATH + 1];
+	DWORD len = GetModuleFileName(NULL, monoPath, sizeof(monoPath));
+	wcscpy_s(monoPath + len - 4, MAX_PATH + 1 - (len - 4), L"_Data\\Mono\\mono.dll");
 
-	// MonoDomain * mono_jit_init_version(const char *root_domain_name, const char *runtime_version);
-	DEF_MONO_PROC(mono_jit_init_version, void *, const char *, const char *);
+	// Preload mono into memory so we can start hooking it
+	HMODULE monoLib = LoadLibrary(monoPath);
 
-	// MonoMethodDesc* mono_method_desc_new(const char *name, gboolean include_namespace)
-	DEF_MONO_PROC(mono_method_desc_new, void *, const char *, int);
-
-	// MonoMethod* mono_method_desc_search_in_image (MonoMethodDesc *desc, MonoImage *image)
-	DEF_MONO_PROC(mono_method_desc_search_in_image, void *, void *, void *);
-
-	//MonoMethodSignature* mono_method_signature (MonoMethod *m)
-	DEF_MONO_PROC(mono_method_signature, void *, void *);
-
-	//guint32 mono_signature_get_param_count (MonoMethodSignature *sig)
-	DEF_MONO_PROC(mono_signature_get_param_count, uint32_t, void *);
-
-	//MonoArray* mono_array_new (MonoDomain *domain, MonoClass *eclass, uintptr_t n)
-	DEF_MONO_PROC(mono_array_new, void *, void *, void *, uintptr_t);
-
-	//MonoClass* mono_get_string_class (void)
-	DEF_MONO_PROC(mono_get_string_class, void *);
-
-	//MonoString* mono_string_new_utf16 (MonoDomain *domain, const guint16 *text, gint32 len)
-	DEF_MONO_PROC(mono_string_new_utf16, void *, void *, const wchar_t *, int32_t);
-
-	//MONO_API void mono_gc_wbarrier_set_arrayref  (MonoArray *arr, void* slot_ptr, MonoObject* value);
-	DEF_MONO_PROC(mono_gc_wbarrier_set_arrayref, void, void *, void *, void *);
-
-	// MONO_API char* mono_array_addr_with_size(MonoArray *array, int size, uintptr_t idx);
-	DEF_MONO_PROC(mono_array_addr_with_size, char *, void *, int, uintptr_t);
-
-
-	/**
-	* \brief Loads Mono C API function pointers so that the above definitions can be called.
-	* \param monoLib Mono.dll module.
-	*/
-	inline void loadMonoFunctions(HMODULE monoLib)
+	// If loading fails, try to get mono from EmbedRuntime folder (as it is in some games)
+	if (monoLib == NULL)
 	{
-		// Find and assign all our functions that we are going to use
-		GET_MONO_PROC(mono_domain_assembly_open, monoLib);
-		GET_MONO_PROC(mono_assembly_get_image, monoLib);
-		GET_MONO_PROC(mono_runtime_invoke, monoLib);
-		GET_MONO_PROC(mono_jit_init_version, monoLib);
-		GET_MONO_PROC(mono_method_desc_new, monoLib);
-		GET_MONO_PROC(mono_method_desc_search_in_image, monoLib);
-		GET_MONO_PROC(mono_method_signature, monoLib);
-		GET_MONO_PROC(mono_signature_get_param_count, monoLib);
-		GET_MONO_PROC(mono_array_new, monoLib);
-		GET_MONO_PROC(mono_get_string_class, monoLib);
-		GET_MONO_PROC(mono_string_new_utf16, monoLib);
-		GET_MONO_PROC(mono_gc_wbarrier_set_arrayref, monoLib);
-		GET_MONO_PROC(mono_array_addr_with_size, monoLib);
+		wcscpy_s(monoPath + len - 4, MAX_PATH + 1 - (len - 4),
+			L"_Data\\Mono\\EmbedRuntime\\mono.dll");
+		monoLib = LoadLibrary(monoPath);
+		ASSERT(monoLib != NULL, L"Failed to load mono.dll!");
 	}
 
-	// Our original mono_jit_init_version_original
-	static mono_jit_init_version_t mono_jit_init_version_original;
+	loadMonoFunctions(monoLib);
 
-	inline std::wstring getMonoPath(std::wstring prefix = L"\\")
-	{
-		// Code to get the name of the Game's Executable
-		wchar_t path[MAX_PATH];
-		wchar_t name[_MAX_FNAME];
-
-		GetModuleFileName(nullptr, path, sizeof(path));
-		_wsplitpath_s(path, nullptr, 0, nullptr, 0, name, sizeof(name), nullptr, 0);
-
-		// The mono.dll should *usually* be in GameName_Data\Mono
-		// TODO: A better way to find mono.dll?
-		return std::wstring(L".\\").append(name).append(L"_Data\\Mono").append(prefix).append(L"mono.dll");
-	}
+	return monoLib;
 }

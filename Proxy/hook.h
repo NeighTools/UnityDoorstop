@@ -1,13 +1,13 @@
 /*
  * EAT-based hooking for x86/x64.
  * 
- * Big thanks to ez for making this!
+ * Big thanks to ez (https://github.com/ezdiy/) for making this!
  * 
  * Creates "hooks" by modifying the module's export address table.
  * The procedure works in three main parts:
  * 
  * 1. Reading the module's PE file and getting all exported functions.
- * 2. Finding the right function to "hook" by simple addrress lookup
+ * 2. Finding the right function to "hook" by simple address lookup
  * 3. Modify the entry to point to the hook.
  * 
  * The idea is based on the fact that the export table allows forwarding imports:
