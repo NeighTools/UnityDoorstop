@@ -40,7 +40,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="winhttp.def">
+    <None Include="dll.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

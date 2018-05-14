@@ -29,18 +29,16 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase; // This is provided by MSVC with the info
 // Load the proxy functions into memory
 inline void loadProxy()
 {
-	// Resolve the path of this DLL
-	wchar_t path[MAX_PATH + 1];
+	wchar_t path[MAX_PATH + 1]; // Path to this DLL
+	wchar_t dllName[_MAX_FNAME + 1]; // The name of the DLL
+	wchar_t altName[_MAX_FNAME + 1]; // We also define an _alt file to look for
+	wchar_t dllPath[MAX_PATH + 1];	// The final DLL path
+
 	GetModuleFileName((HINSTANCE)&__ImageBase, path, MAX_PATH + 1);
 
-	// Resolve the name of the DLL
-	wchar_t dllName[_MAX_FNAME + 1];
 	_wsplitpath_s(path, NULL, 0, NULL, 0, dllName, _MAX_FNAME + 1, NULL, 0);
-
-	wchar_t altName[_MAX_FNAME + 1]; // We also define an _alt file to look for
+	
 	swprintf_s(altName, _MAX_FNAME + 1, L"%s_alt.dll", dllName);
-
-	wchar_t dllPath[MAX_PATH + 1];	// The final DLL path
 
 	// Try to look for the alternative first in the same directory.
 	if (PathFileExists(altName))
