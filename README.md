@@ -7,7 +7,7 @@ Developers should package Doorstop into their applications for the end-users.
 
 ## Features
 
-* **Runs first**: Doorstop's bootstrapper runs its own code before Unity has an ability to do so.
+* **Runs first**: Doorstop runs its own code before Unity has an ability to do so.
 * **Configurable**: A very basic configuration file allows to specify your own assembly to execute!
 * **Public domain!** You are fully free to embed Doorstop into your application!
 
@@ -31,7 +31,6 @@ You can modify which functions you want to proxy by adding/removing function nam
 
 The current set up allows to use the proxy for the following DLLs:
 
-* `opengl32.dll`
 * `winhttp.dll`
 * `iphlpapi.dll`
 

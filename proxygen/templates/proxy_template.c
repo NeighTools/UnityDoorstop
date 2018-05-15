@@ -22,11 +22,11 @@
 		return originalFunctions[i](); \
 	}
 
-FARPROC originalFunctions[{{ PROXY_COUNT }}] = {0};
+FARPROC originalFunctions[${proxy_count}] = {0};
 
 void loadFunctions(HMODULE dll)
 {
-{{ PROXY_ADD }}
+${proxy_add}
 }
 
-{{ PROXY_DEF }}
+${proxy_def}
