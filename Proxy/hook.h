@@ -29,7 +29,7 @@
 #define RVA2PTR(t,base,rva) ((t)(((PCHAR) base) + rva))
 
 // A helper function to write into protected memory
-int wmemcpy(void* dst, void* src, size_t sz)
+int vpmemcpy(void* dst, void* src, size_t sz)
 {
 	DWORD oldp;
 	// Make the memory page writeable
@@ -95,15 +95,15 @@ BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
 			int err = 0;
 
 			// Update the entry to go the the last entry (which we will populate in the next memcpy)
-			err |= wmemcpy(&addrs[i], &fptr, sizeof(fptr));
+			err |= vpmemcpy(&addrs[i], &fptr, sizeof(fptr));
 
 			// Add the forwarding import to our function at the end of the EAT
-			err |= wmemcpy(((char*)exports + edir.Size), forwardFunctionEntry, fwdlen);
+			err |= vpmemcpy(((char*)exports + edir.Size), forwardFunctionEntry, fwdlen);
 
 			// Increment the size of the export data directory
 			// and write the new export data directory
 			edir.Size += fwdlen + 1;
-			err |= wmemcpy(edirp, &edir, sizeof(edir));
+			err |= vpmemcpy(edirp, &edir, sizeof(edir));
 			return err == 0;
 		}
 	}
