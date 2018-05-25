@@ -1,3 +1,13 @@
+<p align="center">
+   <img src="https://raw.githubusercontent.com/NeighTools/UnityDoorstop/master/docs/logo_sm.png"/>
+</p>
+
+![Github All Releases](https://img.shields.io/github/downloads/NeighTools/UnityDoorstop/total.svg)
+![GitHub release](https://img.shields.io/github/release/NeighTools/UnityDoorstop.svg)
+![license](https://img.shields.io/github/license/NeighTools/UnityDoorstop.svg)
+
+*Run managed code before Unity does!*
+
 # Unity Doorstop
 
 Doorstop is a tool to execute managed assemblies inside Unity as early as possible!
