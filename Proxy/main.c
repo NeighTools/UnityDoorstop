@@ -22,6 +22,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <Shlwapi.h>
+#include <wchar.h>
 
 #include "mono.h"
 #include "hook.h"
@@ -32,9 +33,11 @@
 #define DEFAULT_TARGET_ASSEMBLY L"Doorstop.dll"
 #define EXE_EXTENSION_LENGTH 4
 
-BOOL enabled = TRUE;
+BOOL enabled = FALSE;
 wchar_t* targetAssembly[MAX_PATH + 1];
 EXTERN_C IMAGE_DOS_HEADER __ImageBase; // This is provided by MSVC with the infomration about this DLL
+
+#define STR_EQUAL(str1, str2) (_wcsnicmp(str1, str2, wcslen(str2)) == 0)
 
 void loadConfig()
 {
@@ -52,9 +55,9 @@ void loadConfig()
 	wchar_t enabledString[256] = L"true";
 	GetPrivateProfileStringW(L"UnityDoorstop", L"enabled", L"true", enabledString, sizeof(enabledString), iniPath);
 
-	if (_wcsnicmp(enabledString, L"true", 4) == 0)
+	if (STR_EQUAL(enabledString, L"true"))
 		enabled = TRUE;
-	if (_wcsnicmp(enabledString, L"false", 5) == 0)
+	else if (STR_EQUAL(enabledString, L"false"))
 		enabled = FALSE;
 
 	wchar_t uppPathStr[MAX_PATH + 1] = DEFAULT_TARGET_ASSEMBLY;
@@ -62,6 +65,29 @@ void loadConfig()
 	                         iniPath);
 
 	wcscpy_s(targetAssembly, MAX_PATH + 1, uppPathStr);
+
+	wchar_t *args = GetCommandLineW();
+	int argc = 0;
+	wchar_t **argv = CommandLineToArgvW(args, &argc);
+
+	for(int i = 0; i < argc; i++)
+	{
+		wchar_t *arg = argv[i];
+		if(STR_EQUAL(arg, L"--doorstop-enable") && i < argc)
+		{
+			wchar_t *par = argv[++i];
+
+			if (STR_EQUAL(par, L"true"))
+				enabled = TRUE;
+			else if (STR_EQUAL(par, L"false"))
+				enabled = FALSE;
+		}
+		else if(STR_EQUAL(arg, L"--doorstop-target") && i < argc)
+		{
+			wmemset(targetAssembly, L"\0", MAX_PATH + 1);
+			wcscpy_s(targetAssembly, MAX_PATH + 1, argv[++i]);
+		}
+	}
 }
 
 // The hook for mono_jit_init_version
@@ -158,3 +184,4 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 
 	return TRUE;
 }
+
