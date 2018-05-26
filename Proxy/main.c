@@ -28,7 +28,6 @@
 #include "assert_util.h"
 #include "proxy.h"
 
-#define VERSION "2.0"
 #define CONFIG_NAME L"doorstop_config.ini"
 #define DEFAULT_TARGET_ASSEMBLY L"Doorstop.dll"
 #define EXE_EXTENSION_LENGTH 4

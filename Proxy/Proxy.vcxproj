@@ -188,6 +188,9 @@
     <ClInclude Include="mono.h" />
     <ClInclude Include="proxy.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="proxy.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
