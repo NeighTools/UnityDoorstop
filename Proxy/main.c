@@ -88,6 +88,9 @@ void loadConfig()
 			wcscpy_s(targetAssembly, MAX_PATH + 1, argv[++i]);
 		}
 	}
+
+	if (GetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL, 0) != 0)
+		enabled = FALSE;
 }
 
 // The hook for mono_jit_init_version
