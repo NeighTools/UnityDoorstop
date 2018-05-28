@@ -24,103 +24,42 @@
 #include <Shlwapi.h>
 #include <wchar.h>
 
+#include "config.h"
 #include "mono.h"
 #include "hook.h"
 #include "assert_util.h"
 #include "proxy.h"
 
-#define CONFIG_NAME L"doorstop_config.ini"
-#define DEFAULT_TARGET_ASSEMBLY L"Doorstop.dll"
-#define EXE_EXTENSION_LENGTH 4
-
-BOOL enabled = FALSE;
-wchar_t* targetAssembly[MAX_PATH + 1];
 EXTERN_C IMAGE_DOS_HEADER __ImageBase; // This is provided by MSVC with the infomration about this DLL
-
-#define STR_EQUAL(str1, str2) (_wcsnicmp(str1, str2, wcslen(str2)) == 0)
-
-void loadConfig()
-{
-	wchar_t curPathProcess[MAX_PATH + 1];
-	GetModuleFileNameW(NULL, curPathProcess, sizeof(curPathProcess));
-
-	wchar_t curPath[_MAX_DIR + 1];
-	wchar_t drive[_MAX_DRIVE + 1];
-
-	_wsplitpath_s(curPathProcess, drive, _MAX_DRIVE + 1, curPath, _MAX_DIR + 1, NULL, 0, NULL, 0);
-
-	wchar_t iniPath[MAX_PATH + 1];
-	swprintf_s(iniPath, MAX_PATH + 1, L"%s%s%s", drive, curPath, CONFIG_NAME);
-
-	wchar_t enabledString[256] = L"true";
-	GetPrivateProfileStringW(L"UnityDoorstop", L"enabled", L"true", enabledString, sizeof(enabledString), iniPath);
-
-	if (STR_EQUAL(enabledString, L"true"))
-		enabled = TRUE;
-	else if (STR_EQUAL(enabledString, L"false"))
-		enabled = FALSE;
-
-	wchar_t uppPathStr[MAX_PATH + 1] = DEFAULT_TARGET_ASSEMBLY;
-	GetPrivateProfileStringW(L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY, uppPathStr, sizeof(uppPathStr),
-	                         iniPath);
-
-	wcscpy_s(targetAssembly, MAX_PATH + 1, uppPathStr);
-
-	wchar_t *args = GetCommandLineW();
-	int argc = 0;
-	wchar_t **argv = CommandLineToArgvW(args, &argc);
-
-	for(int i = 0; i < argc; i++)
-	{
-		wchar_t *arg = argv[i];
-		if(STR_EQUAL(arg, L"--doorstop-enable") && i < argc)
-		{
-			wchar_t *par = argv[++i];
-
-			if (STR_EQUAL(par, L"true"))
-				enabled = TRUE;
-			else if (STR_EQUAL(par, L"false"))
-				enabled = FALSE;
-		}
-		else if(STR_EQUAL(arg, L"--doorstop-target") && i < argc)
-		{
-			wmemset(targetAssembly, L"\0", MAX_PATH + 1);
-			wcscpy_s(targetAssembly, MAX_PATH + 1, argv[++i]);
-		}
-	}
-
-	if (GetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL, 0) != 0)
-		enabled = FALSE;
-}
 
 // The hook for mono_jit_init_version
 // We use this since it will always be called once to initialize Mono's JIT
 void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_version)
 {
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
-	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
+	void* domain = mono_jit_init_version(root_domain_name, runtime_version);
 
 	char dllPathA[MAX_PATH + 1];
 	sprintf_s(dllPathA, MAX_PATH + 1, "%S", targetAssembly);
 
 	// Load our custom assembly into the domain
-	void *assembly = mono_domain_assembly_open(domain, dllPathA);
+	void* assembly = mono_domain_assembly_open(domain, dllPathA);
 	ASSERT_SOFT(assembly != NULL, domain);
 
 	// Get assembly's image that contains CIL code
-	void *image = mono_assembly_get_image(assembly);
+	void* image = mono_assembly_get_image(assembly);
 	ASSERT_SOFT(image != NULL, domain);
 
 	// Note: we use the runtime_invoke route since jit_exec will not work on DLLs
 
 	// Create a descriptor for a random Main method
-	void *desc = mono_method_desc_new("*:Main", FALSE);
+	void* desc = mono_method_desc_new("*:Main", FALSE);
 
 	// Find the first possible Main method in the assembly
-	void *method = mono_method_desc_search_in_image(desc, image);
+	void* method = mono_method_desc_search_in_image(desc, image);
 	ASSERT_SOFT(method != NULL, domain);
 
-	void *signature = mono_method_signature(method);
+	void* signature = mono_method_signature(method);
 
 	// Get the number of parameters in the signature
 	uint32_t params = mono_signature_get_param_count(signature);
@@ -136,10 +75,10 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 		wchar_t path[MAX_PATH + 1];
 		GetModuleFileName(NULL, path, sizeof(path));
 
-		void *exe_path = MONO_STRING(path);
-		void *doorstop_handle = MONO_STRING(L"--doorstop-invoke");
+		void* exe_path = MONO_STRING(path);
+		void* doorstop_handle = MONO_STRING(L"--doorstop-invoke");
 
-		void *args_array = mono_array_new(domain, mono_get_string_class(), 2);
+		void* args_array = mono_array_new(domain, mono_get_string_class(), 2);
 
 		SET_ARRAY_REF(args_array, 0, exe_path);
 		SET_ARRAY_REF(args_array, 1, doorstop_handle);
@@ -166,7 +105,7 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 
 	wchar_t path[MAX_PATH + 1]; // Path to this DLL
 	wchar_t dllName[_MAX_FNAME + 1]; // The name of the DLL
-	char hookName[_MAX_FNAME + 30];	//Name of the hook method that will be added to mono's EAT
+	char hookName[_MAX_FNAME + 30]; //Name of the hook method that will be added to mono's EAT
 
 	GetModuleFileName((HINSTANCE)&__ImageBase, path, MAX_PATH + 1);
 	_wsplitpath_s(path, NULL, 0, NULL, 0, dllName, _MAX_FNAME + 1, NULL, 0);
@@ -187,4 +126,3 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 
 	return TRUE;
 }
-

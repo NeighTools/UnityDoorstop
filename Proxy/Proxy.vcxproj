@@ -184,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="assert_util.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="mono.h" />
     <ClInclude Include="proxy.h" />
