@@ -31,23 +31,28 @@ inline void loadProxy(wchar_t *moduleName)
 	wchar_t dllPath[MAX_PATH + 1];	// The final DLL path
 	
 	swprintf_s(altName, _MAX_FNAME + 1, L"%s_alt.dll", moduleName);
+	const int altFullPathSize = GetFullPathName(altName, 0, NULL, NULL);
+	wchar_t *altFullPath = malloc(sizeof(wchar_t) * altFullPathSize);
+	GetFullPathName(altName, altFullPathSize, altFullPath, NULL);
 
 	// Try to look for the alternative first in the same directory.
-	if (PathFileExists(altName))
-		wcscpy_s(dllPath, MAX_PATH + 1, altName);
-	else // Otherwise look from Windows dir
+	HMODULE handle = LoadLibrary(altFullPath);
+
+	if(handle == NULL)
 	{
 		wchar_t systemDir[MAX_PATH + 1] = L"\0";
 		GetSystemDirectory(systemDir, MAX_PATH + 1);
-
 		if (systemDir[0] != '\0')
 			swprintf_s(dllPath, MAX_PATH + 1, L"%s\\%s.dll", systemDir, moduleName);
 		else
 			swprintf_s(dllPath, MAX_PATH + 1, L"%s%s.dll", WIN_PATH, moduleName);
+
+		handle = LoadLibrary(dllPath);
 	}
+	
+	ASSERT_F(handle != NULL, L"Unable to load the original %s.dll!\n\nTried to look for these:\n%s\n%s", moduleName, altFullPath, dllPath);
 
-	HMODULE dllHandle = LoadLibraryEx(dllPath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR);
-	ASSERT_F(dllHandle != NULL, L"Unable to load the original %s.dll!\n\nTried to look for these:\n%s_alt.dll\n%s", moduleName, moduleName, dllPath);
+	free(altFullPath);
 
-	loadFunctions(dllHandle);
+	loadFunctions(handle);
 }
