@@ -37,8 +37,8 @@ inline void loadProxy(wchar_t *moduleName)
 		wcscpy_s(dllPath, MAX_PATH + 1, altName);
 	else // Otherwise look from Windows dir
 	{
-		wchar_t systemDir[MAX_PATH + 1] = {'\0'};
-		GetSystemDirectory(systemDir, sizeof(systemDir));
+		wchar_t systemDir[MAX_PATH + 1] = L"\0";
+		GetSystemDirectory(systemDir, MAX_PATH + 1);
 
 		if (systemDir[0] != '\0')
 			swprintf_s(dllPath, MAX_PATH + 1, L"%s\\%s.dll", systemDir, moduleName);
@@ -47,7 +47,7 @@ inline void loadProxy(wchar_t *moduleName)
 	}
 
 	HMODULE dllHandle = LoadLibraryEx(dllPath, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32 | LOAD_LIBRARY_SEARCH_APPLICATION_DIR);
-	ASSERT(dllHandle != NULL, L"Unable to load the original DLL!");
+	ASSERT_F(dllHandle != NULL, L"Unable to load the original %s.dll!\n\nTried to look for these:\n%s_alt.dll\n%s", moduleName, moduleName, dllPath);
 
 	loadFunctions(dllHandle);
 }

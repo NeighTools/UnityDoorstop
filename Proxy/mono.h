@@ -14,11 +14,6 @@
 #include "assert_util.h"
 #include "config.h"
 
-// Define a helper macro that creates a typedef and a variable that will hold address to a mono.dll function
-#define DEF_MONO_PROC(name, returnType, ...)          \
-	typedef returnType (__cdecl * name##_t)(__VA_ARGS__); \
-	static name##_t name
-
 // Creates a MonoString based from a C wide string
 #define MONO_STRING(str) mono_string_new_utf16(domain, str, wcslen(str))
 
