@@ -26,9 +26,8 @@ FARPROC originalFunctions[2] = {0};
 
 void loadFunctions(HMODULE dll)
 {
-ADD_ORIGINAL(0, WinHttpGetIEProxyConfigForCurrentUser);
-ADD_ORIGINAL(1, GetIpAddrTable);
-
+	ADD_ORIGINAL(0, WinHttpGetIEProxyConfigForCurrentUser);
+	ADD_ORIGINAL(1, GetIpAddrTable);
 }
 
 PROXY(0, WinHttpGetIEProxyConfigForCurrentUser);

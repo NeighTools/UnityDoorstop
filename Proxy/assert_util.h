@@ -2,6 +2,14 @@
 
 #include <windows.h>
 
+#ifdef _VERBOSE
+#define STEP(step_name, message) MessageBox(NULL, message, step_name, MB_OK)
+#define STEPA(step_name, message) MessageBoxA(NULL, message, step_name, MB_OK)
+#else
+#define STEP(step_name, message)
+#define STEPA(step_name, message)
+#endif
+
 #define ASSERT_F(test, message, ...)												\
 	if(!(test))																		\
 	{																				\

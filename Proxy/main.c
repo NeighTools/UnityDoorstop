@@ -24,6 +24,7 @@
 #include <Shlwapi.h>
 #include <wchar.h>
 
+#include "winapi_util.h"
 #include "config.h"
 #include "mono.h"
 #include "hook.h"
@@ -39,11 +40,18 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
 	void* domain = mono_jit_init_version(root_domain_name, runtime_version);
 
-	char dllPathA[MAX_PATH + 1];
-	sprintf_s(dllPathA, MAX_PATH + 1, "%S", targetAssembly);
+	size_t len = WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, NULL, 0, NULL, NULL);
+	char* dll_path = malloc(sizeof(char) * len);
+	WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, dll_path, len, NULL, NULL);
 
+	STEPA("Loading assembly", dll_path);
 	// Load our custom assembly into the domain
-	void* assembly = mono_domain_assembly_open(domain, dllPathA);
+	void* assembly = mono_domain_assembly_open(domain, dll_path);
+
+	if (assembly == NULL)
+		STEP(L"Failed to load assembly", L"Failed to load!");
+
+	free(dll_path);
 	ASSERT_SOFT(assembly != NULL, domain);
 
 	// Get assembly's image that contains CIL code
@@ -65,6 +73,7 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	uint32_t params = mono_signature_get_param_count(signature);
 
 	void** args = NULL;
+	wchar_t* app_path = NULL;
 	if (params == 1)
 	{
 		// If there is a parameter, it's most likely a string[].
@@ -72,10 +81,9 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 		// 0 => path to the game's executable
 		// 1 => --doorstop-invoke
 
-		wchar_t path[MAX_PATH + 1];
-		GetModuleFileName(NULL, path, sizeof(path));
+		get_module_path(NULL, &app_path, NULL, 0);
 
-		void* exe_path = MONO_STRING(path);
+		void* exe_path = MONO_STRING(app_path);
 		void* doorstop_handle = MONO_STRING(L"--doorstop-invoke");
 
 		void* args_array = mono_array_new(domain, mono_get_string_class(), 2);
@@ -87,13 +95,17 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 		args[0] = args_array;
 	}
 
+	STEP(L"Invoking", L"Invoking method!");
 	mono_runtime_invoke(method, NULL, args, NULL);
 
 	if (args != NULL)
 	{
+		free(app_path);
 		free(args);
 		args = NULL;
 	}
+
+	cleanupConfig();
 
 	return domain;
 }
@@ -103,26 +115,41 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
 		return TRUE;
 
-	wchar_t path[MAX_PATH + 1]; // Path to this DLL
-	wchar_t dllName[_MAX_FNAME + 1]; // The name of the DLL
-	char hookName[_MAX_FNAME + 30]; //Name of the hook method that will be added to mono's EAT
+	STEP(L"Startup", L"Doorstop started!");
 
-	GetModuleFileName((HINSTANCE)&__ImageBase, path, MAX_PATH + 1);
-	_wsplitpath_s(path, NULL, 0, NULL, 0, dllName, _MAX_FNAME + 1, NULL, 0);
+	wchar_t* dll_path = NULL;
+	size_t dll_path_len = get_module_path((HINSTANCE)&__ImageBase, &dll_path, NULL, 0);
 
-	sprintf_s(hookName, _MAX_FNAME + 30, "%S.ownMonoJitInitVersion", dllName);
+	STEP(L"Getting DLL Path", dll_path);
 
-	loadProxy(dllName);
+	wchar_t* dll_name = get_file_name_no_ext(dll_path, dll_path_len);
+
+	STEP(L"Doorstop DLL Name", dll_name);
+
+	size_t hook_name_len = wcslen(dll_name) + 35;
+	char* hook_name = malloc(sizeof(char) * hook_name_len); // This is fine, since DLLs must always be ANSI names anyway
+	sprintf_s(hook_name, hook_name_len, "%S.ownMonoJitInitVersion", dll_name);
+
+	STEPA("EAT pointer name", hook_name);
+
+	loadProxy(dll_name);
 	loadConfig();
 
 	// If the loader is disabled, don't inject anything.
-	if (!enabled)
-		return TRUE;
+	if (enabled)
+	{
+		STEP(L"Enabled", L"Doorstop enabled!");
+		ASSERT_SOFT(GetFileAttributesW(targetAssembly) != INVALID_FILE_ATTRIBUTES, TRUE);
+		STEP(L"Enabled", L"Loading Mono!");
 
-	ASSERT_SOFT(PathFileExistsW(targetAssembly), TRUE);
+		HMODULE monoLib = load_mono_lib();
+		STEP(L"Hooking", L"Hooking into mono_jit_init_version");
+		ezHook(monoLib, mono_jit_init_version, hook_name);
+	}
 
-	HMODULE monoLib = initMonoLib();
-	ezHook(monoLib, mono_jit_init_version, hookName);
+	free(dll_name);
+	free(dll_path);
+	free(hook_name);
 
 	return TRUE;
 }

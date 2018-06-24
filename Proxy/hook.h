@@ -80,7 +80,7 @@ BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
 
 	// Read the addrress of the function list and the address of function names
 	DWORD* addrs = RVA2PTR(DWORD*, mz, exports->AddressOfFunctions);
-//	DWORD* names = RVA2PTR(DWORD*, mz, exports->AddressOfNames);
+	//	DWORD* names = RVA2PTR(DWORD*, mz, exports->AddressOfNames);
 
 	// Iterate through all functions
 	for (unsigned i = 0; i < exports->NumberOfFunctions; i++)

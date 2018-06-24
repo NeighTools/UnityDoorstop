@@ -11,6 +11,7 @@
 
 #include <windows.h>
 #include <stdint.h>
+#include "winapi_util.h"
 #include "assert_util.h"
 #include "config.h"
 
@@ -76,30 +77,39 @@ inline void loadMonoFunctions(HMODULE monoLib)
 	GET_MONO_PROC(mono_array_addr_with_size);
 }
 
-inline HMODULE initMonoLib()
+inline HMODULE load_mono_lib()
 {
 	// Resolve path to mono.dll
-	wchar_t monoPath[MAX_PATH + 1];
-	DWORD len = GetModuleFileName(NULL, monoPath, sizeof(monoPath));
-	wcscpy_s(monoPath + len - 4, MAX_PATH + 1 - (len - 4), L"_Data\\Mono\\mono.dll");
+	wchar_t* mono_path;
+	size_t mono_path_size;
+	size_t mono_path_len = get_module_path(NULL, &mono_path, &mono_path_size, 33);
+	wcscpy_s(mono_path + mono_path_len - 4, mono_path_size - mono_path_len, L"_Data\\Mono\\mono.dll");
+
+	STEP(L"Finding mono.dll", mono_path);
 
 	// Preload mono into memory so we can start hooking it
-	HMODULE monoLib = LoadLibrary(monoPath);
+	HMODULE monoLib = LoadLibrary(mono_path);
 
 	// If loading fails, try to get mono from EmbedRuntime folder (as it is in some games)
 	if (monoLib == NULL)
 	{
-		wcscpy_s(monoPath + len - 4, MAX_PATH + 1 - (len - 4),
+		wcscpy_s(mono_path + mono_path_len - 4, mono_path_size - mono_path_len,
 		         L"_Data\\Mono\\EmbedRuntime\\mono.dll");
-		monoLib = LoadLibrary(monoPath);
 
-		if (monoLib == NULL && !STR_EQUAL(monoDllFallback, L"\0"))
+		STEP(L"Finding mono.dll from alternative location", mono_path);
+
+		monoLib = LoadLibrary(mono_path);
+
+		if (monoLib == NULL && monoDllFallback != NULL && !STR_EQUAL(monoDllFallback, L"\0"))
+		{
+			STEP(L"Finding mono.dll from custom location", monoDllFallback);
 			monoLib = LoadLibrary(monoDllFallback);
+		}
 
 		ASSERT(monoLib != NULL, L"Failed to load mono.dll!");
 	}
 
 	loadMonoFunctions(monoLib);
-
+	free(mono_path);
 	return monoLib;
 }

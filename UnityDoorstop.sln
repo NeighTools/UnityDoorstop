@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "winhttp", "Proxy\Proxy.vcxproj", "{88609E16-731F-46C9-8139-6B1A7A83240D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "proxy", "Proxy\Proxy.vcxproj", "{88609E16-731F-46C9-8139-6B1A7A83240D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoorstopTest", "DoorstopTest\DoorstopTest.csproj", "{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}"
 EndProject
@@ -15,6 +15,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		Verbose|Any CPU = Verbose|Any CPU
+		Verbose|x64 = Verbose|x64
+		Verbose|x86 = Verbose|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Debug|Any CPU.ActiveCfg = Debug|Win32
@@ -27,6 +30,11 @@ Global
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x64.Build.0 = Release|x64
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x86.ActiveCfg = Release|Win32
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x86.Build.0 = Release|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|Any CPU.ActiveCfg = Verbose|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|x64.ActiveCfg = Verbose|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|x64.Build.0 = Verbose|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|x86.ActiveCfg = Verbose|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|x86.Build.0 = Verbose|Win32
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -39,6 +47,12 @@ Global
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x64.Build.0 = Release|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x86.ActiveCfg = Release|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x86.Build.0 = Release|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|Any CPU.ActiveCfg = Verbose|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|Any CPU.Build.0 = Verbose|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|x64.ActiveCfg = Verbose|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|x64.Build.0 = Verbose|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|x86.ActiveCfg = Verbose|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|x86.Build.0 = Verbose|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
