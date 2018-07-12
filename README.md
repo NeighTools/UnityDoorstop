@@ -41,7 +41,7 @@ You can modify which functions you want to proxy by adding/removing function nam
 
 The current set up allows to use the proxy for the following DLLs:
 
-* `winhttp.dll`
-* `iphlpapi.dll`
+* `winhttp.dll` (All exports)
+* `iphlpapi.dll` (Only `GetIpAddrTable`)
 
 (WIP: Currently all build results are placed in separate folders; will be changed later)
