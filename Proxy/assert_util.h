@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ver.h"
 #include <windows.h>
 
 #ifdef _VERBOSE
@@ -10,6 +11,7 @@ static FILE *log_handle;
 inline void init_logger()
 {
 	fopen_s(&log_handle, "doorstop.log", "w");
+	setvbuf(log_handle, NULL, _IONBF, 0);
 }
 
 inline void free_logger()

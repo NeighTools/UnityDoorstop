@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ver.h"
 #include <windows.h>
 #include "winapi_util.h"
 #include "assert_util.h"
@@ -10,7 +11,6 @@
 
 BOOL enabled = FALSE;
 wchar_t* targetAssembly = NULL;
-wchar_t* monoDllFallback = NULL;
 
 #define STR_EQUAL(str1, str2) (_wcsnicmp(str1, str2, wcslen(str2)) == 0)
 
@@ -32,10 +32,8 @@ inline void initConfigFile()
 		enabled = FALSE;
 
 	targetAssembly = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
-	monoDllFallback = get_ini_entry(configPath, L"UnityDoorstop", L"monoFallback", L"\0");
 
 	LOG(L"Config; Target assembly: %s\n", targetAssembly);
-	LOG(L"Config; Fallback DLL: %s\n", monoDllFallback);
 
 	free(configPath);
 }
@@ -69,15 +67,6 @@ inline void initCmdArgs()
 			wcscpy_s(targetAssembly, len, argv[++i]);
 			LOG(L"Args; Target assembly: %s\n", targetAssembly);
 		}
-		else if (IS_ARGUMENT(L"--doorstop-mono-fallback"))
-		{
-			if (monoDllFallback != NULL)
-				free(monoDllFallback);
-			const size_t len = wcslen(argv[i + 1]) + 1;
-			monoDllFallback = malloc(sizeof(wchar_t) * len);
-			wcscpy_s(monoDllFallback, len, argv[++i]);
-			LOG(L"Args; Fallback DLL: %s\n", monoDllFallback);
-		}
 	}
 
 	LocalFree(argv);
@@ -103,6 +92,4 @@ inline void cleanupConfig()
 {
 	if (targetAssembly != NULL)
 		free(targetAssembly);
-	if (monoDllFallback != NULL)
-		free(monoDllFallback);
 }

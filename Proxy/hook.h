@@ -29,7 +29,7 @@
 #define RVA2PTR(t,base,rva) ((t)(((PCHAR) base) + rva))
 
 // A helper function to write into protected memory
-int vpmemcpy(void* dst, void* src, size_t sz)
+int vpmemcpy(void *dst, void *src, size_t sz)
 {
 	DWORD oldp;
 	// Make the memory page writeable
@@ -49,7 +49,7 @@ int vpmemcpy(void* dst, void* src, size_t sz)
  * \param forwardFunctionEntry Name of the function to add a forward to. Must be of form `dll.API`.
  * \return TRUE, if hooking succeeded, otherwise, FALSE.
  */
-BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
+BOOL ezHook(HMODULE hostDll, void *originalFunction, char *forwardFunctionEntry)
 {
 	/*
 	 * Note that we are not doing any trampoline magic or editing the assembly!
@@ -66,27 +66,27 @@ BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
 	size_t fwdlen = strlen(forwardFunctionEntry);
 
 	// The module always starts with a DOS (or "MZ") header
-	IMAGE_DOS_HEADER* mz = (PIMAGE_DOS_HEADER)hostDll;
+	IMAGE_DOS_HEADER *mz = (PIMAGE_DOS_HEADER)hostDll;
 
 	// Next, get the NT headers. The offset to them is saved in e_lfanew
-	IMAGE_NT_HEADERS* nt = RVA2PTR(PIMAGE_NT_HEADERS, mz, mz->e_lfanew);
+	IMAGE_NT_HEADERS *nt = RVA2PTR(PIMAGE_NT_HEADERS, mz, mz->e_lfanew);
 
 	// Get the pointer to the data directory of the exports
-	IMAGE_DATA_DIRECTORY* edirp = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+	IMAGE_DATA_DIRECTORY *edirp = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
 	IMAGE_DATA_DIRECTORY edir = *edirp;
 
 	// Finally, the virtual address in the data direcotry tells the location of the exports table
-	IMAGE_EXPORT_DIRECTORY* exports = RVA2PTR(PIMAGE_EXPORT_DIRECTORY, mz, edir.VirtualAddress);
+	IMAGE_EXPORT_DIRECTORY *exports = RVA2PTR(PIMAGE_EXPORT_DIRECTORY, mz, edir.VirtualAddress);
 
 	// Read the addrress of the function list and the address of function names
-	DWORD* addrs = RVA2PTR(DWORD*, mz, exports->AddressOfFunctions);
+	DWORD *addrs = RVA2PTR(DWORD*, mz, exports->AddressOfFunctions);
 	//	DWORD* names = RVA2PTR(DWORD*, mz, exports->AddressOfNames);
 
 	// Iterate through all functions
 	for (unsigned i = 0; i < exports->NumberOfFunctions; i++)
 	{
 		//char* name = RVA2PTR(char*, mz, names[i]); // Name of the exported function
-		void* addr = RVA2PTR(void*, mz, addrs[i]); // Address of the exported function
+		void *addr = RVA2PTR(void*, mz, addrs[i]); // Address of the exported function
 
 		// Check if we have the function we need to modify
 		if (addr == originalFunction)
@@ -107,5 +107,48 @@ BOOL ezHook(HMODULE hostDll, void* originalFunction, char* forwardFunctionEntry)
 			return err == 0;
 		}
 	}
+	return FALSE;
+}
+
+
+/**
+ * \brief Hooks the given function through the Import Address Table
+ * \param dll Module to hook
+ * \param targetFunction Address of the target function to hook
+ * \param detourFunction Address of the detour function
+ * \return TRUE if successful, otherwise FALSE
+ */
+BOOL iat_hook(HMODULE dll, void *targetFunction, void *detourFunction)
+{
+	IMAGE_DOS_HEADER *mz = (PIMAGE_DOS_HEADER)dll;
+
+	IMAGE_NT_HEADERS *nt = RVA2PTR(PIMAGE_NT_HEADERS, mz, mz->e_lfanew);
+
+	IMAGE_IMPORT_DESCRIPTOR *imports = RVA2PTR(PIMAGE_IMPORT_DESCRIPTOR, mz, nt->OptionalHeader.DataDirectory[
+		IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+
+	for (int i = 0; imports[i].Characteristics; i++)
+	{
+		void **thunk = RVA2PTR(void**, mz, imports[i].FirstThunk);
+
+		for (; thunk; thunk++)
+		{
+			void *import = *thunk;
+
+			if (import != targetFunction)
+				continue;
+
+			DWORD oldState;
+			if (!VirtualProtect(thunk, sizeof(void*), PAGE_READWRITE, &oldState))
+				return FALSE;
+
+			*thunk = (void*)detourFunction;
+
+			VirtualProtect(thunk, sizeof(void*), oldState, &oldState);
+
+			return TRUE;
+		}
+	}
+
 	return FALSE;
 }

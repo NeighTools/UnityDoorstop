@@ -12,6 +12,7 @@
  * (that can be fixed by changing the appropriate compile flag that I am yet to locate).
  */
 
+#include "ver.h"
 #include <windows.h>
 
 #define ADD_ORIGINAL(i, name) originalFunctions[i] = GetProcAddress(dll, #name)

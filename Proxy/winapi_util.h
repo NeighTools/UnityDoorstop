@@ -1,4 +1,6 @@
 #pragma once
+
+#include "ver.h"
 #include <windows.h>
 #include <stdlib.h>
 

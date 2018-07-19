@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include "ver.h"
 #include <windows.h>
 #include <stdio.h>
 #include <Shlwapi.h>
