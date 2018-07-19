@@ -100,7 +100,7 @@ inline HMODULE load_mono_lib()
 
 		monoLib = LoadLibrary(mono_path);
 
-		if (monoLib == NULL && monoDllFallback != NULL && !STR_EQUAL(monoDllFallback, L"\0"))
+		if (monoLib == NULL && monoDllFallback != NULL && monoDllFallback[0] != L'\0')
 		{
 			STEP(L"Finding mono.dll from custom location", monoDllFallback);
 			monoLib = LoadLibrary(monoDllFallback);
