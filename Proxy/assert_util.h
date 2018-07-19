@@ -3,11 +3,27 @@
 #include <windows.h>
 
 #ifdef _VERBOSE
-#define STEP(step_name, message) MessageBox(NULL, message, step_name, MB_OK)
-#define STEPA(step_name, message) MessageBoxA(NULL, message, step_name, MB_OK)
+#include <stdio.h>
+
+static FILE *log_handle;
+
+inline void init_logger()
+{
+	fopen_s(&log_handle, "doorstop.log", "w");
+}
+
+inline void free_logger()
+{
+	fclose(log_handle);
+}
+
+#define LOG(message, ...) fwprintf_s(log_handle, message, __VA_ARGS__)
+#define LOGA(message, ...) fprintf_s(log_handle, message, __VA_ARGS__)
 #else
-#define STEP(step_name, message)
-#define STEPA(step_name, message)
+inline void init_logger() {}
+inline void free_logger() {}
+#define LOG(message, ...)
+#define LOGA(message, ...)
 #endif
 
 #define ASSERT_F(test, message, ...)												\

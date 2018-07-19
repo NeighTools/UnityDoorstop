@@ -85,7 +85,7 @@ inline HMODULE load_mono_lib()
 	size_t mono_path_len = get_module_path(NULL, &mono_path, &mono_path_size, 33);
 	wcscpy_s(mono_path + mono_path_len - 4, mono_path_size - mono_path_len, L"_Data\\Mono\\mono.dll");
 
-	STEP(L"Finding mono.dll", mono_path);
+	LOG(L"Finding mono.dll from %s\n", mono_path);
 
 	// Preload mono into memory so we can start hooking it
 	HMODULE monoLib = LoadLibrary(mono_path);
@@ -96,13 +96,13 @@ inline HMODULE load_mono_lib()
 		wcscpy_s(mono_path + mono_path_len - 4, mono_path_size - mono_path_len,
 		         L"_Data\\Mono\\EmbedRuntime\\mono.dll");
 
-		STEP(L"Finding mono.dll from alternative location", mono_path);
+		LOG(L"Finding mono.dll from alternative location: %s\n", mono_path);
 
 		monoLib = LoadLibrary(mono_path);
 
 		if (monoLib == NULL && monoDllFallback != NULL && monoDllFallback[0] != L'\0')
 		{
-			STEP(L"Finding mono.dll from custom location", monoDllFallback);
+			LOG(L"Finding mono.dll from custom location: %s\n", monoDllFallback);
 			monoLib = LoadLibrary(monoDllFallback);
 		}
 

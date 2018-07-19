@@ -34,8 +34,8 @@ inline void initConfigFile()
 	targetAssembly = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
 	monoDllFallback = get_ini_entry(configPath, L"UnityDoorstop", L"monoFallback", L"\0");
 
-	STEP(L"Config: Target assembly", targetAssembly);
-	STEP(L"Config: Fallback DLL", monoDllFallback);
+	LOG(L"Config; Target assembly: %s\n", targetAssembly);
+	LOG(L"Config; Fallback DLL: %s\n", monoDllFallback);
 
 	free(configPath);
 }
@@ -67,7 +67,7 @@ inline void initCmdArgs()
 			const size_t len = wcslen(argv[i + 1]) + 1;
 			targetAssembly = malloc(sizeof(wchar_t) * len);
 			wcscpy_s(targetAssembly, len, argv[++i]);
-			STEP(L"Args: Target assembly", targetAssembly);
+			LOG(L"Args; Target assembly: %s\n", targetAssembly);
 		}
 		else if (IS_ARGUMENT(L"--doorstop-mono-fallback"))
 		{
@@ -76,7 +76,7 @@ inline void initCmdArgs()
 			const size_t len = wcslen(argv[i + 1]) + 1;
 			monoDllFallback = malloc(sizeof(wchar_t) * len);
 			wcscpy_s(monoDllFallback, len, argv[++i]);
-			STEP(L"Args: Fallback DLL", monoDllFallback);
+			LOG(L"Args; Fallback DLL: %s\n", monoDllFallback);
 		}
 	}
 
@@ -86,7 +86,10 @@ inline void initCmdArgs()
 inline void initEnvVars()
 {
 	if (GetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL, 0) != 0)
+	{
+		LOG(L"DOORSTOP_DISABLE is set! Disabling Doorstop!\n");
 		enabled = FALSE;
+	}
 }
 
 inline void loadConfig()

@@ -44,12 +44,12 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	char* dll_path = malloc(sizeof(char) * len);
 	WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, dll_path, len, NULL, NULL);
 
-	STEPA("Loading assembly", dll_path);
+	LOGA("Loading assembly: %s\n", dll_path);
 	// Load our custom assembly into the domain
 	void* assembly = mono_domain_assembly_open(domain, dll_path);
 
 	if (assembly == NULL)
-		STEP(L"Failed to load assembly", L"Failed to load!");
+		LOG(L"Failed to load assembly\n");
 
 	free(dll_path);
 	ASSERT_SOFT(assembly != NULL, domain);
@@ -95,7 +95,7 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 		args[0] = args_array;
 	}
 
-	STEP(L"Invoking", L"Invoking method!");
+	LOG(L"Invoking method!\n");
 	mono_runtime_invoke(method, NULL, args, NULL);
 
 	if (args != NULL)
@@ -107,6 +107,8 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 
 	cleanupConfig();
 
+	free_logger();
+
 	return domain;
 }
 
@@ -115,22 +117,24 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
 		return TRUE;
 
-	STEP(L"Startup", L"Doorstop started!");
+	init_logger();
+
+	LOG(L"Doorstop started!\n");
 
 	wchar_t* dll_path = NULL;
 	size_t dll_path_len = get_module_path((HINSTANCE)&__ImageBase, &dll_path, NULL, 0);
 
-	STEP(L"Getting DLL Path", dll_path);
+	LOG(L"DLL Path: %s\n", dll_path);
 
 	wchar_t* dll_name = get_file_name_no_ext(dll_path, dll_path_len);
 
-	STEP(L"Doorstop DLL Name", dll_name);
+	LOG(L"Doorstop DLL Name: %s\n", dll_name);
 
 	size_t hook_name_len = wcslen(dll_name) + 35;
 	char* hook_name = malloc(sizeof(char) * hook_name_len); // This is fine, since DLLs must always be ANSI names anyway
 	sprintf_s(hook_name, hook_name_len, "%S.ownMonoJitInitVersion", dll_name);
 
-	STEPA("EAT pointer name", hook_name);
+	LOGA("EAT pointer name: %s\n", hook_name);
 
 	loadProxy(dll_name);
 	loadConfig();
@@ -138,12 +142,12 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 	// If the loader is disabled, don't inject anything.
 	if (enabled)
 	{
-		STEP(L"Enabled", L"Doorstop enabled!");
+		LOG(L"Doorstop enabled!\n");
 		ASSERT_SOFT(GetFileAttributesW(targetAssembly) != INVALID_FILE_ATTRIBUTES, TRUE);
-		STEP(L"Enabled", L"Loading Mono!");
+		LOG(L"Loading Mono!\n");
 
 		HMODULE monoLib = load_mono_lib();
-		STEP(L"Hooking", L"Hooking into mono_jit_init_version");
+		LOG(L"Hooking into mono_jit_init_version\n");
 		ezHook(monoLib, mono_jit_init_version, hook_name);
 	}
 
