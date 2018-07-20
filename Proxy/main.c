@@ -20,12 +20,9 @@
  */
 
 #include "ver.h"
-#include <windows.h>
-#include <stdio.h>
-#include <Shlwapi.h>
-#include <wchar.h>
-
 #include "winapi_util.h"
+#include <windows.h>
+
 #include "config.h"
 #include "mono.h"
 #include "hook.h"
@@ -42,17 +39,17 @@ void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_ve
 	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
 
 	size_t len = WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, NULL, 0, NULL, NULL);
-	char *dll_path = malloc(sizeof(char) * len);
+	char *dll_path = memalloc(sizeof(char) * len);
 	WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, dll_path, len, NULL, NULL);
 
-	LOGA("Loading assembly: %s\n", dll_path);
+	LOG("Loading assembly: %s\n", dll_path);
 	// Load our custom assembly into the domain
 	void *assembly = mono_domain_assembly_open(domain, dll_path);
 
 	if (assembly == NULL)
-		LOG(L"Failed to load assembly\n");
+	LOG("Failed to load assembly\n");
 
-	free(dll_path);
+	memfree(dll_path);
 	ASSERT_SOFT(assembly != NULL, domain);
 
 	// Get assembly's image that contains CIL code
@@ -71,7 +68,7 @@ void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_ve
 	void *signature = mono_method_signature(method);
 
 	// Get the number of parameters in the signature
-	uint32_t params = mono_signature_get_param_count(signature);
+	UINT32 params = mono_signature_get_param_count(signature);
 
 	void **args = NULL;
 	wchar_t *app_path = NULL;
@@ -92,17 +89,17 @@ void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_ve
 		SET_ARRAY_REF(args_array, 0, exe_path);
 		SET_ARRAY_REF(args_array, 1, doorstop_handle);
 
-		args = malloc(sizeof(void*) * 1);
+		args = memalloc(sizeof(void*) * 1);
 		args[0] = args_array;
 	}
 
-	LOG(L"Invoking method!\n");
+	LOG("Invoking method!\n");
 	mono_runtime_invoke(method, NULL, args, NULL);
 
 	if (args != NULL)
 	{
-		free(app_path);
-		free(args);
+		memfree(app_path);
+		memfree(args);
 		args = NULL;
 	}
 
@@ -115,14 +112,14 @@ void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_ve
 
 BOOL initialized = FALSE;
 
-void *hookGetProcAddress(HMODULE module, char const *name)
+void * WINAPI hookGetProcAddress(HMODULE module, char const *name)
 {
-	if (strcmp(name, "mono_jit_init_version") == 0)
+	if (lstrcmpA(name, "mono_jit_init_version") == 0)
 	{
 		if (!initialized)
 		{
 			initialized = TRUE;
-			LOG(L"Got mono.dll at %p\n", module);
+			LOG("Got mono.dll at %p\n", module);
 			loadMonoFunctions(module);
 		}
 		return (void*)&ownMonoJitInitVersion;
@@ -130,29 +127,31 @@ void *hookGetProcAddress(HMODULE module, char const *name)
 	return (void*)GetProcAddress(module, name);
 }
 
-BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
+BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 {
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
 		return TRUE;
 
+	hHeap = GetProcessHeap();
+
 	init_logger();
 
-	LOG(L"Doorstop started!\n");
+	LOG("Doorstop started!\n");
 
 	wchar_t *dll_path = NULL;
 	size_t dll_path_len = get_module_path((HINSTANCE)&__ImageBase, &dll_path, NULL, 0);
 
-	LOG(L"DLL Path: %s\n", dll_path);
+	LOG("DLL Path: %S\n", dll_path);
 
 	wchar_t *dll_name = get_file_name_no_ext(dll_path, dll_path_len);
 
-	LOG(L"Doorstop DLL Name: %s\n", dll_name);
+	LOG("Doorstop DLL Name: %S\n", dll_name);
 
 	size_t hook_name_len = wcslen(dll_name) + 35;
-	char *hook_name = malloc(sizeof(char) * hook_name_len); // This is fine, since DLLs must always be ANSI names anyway
-	sprintf_s(hook_name, hook_name_len, "%S.ownMonoJitInitVersion", dll_name);
+	char *hook_name = memalloc(sizeof(char) * hook_name_len); // This is fine, since DLLs must always be ANSI names anyway
+	wsprintfA(hook_name, "%S.ownMonoJitInitVersion", dll_name);
 
-	LOGA("EAT pointer name: %s\n", hook_name);
+	LOG("EAT pointer name: %s\n", hook_name);
 
 	loadProxy(dll_name);
 	loadConfig();
@@ -160,24 +159,29 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 	// If the loader is disabled, don't inject anything.
 	if (enabled)
 	{
-		LOG(L"Doorstop enabled!\n");
+		LOG("Doorstop enabled!\n");
 		ASSERT_SOFT(GetFileAttributesW(targetAssembly) != INVALID_FILE_ATTRIBUTES, TRUE);
 
-		LOG(L"Installing IAT hook\n");
+		LOG("Installing IAT hook\n");
 		if (!iat_hook(GetModuleHandle(NULL), &GetProcAddress, &hookGetProcAddress))
 		{
-			LOG(L"Failed to install IAT hook!\n");
+			LOG("Failed to install IAT hook!\n");
+			free_logger();
+		}
+		else
+		{
+			LOG("Hook installed!\n");
 		}
 	}
 	else
 	{
-		LOG(L"Doorstop dissabled! Freeing resources\n");
+		LOG("Doorstop dissabled! memfreeing resources\n");
 		free_logger();
 	}
 
-	free(dll_name);
-	free(dll_path);
-	free(hook_name);
+	memfree(dll_name);
+	memfree(dll_path);
+	memfree(hook_name);
 
 	return TRUE;
 }

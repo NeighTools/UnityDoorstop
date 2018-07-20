@@ -20,6 +20,7 @@
 
 #pragma once
 
+
 #include <windows.h>
 
 // PE format uses RVAs (Relative Virtual Addresses) to save addresses relative to the base of the module

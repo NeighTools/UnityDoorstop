@@ -11,7 +11,6 @@
 
 #include "ver.h"
 #include <windows.h>
-#include <stdint.h>
 #include "winapi_util.h"
 #include "assert_util.h"
 #include "config.h"
@@ -34,22 +33,22 @@
 // This way we don't need to include or define any of Mono's structs, which saves space
 // This, obviously, comes with a drawback of not being able to easily access the contents of the structs
 
-void*(*mono_jit_init_version)(const char* root_domain_name, const char* runtime_version);
-void*(*mono_domain_assembly_open)(void* domain, const char* name);
-void*(*mono_assembly_get_image)(void* assembly);
-void*(*mono_runtime_invoke)(void* method, void* obj, void** params, void** exc);
+void *(*mono_jit_init_version)(const char *root_domain_name, const char *runtime_version);
+void *(*mono_domain_assembly_open)(void *domain, const char *name);
+void *(*mono_assembly_get_image)(void *assembly);
+void *(*mono_runtime_invoke)(void *method, void *obj, void **params, void **exc);
 
-void*(*mono_method_desc_new)(const char* name, int include_namespace);
-void*(*mono_method_desc_search_in_image)(void* desc, void* image);
-void*(*mono_method_signature)(void* method);
-uint32_t (*mono_signature_get_param_count)(void* sig);
+void *(*mono_method_desc_new)(const char *name, int include_namespace);
+void *(*mono_method_desc_search_in_image)(void *desc, void *image);
+void *(*mono_method_signature)(void *method);
+UINT32 (*mono_signature_get_param_count)(void *sig);
 
-void*(*mono_array_new)(void* domain, void* eclass, uintptr_t n);
-void (*mono_gc_wbarrier_set_arrayref)(void* arr, void* slot_ptr, void* value);
-char*(*mono_array_addr_with_size)(void* arr, int size, uintptr_t idx);
+void *(*mono_array_new)(void *domain, void *eclass, uintptr_t n);
+void (*mono_gc_wbarrier_set_arrayref)(void *arr, void *slot_ptr, void *value);
+char *(*mono_array_addr_with_size)(void *arr, int size, uintptr_t idx);
 
-void*(*mono_get_string_class)();
-void*(*mono_string_new_utf16)(void* domain, const wchar_t* text, int32_t len);
+void *(*mono_get_string_class)();
+void *(*mono_string_new_utf16)(void *domain, const wchar_t *text, INT32 len);
 
 
 /**
