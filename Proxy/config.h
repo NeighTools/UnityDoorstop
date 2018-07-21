@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include <shellapi.h>
 #include "winapi_util.h"
 #include "assert_util.h"
 
@@ -9,10 +10,9 @@
 #define EXE_EXTENSION_LENGTH 4
 
 BOOL enabled = FALSE;
-wchar_t* targetAssembly = NULL;
-wchar_t* monoDllFallback = NULL;
+wchar_t *targetAssembly = NULL;
 
-#define STR_EQUAL(str1, str2) (_wcsnicmp(str1, str2, wcslen(str2)) == 0)
+#define STR_EQUAL(str1, str2) (lstrcmpiW(str1, str2) == 0)
 
 inline void initConfigFile()
 {
@@ -20,7 +20,7 @@ inline void initConfigFile()
 		return;
 
 	const size_t len = GetFullPathNameW(CONFIG_NAME, 0, NULL, NULL);
-	wchar_t* configPath = malloc(sizeof(wchar_t) * len);
+	wchar_t *configPath = memalloc(sizeof(wchar_t) * len);
 	GetFullPathNameW(CONFIG_NAME, len, configPath, NULL);
 
 	wchar_t enabledString[256] = L"true";
@@ -32,28 +32,26 @@ inline void initConfigFile()
 		enabled = FALSE;
 
 	targetAssembly = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
-	monoDllFallback = get_ini_entry(configPath, L"UnityDoorstop", L"monoFallback", L"\0");
 
-	LOG(L"Config; Target assembly: %s\n", targetAssembly);
-	LOG(L"Config; Fallback DLL: %s\n", monoDllFallback);
+	LOG("Config; Target assembly: %S\n", targetAssembly);
 
-	free(configPath);
+	memfree(configPath);
 }
 
 inline void initCmdArgs()
 {
-	wchar_t* args = GetCommandLineW();
+	wchar_t *args = GetCommandLineW();
 	int argc = 0;
-	wchar_t** argv = CommandLineToArgvW(args, &argc);
+	wchar_t **argv = CommandLineToArgvW(args, &argc);
 
 #define IS_ARGUMENT(arg_name) STR_EQUAL(arg, arg_name) && i < argc
 
 	for (int i = 0; i < argc; i++)
 	{
-		wchar_t* arg = argv[i];
+		wchar_t *arg = argv[i];
 		if (IS_ARGUMENT(L"--doorstop-enable"))
 		{
-			wchar_t* par = argv[++i];
+			wchar_t *par = argv[++i];
 
 			if (STR_EQUAL(par, L"true"))
 				enabled = TRUE;
@@ -63,20 +61,11 @@ inline void initCmdArgs()
 		else if (IS_ARGUMENT(L"--doorstop-target"))
 		{
 			if (targetAssembly != NULL)
-				free(targetAssembly);
+				memfree(targetAssembly);
 			const size_t len = wcslen(argv[i + 1]) + 1;
-			targetAssembly = malloc(sizeof(wchar_t) * len);
-			wcscpy_s(targetAssembly, len, argv[++i]);
-			LOG(L"Args; Target assembly: %s\n", targetAssembly);
-		}
-		else if (IS_ARGUMENT(L"--doorstop-mono-fallback"))
-		{
-			if (monoDllFallback != NULL)
-				free(monoDllFallback);
-			const size_t len = wcslen(argv[i + 1]) + 1;
-			monoDllFallback = malloc(sizeof(wchar_t) * len);
-			wcscpy_s(monoDllFallback, len, argv[++i]);
-			LOG(L"Args; Fallback DLL: %s\n", monoDllFallback);
+			targetAssembly = memalloc(sizeof(wchar_t) * len);
+			lstrcpynW(targetAssembly, argv[++i], len);
+			LOG("Args; Target assembly: %S\n", targetAssembly);
 		}
 	}
 
@@ -87,7 +76,7 @@ inline void initEnvVars()
 {
 	if (GetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL, 0) != 0)
 	{
-		LOG(L"DOORSTOP_DISABLE is set! Disabling Doorstop!\n");
+		LOG("DOORSTOP_DISABLE is set! Disabling Doorstop!\n");
 		enabled = FALSE;
 	}
 }
@@ -102,7 +91,5 @@ inline void loadConfig()
 inline void cleanupConfig()
 {
 	if (targetAssembly != NULL)
-		free(targetAssembly);
-	if (monoDllFallback != NULL)
-		free(monoDllFallback);
+		memfree(targetAssembly);
 }

@@ -19,12 +19,9 @@
  *
  */
 
-#include <windows.h>
-#include <stdio.h>
-#include <Shlwapi.h>
-#include <wchar.h>
-
 #include "winapi_util.h"
+#include <windows.h>
+
 #include "config.h"
 #include "mono.h"
 #include "hook.h"
@@ -35,45 +32,45 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase; // This is provided by MSVC with the info
 
 // The hook for mono_jit_init_version
 // We use this since it will always be called once to initialize Mono's JIT
-void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_version)
+void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_version)
 {
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
-	void* domain = mono_jit_init_version(root_domain_name, runtime_version);
+	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
 
 	size_t len = WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, NULL, 0, NULL, NULL);
-	char* dll_path = malloc(sizeof(char) * len);
+	char *dll_path = memalloc(sizeof(char) * len);
 	WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, dll_path, len, NULL, NULL);
 
-	LOGA("Loading assembly: %s\n", dll_path);
+	LOG("Loading assembly: %s\n", dll_path);
 	// Load our custom assembly into the domain
-	void* assembly = mono_domain_assembly_open(domain, dll_path);
+	void *assembly = mono_domain_assembly_open(domain, dll_path);
 
 	if (assembly == NULL)
-		LOG(L"Failed to load assembly\n");
+	LOG("Failed to load assembly\n");
 
-	free(dll_path);
+	memfree(dll_path);
 	ASSERT_SOFT(assembly != NULL, domain);
 
 	// Get assembly's image that contains CIL code
-	void* image = mono_assembly_get_image(assembly);
+	void *image = mono_assembly_get_image(assembly);
 	ASSERT_SOFT(image != NULL, domain);
 
 	// Note: we use the runtime_invoke route since jit_exec will not work on DLLs
 
 	// Create a descriptor for a random Main method
-	void* desc = mono_method_desc_new("*:Main", FALSE);
+	void *desc = mono_method_desc_new("*:Main", FALSE);
 
 	// Find the first possible Main method in the assembly
-	void* method = mono_method_desc_search_in_image(desc, image);
+	void *method = mono_method_desc_search_in_image(desc, image);
 	ASSERT_SOFT(method != NULL, domain);
 
-	void* signature = mono_method_signature(method);
+	void *signature = mono_method_signature(method);
 
 	// Get the number of parameters in the signature
-	uint32_t params = mono_signature_get_param_count(signature);
+	UINT32 params = mono_signature_get_param_count(signature);
 
-	void** args = NULL;
-	wchar_t* app_path = NULL;
+	void **args = NULL;
+	wchar_t *app_path = NULL;
 	if (params == 1)
 	{
 		// If there is a parameter, it's most likely a string[].
@@ -83,25 +80,25 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 
 		get_module_path(NULL, &app_path, NULL, 0);
 
-		void* exe_path = MONO_STRING(app_path);
-		void* doorstop_handle = MONO_STRING(L"--doorstop-invoke");
+		void *exe_path = MONO_STRING(app_path);
+		void *doorstop_handle = MONO_STRING(L"--doorstop-invoke");
 
-		void* args_array = mono_array_new(domain, mono_get_string_class(), 2);
+		void *args_array = mono_array_new(domain, mono_get_string_class(), 2);
 
 		SET_ARRAY_REF(args_array, 0, exe_path);
 		SET_ARRAY_REF(args_array, 1, doorstop_handle);
 
-		args = malloc(sizeof(void*) * 1);
+		args = memalloc(sizeof(void*) * 1);
 		args[0] = args_array;
 	}
 
-	LOG(L"Invoking method!\n");
+	LOG("Invoking method!\n");
 	mono_runtime_invoke(method, NULL, args, NULL);
 
 	if (args != NULL)
 	{
-		free(app_path);
-		free(args);
+		memfree(app_path);
+		memfree(args);
 		args = NULL;
 	}
 
@@ -112,29 +109,42 @@ void* ownMonoJitInitVersion(const char* root_domain_name, const char* runtime_ve
 	return domain;
 }
 
-BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
+BOOL initialized = FALSE;
+
+void * WINAPI hookGetProcAddress(HMODULE module, char const *name)
+{
+	if (lstrcmpA(name, "mono_jit_init_version") == 0)
+	{
+		if (!initialized)
+		{
+			initialized = TRUE;
+			LOG("Got mono.dll at %p\n", module);
+			loadMonoFunctions(module);
+		}
+		return (void*)&ownMonoJitInitVersion;
+	}
+	return (void*)GetProcAddress(module, name);
+}
+
+BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 {
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
 		return TRUE;
 
+	hHeap = GetProcessHeap();
+
 	init_logger();
 
-	LOG(L"Doorstop started!\n");
+	LOG("Doorstop started!\n");
 
-	wchar_t* dll_path = NULL;
+	wchar_t *dll_path = NULL;
 	size_t dll_path_len = get_module_path((HINSTANCE)&__ImageBase, &dll_path, NULL, 0);
 
-	LOG(L"DLL Path: %s\n", dll_path);
+	LOG("DLL Path: %S\n", dll_path);
 
-	wchar_t* dll_name = get_file_name_no_ext(dll_path, dll_path_len);
+	wchar_t *dll_name = get_file_name_no_ext(dll_path, dll_path_len);
 
-	LOG(L"Doorstop DLL Name: %s\n", dll_name);
-
-	size_t hook_name_len = wcslen(dll_name) + 35;
-	char* hook_name = malloc(sizeof(char) * hook_name_len); // This is fine, since DLLs must always be ANSI names anyway
-	sprintf_s(hook_name, hook_name_len, "%S.ownMonoJitInitVersion", dll_name);
-
-	LOGA("EAT pointer name: %s\n", hook_name);
+	LOG("Doorstop DLL Name: %S\n", dll_name);
 
 	loadProxy(dll_name);
 	loadConfig();
@@ -142,18 +152,28 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 	// If the loader is disabled, don't inject anything.
 	if (enabled)
 	{
-		LOG(L"Doorstop enabled!\n");
+		LOG("Doorstop enabled!\n");
 		ASSERT_SOFT(GetFileAttributesW(targetAssembly) != INVALID_FILE_ATTRIBUTES, TRUE);
-		LOG(L"Loading Mono!\n");
 
-		HMODULE monoLib = load_mono_lib();
-		LOG(L"Hooking into mono_jit_init_version\n");
-		ezHook(monoLib, mono_jit_init_version, hook_name);
+		LOG("Installing IAT hook\n");
+		if (!iat_hook(GetModuleHandle(NULL), &GetProcAddress, &hookGetProcAddress))
+		{
+			LOG("Failed to install IAT hook!\n");
+			free_logger();
+		}
+		else
+		{
+			LOG("Hook installed!\n");
+		}
+	}
+	else
+	{
+		LOG("Doorstop dissabled! memfreeing resources\n");
+		free_logger();
 	}
 
-	free(dll_name);
-	free(dll_path);
-	free(hook_name);
+	memfree(dll_name);
+	memfree(dll_path);
 
 	return TRUE;
 }

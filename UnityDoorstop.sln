@@ -15,6 +15,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		Verbose_Release|Any CPU = Verbose_Release|Any CPU
+		Verbose_Release|x64 = Verbose_Release|x64
+		Verbose_Release|x86 = Verbose_Release|x86
 		Verbose|Any CPU = Verbose|Any CPU
 		Verbose|x64 = Verbose|x64
 		Verbose|x86 = Verbose|x86
@@ -30,6 +33,11 @@ Global
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x64.Build.0 = Release|x64
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x86.ActiveCfg = Release|Win32
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Release|x86.Build.0 = Release|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose_Release|Any CPU.ActiveCfg = Verbose_Release|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose_Release|x64.ActiveCfg = Verbose_Release|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose_Release|x64.Build.0 = Verbose_Release|x64
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose_Release|x86.ActiveCfg = Verbose_Release|Win32
+		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose_Release|x86.Build.0 = Verbose_Release|Win32
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|Any CPU.ActiveCfg = Verbose|Win32
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|x64.ActiveCfg = Verbose|x64
 		{88609E16-731F-46C9-8139-6B1A7A83240D}.Verbose|x64.Build.0 = Verbose|x64
@@ -47,6 +55,12 @@ Global
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x64.Build.0 = Release|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x86.ActiveCfg = Release|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Release|x86.Build.0 = Release|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose_Release|Any CPU.ActiveCfg = Verbose_Release|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose_Release|Any CPU.Build.0 = Verbose_Release|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose_Release|x64.ActiveCfg = Verbose_Release|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose_Release|x64.Build.0 = Verbose_Release|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose_Release|x86.ActiveCfg = Verbose_Release|Any CPU
+		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose_Release|x86.Build.0 = Verbose_Release|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|Any CPU.ActiveCfg = Verbose|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|Any CPU.Build.0 = Verbose|Any CPU
 		{62B61CCC-0775-4CF4-B37A-EB5E33CBD08C}.Verbose|x64.ActiveCfg = Verbose|Any CPU
