@@ -6,6 +6,8 @@ HANDLE hHeap;
 #define memcalloc(size) HeapAlloc(hHeap, HEAP_ZERO_MEMORY, size)
 #define memfree(mem) HeapFree(hHeap, 0, mem)
 
+#define STR_LEN(str) (sizeof(str) / sizeof(str[0]))
+
 inline void *wmemcpy(wchar_t *dst, const wchar_t *src, size_t n)
 {
 	wchar_t *d = dst;
@@ -31,7 +33,7 @@ void *memset(void *dst, char c, int n)
 	return dst;
 }
 
-void *memcpy(void *dst, const void *src, int n)
+inline void *memcpy(void *dst, const void *src, int n)
 {
 	char *d = dst;
 	const char *s = src;
@@ -40,7 +42,7 @@ void *memcpy(void *dst, const void *src, int n)
 	return dst;
 }
 
-size_t wcslen(wchar_t const *str)
+inline size_t wcslen(wchar_t const *str)
 {
 	size_t result = 0;
 	while (*str++)
@@ -48,7 +50,7 @@ size_t wcslen(wchar_t const *str)
 	return result;
 }
 
-size_t strlen(char const *str)
+inline size_t strlen(char const *str)
 {
 	size_t result = 0;
 	while (*str++)

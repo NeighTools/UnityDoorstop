@@ -9,11 +9,7 @@
 
 #pragma once
 
-#include "ver.h"
 #include <windows.h>
-#include "winapi_util.h"
-#include "assert_util.h"
-#include "config.h"
 
 // Creates a MonoString based from a C wide string
 #define MONO_STRING(str) mono_string_new_utf16(domain, str, wcslen(str))

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ver.h"
 #include <windows.h>
 #include "crt.h"
 

@@ -1,4 +1,3 @@
-GetIpAddrTable
 SvchostPushServiceGlobals
 WinHttpAddRequestHeaders
 WinHttpAutoProxySvcMain

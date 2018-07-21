@@ -1,10 +1,8 @@
 #pragma once
 
-#include "ver.h"
-#include <windows.h>
 
 #ifdef _VERBOSE
-
+#include <windows.h>
 static HANDLE log_handle;
 char buffer[4096];
 
@@ -25,8 +23,14 @@ inline void free_logger()
 		WriteFile(log_handle, buffer, len, NULL, NULL); \
 	}
 #else
-inline void init_logger() {}
-inline void free_logger() {}
+inline void init_logger()
+{
+}
+
+inline void free_logger()
+{
+}
+
 #define LOG(message, ...) 
 #endif
 

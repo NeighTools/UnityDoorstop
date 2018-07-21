@@ -30,7 +30,7 @@
 #define RVA2PTR(t,base,rva) ((t)(((PCHAR) base) + rva))
 
 // A helper function to write into protected memory
-int vpmemcpy(void *dst, void *src, size_t sz)
+inline int vpmemcpy(void *dst, void *src, size_t sz)
 {
 	DWORD oldp;
 	// Make the memory page writeable
@@ -50,7 +50,7 @@ int vpmemcpy(void *dst, void *src, size_t sz)
  * \param forwardFunctionEntry Name of the function to add a forward to. Must be of form `dll.API`.
  * \return TRUE, if hooking succeeded, otherwise, FALSE.
  */
-BOOL ezHook(HMODULE hostDll, void *originalFunction, char *forwardFunctionEntry)
+inline BOOL ezHook(HMODULE hostDll, void *originalFunction, char *forwardFunctionEntry)
 {
 	/*
 	 * Note that we are not doing any trampoline magic or editing the assembly!
@@ -119,7 +119,7 @@ BOOL ezHook(HMODULE hostDll, void *originalFunction, char *forwardFunctionEntry)
  * \param detourFunction Address of the detour function
  * \return TRUE if successful, otherwise FALSE
  */
-BOOL iat_hook(HMODULE dll, void *targetFunction, void *detourFunction)
+inline BOOL iat_hook(HMODULE dll, void *targetFunction, void *detourFunction)
 {
 	IMAGE_DOS_HEADER *mz = (PIMAGE_DOS_HEADER)dll;
 

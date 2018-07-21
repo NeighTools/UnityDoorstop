@@ -19,7 +19,6 @@
  *
  */
 
-#include "ver.h"
 #include "winapi_util.h"
 #include <windows.h>
 
@@ -147,12 +146,6 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	LOG("Doorstop DLL Name: %S\n", dll_name);
 
-	size_t hook_name_len = wcslen(dll_name) + 35;
-	char *hook_name = memalloc(sizeof(char) * hook_name_len); // This is fine, since DLLs must always be ANSI names anyway
-	wsprintfA(hook_name, "%S.ownMonoJitInitVersion", dll_name);
-
-	LOG("EAT pointer name: %s\n", hook_name);
-
 	loadProxy(dll_name);
 	loadConfig();
 
@@ -181,7 +174,6 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	memfree(dll_name);
 	memfree(dll_path);
-	memfree(hook_name);
 
 	return TRUE;
 }
