@@ -155,8 +155,16 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		LOG("Doorstop enabled!\n");
 		ASSERT_SOFT(GetFileAttributesW(targetAssembly) != INVALID_FILE_ATTRIBUTES, TRUE);
 
+		HMODULE targetModule = GetModuleHandleA("UnityPlayer");
+
+		if(targetModule == NULL)
+		{
+			LOG("No UnityPlayer.dll; using EXE as the hook target.");
+			targetModule = GetModuleHandleA(NULL);
+		}
+
 		LOG("Installing IAT hook\n");
-		if (!iat_hook(GetModuleHandle(NULL), &GetProcAddress, &hookGetProcAddress))
+		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &hookGetProcAddress))
 		{
 			LOG("Failed to install IAT hook!\n");
 			free_logger();

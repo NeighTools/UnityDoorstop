@@ -119,7 +119,7 @@ inline BOOL ezHook(HMODULE hostDll, void *originalFunction, char *forwardFunctio
  * \param detourFunction Address of the detour function
  * \return TRUE if successful, otherwise FALSE
  */
-inline BOOL iat_hook(HMODULE dll, void *targetFunction, void *detourFunction)
+inline BOOL iat_hook(HMODULE dll, char const* targetDLL, void *targetFunction, void *detourFunction)
 {
 	IMAGE_DOS_HEADER *mz = (PIMAGE_DOS_HEADER)dll;
 
@@ -130,6 +130,11 @@ inline BOOL iat_hook(HMODULE dll, void *targetFunction, void *detourFunction)
 
 	for (int i = 0; imports[i].Characteristics; i++)
 	{
+		char *name = RVA2PTR(char*, mz, imports[i].Name);
+
+		if(lstrcmpiA(name, targetDLL) != 0)
+			continue;
+
 		void **thunk = RVA2PTR(void**, mz, imports[i].FirstThunk);
 
 		for (; thunk; thunk++)
