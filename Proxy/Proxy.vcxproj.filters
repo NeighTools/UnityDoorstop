@@ -53,4 +53,14 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="dllproxy.asm">
+      <Filter>Other</Filter>
+    </MASM>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dll.def">
+      <Filter>Other</Filter>
+    </None>
+  </ItemGroup>
 </Project>
