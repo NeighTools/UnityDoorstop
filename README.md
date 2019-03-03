@@ -27,21 +27,20 @@ Developers should package Doorstop into their applications for the end-users.
 
 To build, you will need:
 
+* PowerShell 2.0 or newer
 * Visual Studio 2017 (2015 might work as well with some modifications)
 * Visual C++ Toolset v140
 * .NET Framework 3.5 or newer (only for the example, not used by the proxy)
-* Python (only to generate proxy functions; not needed to build)
 
 Clone, open in Visual Studio, select the platform (x86/x64) and build.
 
 #### Custom proxy functions
 
 Doorstop's proxy is flexible and allows to be load as different DLLs.
-You can modify which functions you want to proxy by adding/removing function names in `Proxy/proxydefs.txt` and running `proxygen/proxy_gen.py ../Proxy/proxydefs.txt` to generate an appropriate proxy functions.
+You can modify which functions are proxied by adding/removing entries in dll.def
 
 The current set up allows to use the proxy for the following DLLs:
 
-* `winhttp.dll` (All exports)
-* `iphlpapi.dll` (Only `GetIpAddrTable`)
+* `version.dll` (All exports)
 
 (WIP: Currently all build results are placed in separate folders; will be changed later)
