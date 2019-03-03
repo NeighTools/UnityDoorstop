@@ -1,8 +1,12 @@
 param($projectPath, $templatePath, $arch)
 
-$templatePath = "E:\Projects\C++\UnityDoorstop\scripts"
-$projectPath = "E:\Projects\C++\UnityDoorstop\Proxy"
-$arch = "64"
+function Merge-Tokens($template, $tokens)
+{
+    return [regex]::Replace($template, '\$(?<token>\w+)\$', 
+        { param($match) $tokens[$match.Groups['token'].Value] })
+}
+
+echo "Generating proxy template..."
 
 $ptrType = ""
 if($arch -eq "32") { $ptrType = "DWORD" }
@@ -29,6 +33,8 @@ foreach($func in $defFile) {
     [void]$sbProxyAdd.AppendLine("__${func}__ = GetProcAddress(dll, ""${func}"");")
 }
 
+
+
 $asmTemplatePath = Join-Path $templatePath "dllproxy.asm.tmpl"
 $asmTemplate = [IO.File]::ReadAllText($asmTemplatePath)
 $asm = Merge-Tokens $asmTemplate @{ definitions = $sbDefs.ToString(); variables = $sbVariables.ToString(); jmps = $sbJmps.ToString() }
@@ -39,11 +45,5 @@ $cTemplate = [IO.File]::ReadAllText($cTemplatePath)
 $cProxy = Merge-Tokens $cTemplate @{ proxyDefs = $sbProxyDefs.ToString(); proxyAdd = $sbProxyAdd.ToString() }
 $cPath = Join-Path $projectPath "proxy.c" 
 Set-Content $cPath $cProxy
-
-function Merge-Tokens($template, $tokens)
-{
-    return [regex]::Replace($template, '\$(?<token>\w+)\$', 
-        { param($match) $tokens[$match.Groups['token'].Value] })
-}
 
 
