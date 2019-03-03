@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Ignore the proxy and the MASM file
+Proxy/proxy.c
+Proxy/dllproxy.asm
+
 # Prerequisites
 *.d
 

@@ -7,327 +7,97 @@ else
 .stack 4096
 endif
 
-public SvchostPushServiceGlobals
-public __SvchostPushServiceGlobals__
-public WinHttpAddRequestHeaders
-public __WinHttpAddRequestHeaders__
-public WinHttpAutoProxySvcMain
-public __WinHttpAutoProxySvcMain__
-public WinHttpCheckPlatform
-public __WinHttpCheckPlatform__
-public WinHttpCloseHandle
-public __WinHttpCloseHandle__
-public WinHttpConnect
-public __WinHttpConnect__
-public WinHttpConnectionDeletePolicyEntries
-public __WinHttpConnectionDeletePolicyEntries__
-public WinHttpConnectionDeleteProxyInfo
-public __WinHttpConnectionDeleteProxyInfo__
-public WinHttpConnectionFreeNameList
-public __WinHttpConnectionFreeNameList__
-public WinHttpConnectionFreeProxyInfo
-public __WinHttpConnectionFreeProxyInfo__
-public WinHttpConnectionFreeProxyList
-public __WinHttpConnectionFreeProxyList__
-public WinHttpConnectionGetNameList
-public __WinHttpConnectionGetNameList__
-public WinHttpConnectionGetProxyInfo
-public __WinHttpConnectionGetProxyInfo__
-public WinHttpConnectionGetProxyList
-public __WinHttpConnectionGetProxyList__
-public WinHttpConnectionSetPolicyEntries
-public __WinHttpConnectionSetPolicyEntries__
-public WinHttpConnectionSetProxyInfo
-public __WinHttpConnectionSetProxyInfo__
-public WinHttpConnectionUpdateIfIndexTable
-public __WinHttpConnectionUpdateIfIndexTable__
-public WinHttpCrackUrl
-public __WinHttpCrackUrl__
-public WinHttpCreateProxyResolver
-public __WinHttpCreateProxyResolver__
-public WinHttpCreateUrl
-public __WinHttpCreateUrl__
-public WinHttpDetectAutoProxyConfigUrl
-public __WinHttpDetectAutoProxyConfigUrl__
-public WinHttpFreeProxyResult
-public __WinHttpFreeProxyResult__
-public WinHttpFreeProxyResultEx
-public __WinHttpFreeProxyResultEx__
-public WinHttpFreeProxySettings
-public __WinHttpFreeProxySettings__
-public WinHttpGetDefaultProxyConfiguration
-public __WinHttpGetDefaultProxyConfiguration__
-public WinHttpGetIEProxyConfigForCurrentUser
-public __WinHttpGetIEProxyConfigForCurrentUser__
-public WinHttpGetProxyForUrl
-public __WinHttpGetProxyForUrl__
-public WinHttpGetProxyForUrlEx
-public __WinHttpGetProxyForUrlEx__
-public WinHttpGetProxyForUrlEx2
-public __WinHttpGetProxyForUrlEx2__
-public WinHttpGetProxyForUrlHvsi
-public __WinHttpGetProxyForUrlHvsi__
-public WinHttpGetProxyResult
-public __WinHttpGetProxyResult__
-public WinHttpGetProxyResultEx
-public __WinHttpGetProxyResultEx__
-public WinHttpGetProxySettingsVersion
-public __WinHttpGetProxySettingsVersion__
-public WinHttpGetTunnelSocket
-public __WinHttpGetTunnelSocket__
-public WinHttpOpen
-public __WinHttpOpen__
-public WinHttpOpenRequest
-public __WinHttpOpenRequest__
-public WinHttpProbeConnectivity
-public __WinHttpProbeConnectivity__
-public WinHttpQueryAuthSchemes
-public __WinHttpQueryAuthSchemes__
-public WinHttpQueryDataAvailable
-public __WinHttpQueryDataAvailable__
-public WinHttpQueryHeaders
-public __WinHttpQueryHeaders__
-public WinHttpQueryOption
-public __WinHttpQueryOption__
-public WinHttpReadData
-public __WinHttpReadData__
-public WinHttpReadProxySettings
-public __WinHttpReadProxySettings__
-public WinHttpReadProxySettingsHvsi
-public __WinHttpReadProxySettingsHvsi__
-public WinHttpReceiveResponse
-public __WinHttpReceiveResponse__
-public WinHttpResetAutoProxy
-public __WinHttpResetAutoProxy__
-public WinHttpSaveProxyCredentials
-public __WinHttpSaveProxyCredentials__
-public WinHttpSendRequest
-public __WinHttpSendRequest__
-public WinHttpSetCredentials
-public __WinHttpSetCredentials__
-public WinHttpSetDefaultProxyConfiguration
-public __WinHttpSetDefaultProxyConfiguration__
-public WinHttpSetOption
-public __WinHttpSetOption__
-public WinHttpSetStatusCallback
-public __WinHttpSetStatusCallback__
-public WinHttpSetTimeouts
-public __WinHttpSetTimeouts__
-public WinHttpTimeFromSystemTime
-public __WinHttpTimeFromSystemTime__
-public WinHttpTimeToSystemTime
-public __WinHttpTimeToSystemTime__
-public WinHttpWebSocketClose
-public __WinHttpWebSocketClose__
-public WinHttpWebSocketCompleteUpgrade
-public __WinHttpWebSocketCompleteUpgrade__
-public WinHttpWebSocketQueryCloseStatus
-public __WinHttpWebSocketQueryCloseStatus__
-public WinHttpWebSocketReceive
-public __WinHttpWebSocketReceive__
-public WinHttpWebSocketSend
-public __WinHttpWebSocketSend__
-public WinHttpWebSocketShutdown
-public __WinHttpWebSocketShutdown__
-public WinHttpWriteData
-public __WinHttpWriteData__
-public WinHttpWriteProxySettings
-public __WinHttpWriteProxySettings__
+public GetFileVersionInfoA
+public __GetFileVersionInfoA__
+public GetFileVersionInfoByHandle
+public __GetFileVersionInfoByHandle__
+public GetFileVersionInfoExA
+public __GetFileVersionInfoExA__
+public GetFileVersionInfoExW
+public __GetFileVersionInfoExW__
+public GetFileVersionInfoSizeA
+public __GetFileVersionInfoSizeA__
+public GetFileVersionInfoSizeExA
+public __GetFileVersionInfoSizeExA__
+public GetFileVersionInfoSizeExW
+public __GetFileVersionInfoSizeExW__
+public GetFileVersionInfoSizeW
+public __GetFileVersionInfoSizeW__
+public GetFileVersionInfoW
+public __GetFileVersionInfoW__
+public VerFindFileA
+public __VerFindFileA__
+public VerFindFileW
+public __VerFindFileW__
+public VerInstallFileA
+public __VerInstallFileA__
+public VerInstallFileW
+public __VerInstallFileW__
+public VerLanguageNameA
+public __VerLanguageNameA__
+public VerLanguageNameW
+public __VerLanguageNameW__
+public VerQueryValueA
+public __VerQueryValueA__
+public VerQueryValueW
+public __VerQueryValueW__
 
 
 .data
-  __SvchostPushServiceGlobals__ QWORD 0
-  __WinHttpAddRequestHeaders__ QWORD 0
-  __WinHttpAutoProxySvcMain__ QWORD 0
-  __WinHttpCheckPlatform__ QWORD 0
-  __WinHttpCloseHandle__ QWORD 0
-  __WinHttpConnect__ QWORD 0
-  __WinHttpConnectionDeletePolicyEntries__ QWORD 0
-  __WinHttpConnectionDeleteProxyInfo__ QWORD 0
-  __WinHttpConnectionFreeNameList__ QWORD 0
-  __WinHttpConnectionFreeProxyInfo__ QWORD 0
-  __WinHttpConnectionFreeProxyList__ QWORD 0
-  __WinHttpConnectionGetNameList__ QWORD 0
-  __WinHttpConnectionGetProxyInfo__ QWORD 0
-  __WinHttpConnectionGetProxyList__ QWORD 0
-  __WinHttpConnectionSetPolicyEntries__ QWORD 0
-  __WinHttpConnectionSetProxyInfo__ QWORD 0
-  __WinHttpConnectionUpdateIfIndexTable__ QWORD 0
-  __WinHttpCrackUrl__ QWORD 0
-  __WinHttpCreateProxyResolver__ QWORD 0
-  __WinHttpCreateUrl__ QWORD 0
-  __WinHttpDetectAutoProxyConfigUrl__ QWORD 0
-  __WinHttpFreeProxyResult__ QWORD 0
-  __WinHttpFreeProxyResultEx__ QWORD 0
-  __WinHttpFreeProxySettings__ QWORD 0
-  __WinHttpGetDefaultProxyConfiguration__ QWORD 0
-  __WinHttpGetIEProxyConfigForCurrentUser__ QWORD 0
-  __WinHttpGetProxyForUrl__ QWORD 0
-  __WinHttpGetProxyForUrlEx__ QWORD 0
-  __WinHttpGetProxyForUrlEx2__ QWORD 0
-  __WinHttpGetProxyForUrlHvsi__ QWORD 0
-  __WinHttpGetProxyResult__ QWORD 0
-  __WinHttpGetProxyResultEx__ QWORD 0
-  __WinHttpGetProxySettingsVersion__ QWORD 0
-  __WinHttpGetTunnelSocket__ QWORD 0
-  __WinHttpOpen__ QWORD 0
-  __WinHttpOpenRequest__ QWORD 0
-  __WinHttpProbeConnectivity__ QWORD 0
-  __WinHttpQueryAuthSchemes__ QWORD 0
-  __WinHttpQueryDataAvailable__ QWORD 0
-  __WinHttpQueryHeaders__ QWORD 0
-  __WinHttpQueryOption__ QWORD 0
-  __WinHttpReadData__ QWORD 0
-  __WinHttpReadProxySettings__ QWORD 0
-  __WinHttpReadProxySettingsHvsi__ QWORD 0
-  __WinHttpReceiveResponse__ QWORD 0
-  __WinHttpResetAutoProxy__ QWORD 0
-  __WinHttpSaveProxyCredentials__ QWORD 0
-  __WinHttpSendRequest__ QWORD 0
-  __WinHttpSetCredentials__ QWORD 0
-  __WinHttpSetDefaultProxyConfiguration__ QWORD 0
-  __WinHttpSetOption__ QWORD 0
-  __WinHttpSetStatusCallback__ QWORD 0
-  __WinHttpSetTimeouts__ QWORD 0
-  __WinHttpTimeFromSystemTime__ QWORD 0
-  __WinHttpTimeToSystemTime__ QWORD 0
-  __WinHttpWebSocketClose__ QWORD 0
-  __WinHttpWebSocketCompleteUpgrade__ QWORD 0
-  __WinHttpWebSocketQueryCloseStatus__ QWORD 0
-  __WinHttpWebSocketReceive__ QWORD 0
-  __WinHttpWebSocketSend__ QWORD 0
-  __WinHttpWebSocketShutdown__ QWORD 0
-  __WinHttpWriteData__ QWORD 0
-  __WinHttpWriteProxySettings__ QWORD 0
+  __GetFileVersionInfoA__ QWORD 0
+  __GetFileVersionInfoByHandle__ QWORD 0
+  __GetFileVersionInfoExA__ QWORD 0
+  __GetFileVersionInfoExW__ QWORD 0
+  __GetFileVersionInfoSizeA__ QWORD 0
+  __GetFileVersionInfoSizeExA__ QWORD 0
+  __GetFileVersionInfoSizeExW__ QWORD 0
+  __GetFileVersionInfoSizeW__ QWORD 0
+  __GetFileVersionInfoW__ QWORD 0
+  __VerFindFileA__ QWORD 0
+  __VerFindFileW__ QWORD 0
+  __VerInstallFileA__ QWORD 0
+  __VerInstallFileW__ QWORD 0
+  __VerLanguageNameA__ QWORD 0
+  __VerLanguageNameW__ QWORD 0
+  __VerQueryValueA__ QWORD 0
+  __VerQueryValueW__ QWORD 0
 
 
 .code
-SvchostPushServiceGlobals:
-  jmp QWORD ptr __SvchostPushServiceGlobals__
-WinHttpAddRequestHeaders:
-  jmp QWORD ptr __WinHttpAddRequestHeaders__
-WinHttpAutoProxySvcMain:
-  jmp QWORD ptr __WinHttpAutoProxySvcMain__
-WinHttpCheckPlatform:
-  jmp QWORD ptr __WinHttpCheckPlatform__
-WinHttpCloseHandle:
-  jmp QWORD ptr __WinHttpCloseHandle__
-WinHttpConnect:
-  jmp QWORD ptr __WinHttpConnect__
-WinHttpConnectionDeletePolicyEntries:
-  jmp QWORD ptr __WinHttpConnectionDeletePolicyEntries__
-WinHttpConnectionDeleteProxyInfo:
-  jmp QWORD ptr __WinHttpConnectionDeleteProxyInfo__
-WinHttpConnectionFreeNameList:
-  jmp QWORD ptr __WinHttpConnectionFreeNameList__
-WinHttpConnectionFreeProxyInfo:
-  jmp QWORD ptr __WinHttpConnectionFreeProxyInfo__
-WinHttpConnectionFreeProxyList:
-  jmp QWORD ptr __WinHttpConnectionFreeProxyList__
-WinHttpConnectionGetNameList:
-  jmp QWORD ptr __WinHttpConnectionGetNameList__
-WinHttpConnectionGetProxyInfo:
-  jmp QWORD ptr __WinHttpConnectionGetProxyInfo__
-WinHttpConnectionGetProxyList:
-  jmp QWORD ptr __WinHttpConnectionGetProxyList__
-WinHttpConnectionSetPolicyEntries:
-  jmp QWORD ptr __WinHttpConnectionSetPolicyEntries__
-WinHttpConnectionSetProxyInfo:
-  jmp QWORD ptr __WinHttpConnectionSetProxyInfo__
-WinHttpConnectionUpdateIfIndexTable:
-  jmp QWORD ptr __WinHttpConnectionUpdateIfIndexTable__
-WinHttpCrackUrl:
-  jmp QWORD ptr __WinHttpCrackUrl__
-WinHttpCreateProxyResolver:
-  jmp QWORD ptr __WinHttpCreateProxyResolver__
-WinHttpCreateUrl:
-  jmp QWORD ptr __WinHttpCreateUrl__
-WinHttpDetectAutoProxyConfigUrl:
-  jmp QWORD ptr __WinHttpDetectAutoProxyConfigUrl__
-WinHttpFreeProxyResult:
-  jmp QWORD ptr __WinHttpFreeProxyResult__
-WinHttpFreeProxyResultEx:
-  jmp QWORD ptr __WinHttpFreeProxyResultEx__
-WinHttpFreeProxySettings:
-  jmp QWORD ptr __WinHttpFreeProxySettings__
-WinHttpGetDefaultProxyConfiguration:
-  jmp QWORD ptr __WinHttpGetDefaultProxyConfiguration__
-WinHttpGetIEProxyConfigForCurrentUser:
-  jmp QWORD ptr __WinHttpGetIEProxyConfigForCurrentUser__
-WinHttpGetProxyForUrl:
-  jmp QWORD ptr __WinHttpGetProxyForUrl__
-WinHttpGetProxyForUrlEx:
-  jmp QWORD ptr __WinHttpGetProxyForUrlEx__
-WinHttpGetProxyForUrlEx2:
-  jmp QWORD ptr __WinHttpGetProxyForUrlEx2__
-WinHttpGetProxyForUrlHvsi:
-  jmp QWORD ptr __WinHttpGetProxyForUrlHvsi__
-WinHttpGetProxyResult:
-  jmp QWORD ptr __WinHttpGetProxyResult__
-WinHttpGetProxyResultEx:
-  jmp QWORD ptr __WinHttpGetProxyResultEx__
-WinHttpGetProxySettingsVersion:
-  jmp QWORD ptr __WinHttpGetProxySettingsVersion__
-WinHttpGetTunnelSocket:
-  jmp QWORD ptr __WinHttpGetTunnelSocket__
-WinHttpOpen:
-  jmp QWORD ptr __WinHttpOpen__
-WinHttpOpenRequest:
-  jmp QWORD ptr __WinHttpOpenRequest__
-WinHttpProbeConnectivity:
-  jmp QWORD ptr __WinHttpProbeConnectivity__
-WinHttpQueryAuthSchemes:
-  jmp QWORD ptr __WinHttpQueryAuthSchemes__
-WinHttpQueryDataAvailable:
-  jmp QWORD ptr __WinHttpQueryDataAvailable__
-WinHttpQueryHeaders:
-  jmp QWORD ptr __WinHttpQueryHeaders__
-WinHttpQueryOption:
-  jmp QWORD ptr __WinHttpQueryOption__
-WinHttpReadData:
-  jmp QWORD ptr __WinHttpReadData__
-WinHttpReadProxySettings:
-  jmp QWORD ptr __WinHttpReadProxySettings__
-WinHttpReadProxySettingsHvsi:
-  jmp QWORD ptr __WinHttpReadProxySettingsHvsi__
-WinHttpReceiveResponse:
-  jmp QWORD ptr __WinHttpReceiveResponse__
-WinHttpResetAutoProxy:
-  jmp QWORD ptr __WinHttpResetAutoProxy__
-WinHttpSaveProxyCredentials:
-  jmp QWORD ptr __WinHttpSaveProxyCredentials__
-WinHttpSendRequest:
-  jmp QWORD ptr __WinHttpSendRequest__
-WinHttpSetCredentials:
-  jmp QWORD ptr __WinHttpSetCredentials__
-WinHttpSetDefaultProxyConfiguration:
-  jmp QWORD ptr __WinHttpSetDefaultProxyConfiguration__
-WinHttpSetOption:
-  jmp QWORD ptr __WinHttpSetOption__
-WinHttpSetStatusCallback:
-  jmp QWORD ptr __WinHttpSetStatusCallback__
-WinHttpSetTimeouts:
-  jmp QWORD ptr __WinHttpSetTimeouts__
-WinHttpTimeFromSystemTime:
-  jmp QWORD ptr __WinHttpTimeFromSystemTime__
-WinHttpTimeToSystemTime:
-  jmp QWORD ptr __WinHttpTimeToSystemTime__
-WinHttpWebSocketClose:
-  jmp QWORD ptr __WinHttpWebSocketClose__
-WinHttpWebSocketCompleteUpgrade:
-  jmp QWORD ptr __WinHttpWebSocketCompleteUpgrade__
-WinHttpWebSocketQueryCloseStatus:
-  jmp QWORD ptr __WinHttpWebSocketQueryCloseStatus__
-WinHttpWebSocketReceive:
-  jmp QWORD ptr __WinHttpWebSocketReceive__
-WinHttpWebSocketSend:
-  jmp QWORD ptr __WinHttpWebSocketSend__
-WinHttpWebSocketShutdown:
-  jmp QWORD ptr __WinHttpWebSocketShutdown__
-WinHttpWriteData:
-  jmp QWORD ptr __WinHttpWriteData__
-WinHttpWriteProxySettings:
-  jmp QWORD ptr __WinHttpWriteProxySettings__
+GetFileVersionInfoA:
+  jmp QWORD ptr __GetFileVersionInfoA__
+GetFileVersionInfoByHandle:
+  jmp QWORD ptr __GetFileVersionInfoByHandle__
+GetFileVersionInfoExA:
+  jmp QWORD ptr __GetFileVersionInfoExA__
+GetFileVersionInfoExW:
+  jmp QWORD ptr __GetFileVersionInfoExW__
+GetFileVersionInfoSizeA:
+  jmp QWORD ptr __GetFileVersionInfoSizeA__
+GetFileVersionInfoSizeExA:
+  jmp QWORD ptr __GetFileVersionInfoSizeExA__
+GetFileVersionInfoSizeExW:
+  jmp QWORD ptr __GetFileVersionInfoSizeExW__
+GetFileVersionInfoSizeW:
+  jmp QWORD ptr __GetFileVersionInfoSizeW__
+GetFileVersionInfoW:
+  jmp QWORD ptr __GetFileVersionInfoW__
+VerFindFileA:
+  jmp QWORD ptr __VerFindFileA__
+VerFindFileW:
+  jmp QWORD ptr __VerFindFileW__
+VerInstallFileA:
+  jmp QWORD ptr __VerInstallFileA__
+VerInstallFileW:
+  jmp QWORD ptr __VerInstallFileW__
+VerLanguageNameA:
+  jmp QWORD ptr __VerLanguageNameA__
+VerLanguageNameW:
+  jmp QWORD ptr __VerLanguageNameW__
+VerQueryValueA:
+  jmp QWORD ptr __VerQueryValueA__
+VerQueryValueW:
+  jmp QWORD ptr __VerQueryValueW__
 
 
 end
