@@ -39,7 +39,9 @@ $asmTemplatePath = Join-Path $templatePath "dllproxy.asm.tmpl"
 $asmTemplate = [IO.File]::ReadAllText($asmTemplatePath)
 $asm = Merge-Tokens $asmTemplate @{ definitions = $sbDefs.ToString(); variables = $sbVariables.ToString(); jmps = $sbJmps.ToString() }
 $asmPath = Join-Path $projectPath "dllproxy.asm" 
-Set-Content $asmPath $asm
+Set-Content $asmPath $asm
+
+
 $cTemplatePath = Join-Path $templatePath "proxy.c.tmpl"
 $cTemplate = [IO.File]::ReadAllText($cTemplatePath)
 $cProxy = Merge-Tokens $cTemplate @{ proxyDefs = $sbProxyDefs.ToString(); proxyAdd = $sbProxyAdd.ToString() }
