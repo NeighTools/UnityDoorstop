@@ -3,7 +3,7 @@
  * 
  * The proxy works roughly as follows:
  * - We define our exports in proxy.c (computer generated)
- * - loadProxy initializes the proxy:
+ * - load_proxy initializes the proxy:
  *     1. Look up the name of this DLL
  *     2. Find the original DLL with the same name
  *     3. Load the original DLL
@@ -25,13 +25,13 @@ extern FARPROC originalFunctions[];
 extern void loadFunctions(HMODULE dll);
 
 // Load the proxy functions into memory
-inline void loadProxy(wchar_t *moduleName)
+inline void load_proxy(wchar_t *module_name)
 {
-	size_t module_name_len = wcslen(moduleName);
+	size_t module_name_len = wcslen(module_name);
 
 	size_t alt_name_len = module_name_len + STR_LEN(ALT_POSTFIX);
 	wchar_t *alt_name = memalloc(sizeof(wchar_t) * alt_name_len);
-	wmemcpy(alt_name, moduleName, module_name_len);
+	wmemcpy(alt_name, module_name, module_name_len);
 	wmemcpy(alt_name + module_name_len, ALT_POSTFIX, STR_LEN(ALT_POSTFIX));
 
 	wchar_t *dll_path = NULL; // The final DLL path
@@ -52,7 +52,7 @@ inline void loadProxy(wchar_t *moduleName)
 		dll_path = memalloc(sizeof(wchar_t) * (system_dir_len + module_name_len + STR_LEN(DLL_POSTFIX)));
 		GetSystemDirectoryW(dll_path, system_dir_len);
 		dll_path[system_dir_len - 1] = L'\\';
-		wmemcpy(dll_path + system_dir_len, moduleName, module_name_len);
+		wmemcpy(dll_path + system_dir_len, module_name, module_name_len);
 		wmemcpy(dll_path + system_dir_len + module_name_len, DLL_POSTFIX, STR_LEN(DLL_POSTFIX));
 
 		LOG("Looking for original DLL from %S\n", dll_path);
@@ -61,7 +61,7 @@ inline void loadProxy(wchar_t *moduleName)
 	}
 
 	ASSERT_F(handle != NULL, L"Unable to load the original %s.dll (looked from system directory and from %s_alt.dll)!",
-		moduleName, moduleName);
+		module_name, module_name);
 
 	memfree(alt_full_path);
 	memfree(dll_path);

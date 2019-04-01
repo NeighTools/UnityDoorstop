@@ -1,19 +1,21 @@
 /*
  * main.cpp -- The main "entry point" and the main logic of the DLL.
  *
- * Here, we define and initialize struct Main that contains the main code of this DLL.
+ * Here, we do the main magic of the whole DLL
  * 
  * The main procedure goes as follows:
- * 1. The loader checks that PatchLoader.dll and mono.dll exist
- * 2. mono.dll is loaded into memory and some of its functions are looked up
- * 3. mono_jit_init_version is hooked with the help of MinHook
+ * 0. Initialize the proxy functions
+ * 1. Read configuration (whether to enable Doorstop, what .NET assembly to execute, etc)
+ * 2. Find the Unity player module (it's either the game EXE or UnityPlayer.dll)
+ * 3. Install IAT hook to GetProcAddress into the Unity player
+ * 4. When Unity tries to resolve mono_jit_init_version, grab the mono module and return the address to init_doorstop
  * 
  * Then, the loader waits until Unity creates its root domain for mono (which is done with mono_jit_init_version).
  * 
- * Inside mono_jit_init_version hook:
+ * Inside mono_jit_init_version hook (i.e. init_doorstop):
  * 1. Call the original mono_jit_init_version to get the Unity root domain
- * 2. Load PatchLoader.dll into the root domain
- * 3. Find and invoke PatchLoader.Loader.Run()
+ * 2. Load the .NET assembly we want to run into the root domain
+ * 3. Find Main() method inside the target assembly and invoke it
  * 
  * Rest of the work is done on the managed side.
  *
@@ -32,14 +34,14 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase; // This is provided by MSVC with the info
 
 // The hook for mono_jit_init_version
 // We use this since it will always be called once to initialize Mono's JIT
-void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_version)
+void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 {
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
 	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
 
-	size_t len = WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, NULL, 0, NULL, NULL);
+	size_t len = WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, NULL, 0, NULL, NULL);
 	char *dll_path = memalloc(sizeof(char) * len);
-	WideCharToMultiByte(CP_UTF8, 0, targetAssembly, -1, dll_path, len, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, dll_path, len, NULL, NULL);
 
 	LOG("Loading assembly: %s\n", dll_path);
 	// Load our custom assembly into the domain
@@ -102,7 +104,7 @@ void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_ve
 		args = NULL;
 	}
 
-	cleanupConfig();
+	cleanup_config();
 
 	free_logger();
 
@@ -111,7 +113,7 @@ void *ownMonoJitInitVersion(const char *root_domain_name, const char *runtime_ve
 
 BOOL initialized = FALSE;
 
-void * WINAPI hookGetProcAddress(HMODULE module, char const *name)
+void * WINAPI get_proc_address_detour(HMODULE module, char const *name)
 {
 	if (lstrcmpA(name, "mono_jit_init_version") == 0)
 	{
@@ -119,9 +121,9 @@ void * WINAPI hookGetProcAddress(HMODULE module, char const *name)
 		{
 			initialized = TRUE;
 			LOG("Got mono.dll at %p\n", module);
-			loadMonoFunctions(module);
+			load_mono_functions(module);
 		}
-		return (void*)&ownMonoJitInitVersion;
+		return (void*)&init_doorstop;
 	}
 	return (void*)GetProcAddress(module, name);
 }
@@ -146,14 +148,14 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	LOG("Doorstop DLL Name: %S\n", dll_name);
 
-	loadProxy(dll_name);
-	loadConfig();
+	load_proxy(dll_name);
+	load_config();
 
 	// If the loader is disabled, don't inject anything.
 	if (enabled)
 	{
 		LOG("Doorstop enabled!\n");
-		ASSERT_SOFT(GetFileAttributesW(targetAssembly) != INVALID_FILE_ATTRIBUTES, TRUE);
+		ASSERT_SOFT(GetFileAttributesW(target_assembly) != INVALID_FILE_ATTRIBUTES, TRUE);
 
 		HMODULE targetModule = GetModuleHandleA("UnityPlayer");
 
@@ -164,7 +166,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		}
 
 		LOG("Installing IAT hook\n");
-		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &hookGetProcAddress))
+		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &get_proc_address_detour))
 		{
 			LOG("Failed to install IAT hook!\n");
 			free_logger();

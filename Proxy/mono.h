@@ -49,13 +49,13 @@ void *(*mono_string_new_utf16)(void *domain, const wchar_t *text, INT32 len);
 
 /**
 * \brief Loads Mono C API function pointers so that the above definitions can be called.
-* \param monoLib Mono.dll module.
+* \param mono_lib Mono.dll module.
 */
-inline void loadMonoFunctions(HMODULE monoLib)
+inline void load_mono_functions(HMODULE mono_lib)
 {
 	// Enjoy the fact that C allows such sloppy casting
 	// In C++ you would have to cast to the precise function pointer type
-#define GET_MONO_PROC(name) name = (void*)GetProcAddress(monoLib, #name)
+#define GET_MONO_PROC(name) name = (void*)GetProcAddress(mono_lib, #name)
 
 	// Find and assign all our functions that we are going to use
 	GET_MONO_PROC(mono_domain_assembly_open);

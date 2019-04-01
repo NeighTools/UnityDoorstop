@@ -10,11 +10,11 @@
 #define EXE_EXTENSION_LENGTH 4
 
 BOOL enabled = FALSE;
-wchar_t *targetAssembly = NULL;
+wchar_t *target_assembly = NULL;
 
 #define STR_EQUAL(str1, str2) (lstrcmpiW(str1, str2) == 0)
 
-inline void initConfigFile()
+inline void init_config_file()
 {
 	if (GetFileAttributesW(CONFIG_NAME) == INVALID_FILE_ATTRIBUTES)
 		return;
@@ -31,14 +31,14 @@ inline void initConfigFile()
 	else if (STR_EQUAL(enabledString, L"false"))
 		enabled = FALSE;
 
-	targetAssembly = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
+	target_assembly = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
 
 	LOG("Config; Target assembly: %S\n", targetAssembly);
 
 	memfree(configPath);
 }
 
-inline void initCmdArgs()
+inline void init_cmd_args()
 {
 	wchar_t *args = GetCommandLineW();
 	int argc = 0;
@@ -60,11 +60,11 @@ inline void initCmdArgs()
 		}
 		else if (IS_ARGUMENT(L"--doorstop-target"))
 		{
-			if (targetAssembly != NULL)
-				memfree(targetAssembly);
+			if (target_assembly != NULL)
+				memfree(target_assembly);
 			const size_t len = wcslen(argv[i + 1]) + 1;
-			targetAssembly = memalloc(sizeof(wchar_t) * len);
-			lstrcpynW(targetAssembly, argv[++i], len);
+			target_assembly = memalloc(sizeof(wchar_t) * len);
+			lstrcpynW(target_assembly, argv[++i], len);
 			LOG("Args; Target assembly: %S\n", targetAssembly);
 		}
 	}
@@ -72,7 +72,7 @@ inline void initCmdArgs()
 	LocalFree(argv);
 }
 
-inline void initEnvVars()
+inline void init_env_vars()
 {
 	if (GetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL, 0) != 0)
 	{
@@ -81,15 +81,15 @@ inline void initEnvVars()
 	}
 }
 
-inline void loadConfig()
+inline void load_config()
 {
-	initConfigFile();
-	initCmdArgs();
-	initEnvVars();
+	init_config_file();
+	init_cmd_args();
+	init_env_vars();
 }
 
-inline void cleanupConfig()
+inline void cleanup_config()
 {
-	if (targetAssembly != NULL)
-		memfree(targetAssembly);
+	if (target_assembly != NULL)
+		memfree(target_assembly);
 }
