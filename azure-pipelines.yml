@@ -34,57 +34,59 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'Proxy/bin/Win32/Release'
+    SourceFolder: '$(Build.SourcesDirectory)/Proxy/bin/Win32/Release'
     Contents: 'proxy.dll'
-    TargetFolder: '/dist/x86'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x86'
     OverWrite: true
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'Proxy/bin/x64/Release'
+    SourceFolder: '$(Build.SourcesDirectory)/Proxy/bin/x64/Release'
     Contents: 'proxy.dll'
-    TargetFolder: '/dist/x64'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x64'
     OverWrite: true
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'docs/'
+    SourceFolder: '$(Build.SourcesDirectory)/docs/'
     Contents: 'dist_readme.md,doorstop_config.ini'
-    TargetFolder: '/dist/x64'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x64'
     OverWrite: true
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'docs/'
+    SourceFolder: '$(Build.SourcesDirectory)/docs/'
     Contents: 'dist_readme.md,doorstop_config.ini'
-    TargetFolder: '/dist/x86'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x86'
     OverWrite: true
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'DoorstopTest/bin/Release'
+    SourceFolder: '$(Build.SourcesDirectory)/DoorstopTest/bin/Release'
     Contents: 'Doorstop.dll'
-    TargetFolder: '/dist/x86/Example.dll'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x86/Example.dll'
     OverWrite: true
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: 'DoorstopTest/bin/Release'
+    SourceFolder: '$(Build.SourcesDirectory)/DoorstopTest/bin/Release'
     Contents: 'Doorstop.dll'
-    TargetFolder: '/dist/x64/Example.dll'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x64/Example.dll'
     OverWrite: true
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: 'dist/x86'
-    archiveFile: 'bins/Doorstop_$(Build.BuildId)_x86.zip'
+    rootFolderOrFile: 'dist/x86/'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/Doorstop_$(Build.BuildId)_x86.zip'
+    includeRootFolder: false
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: 'dist/x64'
-    archiveFile: 'bins/Doorstop_$(Build.BuildId)_x64.zip'
+    rootFolderOrFile: 'dist/x64/'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/Doorstop_$(Build.BuildId)_x64.zip'
+    includeRootFolder: false
 
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: 'bins'
-    ArtifactName: 'Doorstop'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'Doorstop'    
