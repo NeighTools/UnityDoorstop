@@ -49,14 +49,18 @@ steps:
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/docs/'
-    Contents: 'dist_readme.md,doorstop_config.ini'
+    Contents: |
+     dist_readme.md
+     doorstop_config.ini
     TargetFolder: '$(Build.SourcesDirectory)/dist/x64'
     OverWrite: true
 
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/docs/'
-    Contents: 'dist_readme.md,doorstop_config.ini'
+    Contents: |
+     dist_readme.md
+     doorstop_config.ini
     TargetFolder: '$(Build.SourcesDirectory)/dist/x86'
     OverWrite: true
 
@@ -64,14 +68,14 @@ steps:
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/DoorstopTest/bin/Release'
     Contents: 'Doorstop.dll'
-    TargetFolder: '$(Build.SourcesDirectory)/dist/x86/Example.dll'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x86/Example'
     OverWrite: true
 
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/DoorstopTest/bin/Release'
     Contents: 'Doorstop.dll'
-    TargetFolder: '$(Build.SourcesDirectory)/dist/x64/Example.dll'
+    TargetFolder: '$(Build.SourcesDirectory)/dist/x64/Example'
     OverWrite: true
 
 - task: ArchiveFiles@2
