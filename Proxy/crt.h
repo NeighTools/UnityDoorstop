@@ -6,7 +6,7 @@ HANDLE hHeap;
 #define memcalloc(size) HeapAlloc(hHeap, HEAP_ZERO_MEMORY, size)
 #define memfree(mem) HeapFree(hHeap, 0, mem)
 
-#define STR_LEN(str) (sizeof(str) / sizeof(str[0]))
+#define STR_LEN(str) (sizeof(str) / sizeof((str)[0]))
 
 inline void *wmemcpy(wchar_t *dst, const wchar_t *src, size_t n)
 {
@@ -21,7 +21,7 @@ inline void *wmemset(wchar_t *dst, wchar_t c, size_t n)
 {
 	wchar_t *d = dst;
 	while (n--)
-		*d = c;
+		*d++ = c;
 	return dst;
 }
 
@@ -29,7 +29,7 @@ void *memset(void *dst, char c, int n)
 {
 	char *d = dst;
 	while (n--)
-		*d = c;
+		*d++ = c;
 	return dst;
 }
 
