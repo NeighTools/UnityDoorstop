@@ -3,6 +3,21 @@
 #include <windows.h>
 #include "crt.h"
 
+#define UNIX_TIME_START 0x019DB1DED53E8000
+#define TICKS_PER_SECOND 10000000
+
+inline ULONGLONG GetSystemTimeAsUnixTime()
+{
+	FILETIME ft;
+	GetSystemTimeAsFileTime(&ft); //returns ticks in UTC
+
+	LARGE_INTEGER li;
+	li.LowPart = ft.dwLowDateTime;
+	li.HighPart = ft.dwHighDateTime;
+
+	return (li.QuadPart - UNIX_TIME_START) / TICKS_PER_SECOND;
+}
+
 inline size_t get_module_path(HMODULE module, wchar_t **result, size_t *size, size_t free_space)
 {
 	size_t i = 0;

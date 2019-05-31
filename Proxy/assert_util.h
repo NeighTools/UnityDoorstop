@@ -8,7 +8,8 @@ char buffer[4096];
 
 inline void init_logger()
 {
-	log_handle = CreateFileA("doorstop.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
+	wsprintfA(buffer, "doorstop_%lu.log", GetSystemTimeAsUnixTime());
+	log_handle = CreateFileA(buffer, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
 	                         NULL);
 }
 
