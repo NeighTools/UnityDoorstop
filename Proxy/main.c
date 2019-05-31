@@ -142,6 +142,13 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	LOG("DLL Path: %S\n", dll_path);
 
+#if _VERBOSE
+	wchar_t* exe_path = NULL;
+	get_module_path(NULL, &exe_path, NULL, 0);
+
+	LOG("EXE Path: %S\n", exe_path);
+#endif
+
 	wchar_t *dll_name = get_file_name_no_ext(dll_path, dll_path_len);
 
 	LOG("Doorstop DLL Name: %S\n", dll_name);
