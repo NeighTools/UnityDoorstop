@@ -33,7 +33,7 @@ inline void init_config_file()
 
 	target_assembly = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
 
-	LOG("Config; Target assembly: %S\n", targetAssembly);
+	LOG("Config; Target assembly: %S\n", target_assembly);
 
 	memfree(configPath);
 }
@@ -65,7 +65,7 @@ inline void init_cmd_args()
 			const size_t len = wcslen(argv[i + 1]) + 1;
 			target_assembly = memalloc(sizeof(wchar_t) * len);
 			lstrcpynW(target_assembly, argv[++i], len);
-			LOG("Args; Target assembly: %S\n", targetAssembly);
+			LOG("Args; Target assembly: %S\n", target_assembly);
 		}
 	}
 
