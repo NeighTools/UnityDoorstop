@@ -155,6 +155,10 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	if (enabled)
 	{
 		LOG("Doorstop enabled!\n");
+
+		// Disable Doorstop to ensure we only run one instance of it
+		SetEnvironmentVariableW(L"DOORSTOP_DISABLE", L"TRUE");
+
 		ASSERT_SOFT(GetFileAttributesW(target_assembly) != INVALID_FILE_ATTRIBUTES, TRUE);
 
 		HMODULE targetModule = GetModuleHandleA("UnityPlayer");
@@ -178,7 +182,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	}
 	else
 	{
-		LOG("Doorstop dissabled! memfreeing resources\n");
+		LOG("Doorstop disabled! memfreeing resources\n");
 		free_logger();
 	}
 
