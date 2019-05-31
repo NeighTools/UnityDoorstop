@@ -30,8 +30,6 @@
 #include "assert_util.h"
 #include "proxy.h"
 
-EXTERN_C IMAGE_DOS_HEADER __ImageBase; // This is provided by MSVC with the infomration about this DLL
-
 // The hook for mono_jit_init_version
 // We use this since it will always be called once to initialize Mono's JIT
 void *init_doorstop(const char *root_domain_name, const char *runtime_version)
@@ -140,7 +138,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	LOG("Doorstop started!\n");
 
 	wchar_t *dll_path = NULL;
-	size_t dll_path_len = get_module_path((HINSTANCE)&__ImageBase, &dll_path, NULL, 0);
+	size_t dll_path_len = get_module_path(hInstDll, &dll_path, NULL, 0);
 
 	LOG("DLL Path: %S\n", dll_path);
 
