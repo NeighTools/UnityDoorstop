@@ -37,6 +37,9 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
 	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
 
+	// Set target assembly as an environment variable for use in the managed world
+	SetEnvironmentVariableW(L"DOORSTOP_INVOKE_DLL_PATH", target_assembly);
+	
 	size_t len = WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, NULL, 0, NULL, NULL);
 	char *dll_path = memalloc(sizeof(char) * len);
 	WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, dll_path, len, NULL, NULL);
