@@ -117,7 +117,10 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 void capture_managed_dir(char *assembly_dir, char *config_dir)
 {
 	LOG("Assembly dir: %s\n", assembly_dir);
-	SetEnvironmentVariableA("DOORSTOP_MANAGED_FOLDER_DIR", assembly_dir);
+	wchar_t* wide_assembly_dir = widen(assembly_dir);
+	SetEnvironmentVariableW(L"DOORSTOP_MANAGED_FOLDER_DIR", wide_assembly_dir);
+	memfree(wide_assembly_dir);
+
 	mono_set_dirs(assembly_dir, config_dir);
 }
 

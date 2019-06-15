@@ -18,6 +18,14 @@ inline ULONGLONG GetSystemTimeAsUnixTime()
 	return (li.QuadPart - UNIX_TIME_START) / TICKS_PER_SECOND;
 }
 
+inline wchar_t *widen(const char *str)
+{
+	size_t req_size = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+	wchar_t* result = memalloc(req_size);
+	MultiByteToWideChar(CP_UTF8, 0, str, -1, result, req_size);
+	return result;
+}
+
 inline size_t get_module_path(HMODULE module, wchar_t **result, size_t *size, size_t free_space)
 {
 	size_t i = 0;
