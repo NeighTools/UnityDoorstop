@@ -39,6 +39,14 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 	// Set target assembly as an environment variable for use in the managed world
 	SetEnvironmentVariableW(L"DOORSTOP_INVOKE_DLL_PATH", target_assembly);
+
+	// Set path to managed folder dir as an env variable
+	char* assembly_dir = mono_assembly_getrootdir();
+	LOG("Assembly dir: %s\n", assembly_dir);
+
+	wchar_t* wide_assembly_dir = widen(assembly_dir);
+	SetEnvironmentVariableW(L"DOORSTOP_MANAGED_FOLDER_DIR", wide_assembly_dir);
+	memfree(wide_assembly_dir);
 	
 	size_t len = WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, NULL, 0, NULL, NULL);
 	char *dll_path = memalloc(sizeof(char) * len);
@@ -112,39 +120,22 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	return domain;
 }
 
-// Hook for mono_set_dirs
-// Used to capture the location of Managed folder (in case it's not in form GameName_Data/Managed)
-void capture_managed_dir(char *assembly_dir, char *config_dir)
-{
-	LOG("Assembly dir: %s\n", assembly_dir);
-	wchar_t* wide_assembly_dir = widen(assembly_dir);
-	SetEnvironmentVariableW(L"DOORSTOP_MANAGED_FOLDER_DIR", wide_assembly_dir);
-	memfree(wide_assembly_dir);
-
-	mono_set_dirs(assembly_dir, config_dir);
-}
-
 BOOL initialized = FALSE;
 
 void * WINAPI get_proc_address_detour(HMODULE module, char const *name)
 {
-#define REDIRECT(from, to) \
-	if (lstrcmpA(name, #from) == 0) \
-	{ \
-		if (!initialized) \
-		{ \
-			initialized = TRUE; \
-			LOG("Got mono.dll at %p\n", module); \
-			load_mono_functions(module); \
-		} \
-		return (void*)&(to); \
+	if (lstrcmpA(name, "mono_jit_init_version") == 0)
+	{
+		if (!initialized)
+		{
+			initialized = TRUE;
+			LOG("Got mono.dll at %p\n", module);
+			load_mono_functions(module);
+		}
+		return (void*)& init_doorstop;
 	}
 
-	REDIRECT(mono_set_dirs, capture_managed_dir);
-	REDIRECT(mono_jit_init_version, init_doorstop);
 	return (void*)GetProcAddress(module, name);
-
-#undef REDIRECT
 }
 
 BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
