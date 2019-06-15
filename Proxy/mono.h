@@ -46,6 +46,8 @@ char *(*mono_array_addr_with_size)(void *arr, int size, uintptr_t idx);
 void *(*mono_get_string_class)();
 void *(*mono_string_new_utf16)(void *domain, const wchar_t *text, INT32 len);
 
+void* (*mono_set_dirs)(char *assembly_dir, char *config_dir);
+
 
 /**
 * \brief Loads Mono C API function pointers so that the above definitions can be called.
@@ -71,4 +73,5 @@ inline void load_mono_functions(HMODULE mono_lib)
 	GET_MONO_PROC(mono_string_new_utf16);
 	GET_MONO_PROC(mono_gc_wbarrier_set_arrayref);
 	GET_MONO_PROC(mono_array_addr_with_size);
+	GET_MONO_PROC(mono_set_dirs);
 }

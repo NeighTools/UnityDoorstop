@@ -112,21 +112,36 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	return domain;
 }
 
+// Hook for mono_set_dirs
+// Used to capture the location of Managed folder (in case it's not in form GameName_Data/Managed)
+void capture_managed_dir(char *assembly_dir, char *config_dir)
+{
+	LOG("Assembly dir: %s\n", assembly_dir);
+	SetEnvironmentVariableA("DOORSTOP_MANAGED_FOLDER_DIR", assembly_dir);
+	mono_set_dirs(assembly_dir, config_dir);
+}
+
 BOOL initialized = FALSE;
 
 void * WINAPI get_proc_address_detour(HMODULE module, char const *name)
 {
-	if (lstrcmpA(name, "mono_jit_init_version") == 0)
-	{
-		if (!initialized)
-		{
-			initialized = TRUE;
-			LOG("Got mono.dll at %p\n", module);
-			load_mono_functions(module);
-		}
-		return (void*)&init_doorstop;
+#define REDIRECT(from, to) \
+	if (lstrcmpA(name, #from) == 0) \
+	{ \
+		if (!initialized) \
+		{ \
+			initialized = TRUE; \
+			LOG("Got mono.dll at %p\n", module); \
+			load_mono_functions(module); \
+		} \
+		return (void*)&(to); \
 	}
+
+	REDIRECT(mono_set_dirs, capture_managed_dir);
+	REDIRECT(mono_jit_init_version, init_doorstop);
 	return (void*)GetProcAddress(module, name);
+
+#undef REDIRECT
 }
 
 BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
