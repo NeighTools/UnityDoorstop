@@ -21,7 +21,7 @@ inline ULONGLONG GetSystemTimeAsUnixTime()
 inline wchar_t *widen(const char *str)
 {
 	size_t req_size = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
-	wchar_t* result = memalloc(req_size);
+	wchar_t* result = memalloc(req_size * sizeof(wchar_t));
 	MultiByteToWideChar(CP_UTF8, 0, str, -1, result, req_size);
 	return result;
 }
