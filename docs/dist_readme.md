@@ -1,3 +1,7 @@
+Welcome to the Doorstop wiki!
+
+Here you can find information about Unity Doorstop.
+
 ## About Unity Doorstop
 
 Unity Doorstop (just Doorstop from now on) is a minimal tool to *execute a managed assembly* within Unity. Doorstop executes the assembly *before* Unity has the ability to modify its application domain, which means only `mscorlib.dll` is loaded when Doorstop executes the assembly.
@@ -8,14 +12,13 @@ Doorstop is released to the public domain under CC0 and can be distributed as-is
 
 ## Installation
 
-1. Put `winhttp.dll` into the game's root directory
+1. Put `version.dll` into the game's root directory
 2. In game's root directory, create a file `doorstop_config.ini` with the following contents:
 
 ```ini
 [UnityDoorstop]
 # Specifies whether assembly executing is enabled
 enabled=true
-
 # Specifies the path (absolute, or relative to the game's exe) to the DLL/EXE that should be executed by Doorstop
 targetAssembly=Doorstop.dll
 ```
@@ -27,7 +30,7 @@ targetAssembly=Doorstop.dll
 
 ## Using Doorstop to execute assemblies
 
-Doorstop will execute any managed .NET 3.5 assembly with a valid [entry point](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/main-and-command-args/). In nutshell any of the following signatures are considered a valid entry point:
+Doorstop will execute any managed .NET assembly (version depends on version of Mono used by the game) with a valid [entry point](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/main-and-command-args/). In nutshell any of the following signatures are considered a valid entry point:
 
 ```csharp
 public static void Main();
@@ -50,6 +53,16 @@ If the entry point provides `string[]` as parameter, Doorstop will provide the f
 thus, the first parameter is the *path to the game's executable*, because the assembly will be run within the game's process. This frees the developer from importing `System.dll` and doing the lookup manually.
 
 The second argument is as a hint for the assembly that it was invoked by Doorstop and that it is running within the Unity Root Domain.
+
+## Environment variables
+
+In addition to command line arguments, Doorstop passes some important paths via environment variables that you can access using `Environment.GetEnvironmentVariable`. Doorstop adds the following variables:
+
+| Variable | Description |
+|----------|------------ |
+| `DOORSTOP_DISABLE` | A helper environment variable that disabled Doorstop execution. Can be set to `TRUE` by the user to disable Doorstop (in addition to other ways to disable it discussed below). |
+| `DOORSTOP_INVOKE_DLL_PATH` | Path to the assembly that was invoked via Doorstop. Contains the same value as in `targetAssembly` configuration option in the config file. |
+| `DOORSTOP_MANAGED_FOLDER_DIR` | Full path to the game's `Managed` folder that contains all the game's managed assemblies |
 
 ### Assembly references
 
@@ -84,4 +97,3 @@ To use the feature, run the game with the following command-line arguments:
 * `--doorstop-target`: Target DLL to execute. Allows a path to the DLL.
 
 If both configuration file and command-line arguments are present **command-line arguments take precedence*.*
-
