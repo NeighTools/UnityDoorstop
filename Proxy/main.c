@@ -40,6 +40,30 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 	mono_thread_set_main(mono_thread_current());
 
+	if(mono_domain_set_config)
+	{
+#define CONFIG_EXT L".config"
+
+		wchar_t *exe_path = NULL;
+		const size_t real_len = get_module_path(NULL, &exe_path, NULL, STR_LEN(CONFIG_EXT));
+		wchar_t *folder_name = get_folder_name(exe_path, real_len);
+		wmemcpy(exe_path + real_len, CONFIG_EXT, STR_LEN(CONFIG_EXT));
+
+		char *exe_path_n = narrow(exe_path);
+		char *folder_path_n = narrow(folder_name);
+
+		LOG("Setting config paths: base dir: %s; config path: %s\n", folder_path_n, exe_path_n);
+
+		mono_domain_set_config(domain, folder_path_n, exe_path_n);
+
+		memfree(exe_path);
+		memfree(folder_name);
+		memfree(exe_path_n);
+		memfree(folder_path_n);
+
+#undef CONFIG_EXT
+	}
+
 	// Set target assembly as an environment variable for use in the managed world
 	SetEnvironmentVariableW(L"DOORSTOP_INVOKE_DLL_PATH", target_assembly);
 
@@ -91,7 +115,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 		// Populate it as follows
 		// 0 => path to the game's executable
 		// 1 => --doorstop-invoke
-
+		
 		get_module_path(NULL, &app_path, NULL, 0);
 
 		void *exe_path = MONO_STRING(app_path);

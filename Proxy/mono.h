@@ -42,6 +42,8 @@ void *(*mono_method_desc_search_in_image)(void *desc, void *image);
 void *(*mono_method_signature)(void *method);
 UINT32 (*mono_signature_get_param_count)(void *sig);
 
+void (*mono_domain_set_config)(void* domain, char* base_dir, char* config_file_name);
+
 void *(*mono_array_new)(void *domain, void *eclass, uintptr_t n);
 void (*mono_gc_wbarrier_set_arrayref)(void *arr, void *slot_ptr, void *value);
 char *(*mono_array_addr_with_size)(void *arr, int size, uintptr_t idx);
@@ -79,4 +81,5 @@ inline void load_mono_functions(HMODULE mono_lib)
 	GET_MONO_PROC(mono_assembly_getrootdir);
 	GET_MONO_PROC(mono_thread_current);
 	GET_MONO_PROC(mono_thread_set_main);
+	GET_MONO_PROC(mono_domain_set_config);
 }

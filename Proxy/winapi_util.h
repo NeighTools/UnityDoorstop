@@ -26,6 +26,14 @@ inline wchar_t *widen(const char *str)
 	return result;
 }
 
+inline char *narrow(const wchar_t *str)
+{
+	size_t req_size = WideCharToMultiByte(CP_UTF8, 0, str, -1, NULL, 0, NULL, NULL);
+	char* result = memalloc(req_size * sizeof(char));
+	WideCharToMultiByte(CP_UTF8, 0, str, -1, result, req_size, NULL, NULL);
+	return result;
+}
+
 inline size_t get_module_path(HMODULE module, wchar_t **result, size_t *size, size_t free_space)
 {
 	size_t i = 0;
@@ -40,7 +48,7 @@ inline size_t get_module_path(HMODULE module, wchar_t **result, size_t *size, si
 		*result = memalloc(sizeof(wchar_t) * s);
 		len = GetModuleFileNameW(module, *result, s);
 	}
-	while (GetLastError() == ERROR_INSUFFICIENT_BUFFER && s - len >= free_space);
+	while (GetLastError() == ERROR_INSUFFICIENT_BUFFER || s - len < free_space);
 
 	if (size != NULL)
 		*size = s;
@@ -66,6 +74,22 @@ inline wchar_t *get_ini_entry(const wchar_t *config_file, const wchar_t *section
 	return result;
 }
 
+inline wchar_t *get_folder_name(wchar_t* str, size_t len)
+{
+	size_t i;
+	for (i = len; i > 0; i--)
+	{
+		wchar_t c = *(str + i);
+		if (c == L'\\' || c == L'/')
+			break;
+	}
+
+	size_t result_len = i + 1;
+	wchar_t* result = memcalloc(sizeof(wchar_t) * (result_len + 1));
+	wmemcpy(result, str, result_len);
+	return result;
+}
+
 inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len)
 {
 	size_t ext_index = len;
@@ -75,7 +99,7 @@ inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len)
 		wchar_t c = *(str + i);
 		if (c == L'.' && ext_index == len)
 			ext_index = i;
-		else if (c == L'\\')
+		else if (c == L'\\' || c == L'/')
 			break;
 	}
 
