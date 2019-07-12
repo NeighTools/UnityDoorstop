@@ -29,6 +29,9 @@
 // This way we don't need to include or define any of Mono's structs, which saves space
 // This, obviously, comes with a drawback of not being able to easily access the contents of the structs
 
+void* (*mono_thread_current)();
+void (*mono_thread_set_main)(void*);
+
 void *(*mono_jit_init_version)(const char *root_domain_name, const char *runtime_version);
 void *(*mono_domain_assembly_open)(void *domain, const char *name);
 void *(*mono_assembly_get_image)(void *assembly);
@@ -74,4 +77,6 @@ inline void load_mono_functions(HMODULE mono_lib)
 	GET_MONO_PROC(mono_gc_wbarrier_set_arrayref);
 	GET_MONO_PROC(mono_array_addr_with_size);
 	GET_MONO_PROC(mono_assembly_getrootdir);
+	GET_MONO_PROC(mono_thread_current);
+	GET_MONO_PROC(mono_thread_set_main);
 }

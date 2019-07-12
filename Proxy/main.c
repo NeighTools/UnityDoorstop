@@ -34,8 +34,11 @@
 // We use this since it will always be called once to initialize Mono's JIT
 void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 {
+	LOG("Starting mono domain\n");
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
 	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
+
+	mono_thread_set_main(mono_thread_current());
 
 	// Set target assembly as an environment variable for use in the managed world
 	SetEnvironmentVariableW(L"DOORSTOP_INVOKE_DLL_PATH", target_assembly);
@@ -131,6 +134,7 @@ void * WINAPI get_proc_address_detour(HMODULE module, char const *name)
 			initialized = TRUE;
 			LOG("Got mono.dll at %p\n", module);
 			load_mono_functions(module);
+			LOG("Loaded all mono.dll functions\n");
 		}
 		return (void*)& init_doorstop;
 	}
