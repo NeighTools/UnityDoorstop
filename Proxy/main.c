@@ -35,6 +35,15 @@
 void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 {
 	LOG("Starting mono domain\n");
+
+#if _VERBOSE
+	HANDLE stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	LOG("STDOUT handle at %p\n", stdout);
+	char handlepath[2046] = "\0";
+	GetFinalPathNameByHandleA(stdout, handlepath, 2046, 0);
+	LOG("STDOUT handle path: %s\n", handlepath);
+#endif
+
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
 	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
 
@@ -166,6 +175,15 @@ void * WINAPI get_proc_address_detour(HMODULE module, char const *name)
 	return (void*)GetProcAddress(module, name);
 }
 
+HANDLE stdoutHandle = NULL;
+
+BOOL WINAPI close_handle_hook(HANDLE handle)
+{
+	if (stdoutHandle && handle == stdoutHandle)
+		return TRUE;
+	return CloseHandle(handle);
+}
+
 BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 {
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
@@ -176,6 +194,16 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	init_logger();
 
 	LOG("Doorstop started!\n");
+
+	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+#if _VERBOSE
+	LOG("STDOUT handle at %p\n", stdoutHandle);
+	char handlepath[2046] = "\0";
+	GetFinalPathNameByHandleA(stdoutHandle, handlepath, 2046, 0);
+	LOG("Pointer to GetFinalPathNameByHandleA %p\n", &GetFinalPathNameByHandleA);
+	LOG("STDOUT handle path: %s\n", handlepath);
+#endif
 
 	wchar_t *dll_path = NULL;
 	size_t dll_path_len = get_module_path(hInstDll, &dll_path, NULL, 0);
@@ -212,7 +240,8 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		}
 
 		LOG("Installing IAT hook\n");
-		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &get_proc_address_detour))
+		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &get_proc_address_detour) || 
+			!iat_hook(targetModule, "kernel32.dll", &CloseHandle, &close_handle_hook))
 		{
 			LOG("Failed to install IAT hook!\n");
 			free_logger();
