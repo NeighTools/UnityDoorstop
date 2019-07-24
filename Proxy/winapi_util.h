@@ -108,3 +108,12 @@ inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len)
 	wmemcpy(result, str + i + 1, result_len - 1);
 	return result;
 }
+
+
+inline wchar_t *get_full_path(wchar_t *str, size_t len)
+{
+	size_t needed = GetFullPathNameW(str, 0, NULL, NULL);
+	wchar_t* res = memalloc(sizeof(wchar_t) * needed);
+	GetFullPathNameW(str, needed, res, NULL);
+	return res;
+}

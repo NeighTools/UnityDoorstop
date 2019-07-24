@@ -31,10 +31,12 @@ inline void init_config_file()
 	else if (STR_EQUAL(enabledString, L"false"))
 		enabled = FALSE;
 
-	target_assembly = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
+	wchar_t *tmp = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
+	target_assembly = get_full_path(tmp, wcslen(tmp));
 
 	LOG("Config; Target assembly: %S\n", target_assembly);
 
+	memfree(tmp);
 	memfree(configPath);
 }
 
