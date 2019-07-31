@@ -55,7 +55,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 		wchar_t *exe_path = NULL;
 		const size_t real_len = get_module_path(NULL, &exe_path, NULL, STR_LEN(CONFIG_EXT));
-		wchar_t *folder_name = get_folder_name(exe_path, real_len);
+		wchar_t *folder_name = get_folder_name(exe_path, real_len, TRUE);
 		wmemcpy(exe_path + real_len, CONFIG_EXT, STR_LEN(CONFIG_EXT));
 
 		char *exe_path_n = narrow(exe_path);
@@ -191,9 +191,33 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	hHeap = GetProcessHeap();
 
-	init_logger();
+	wchar_t* app_path = NULL;
+	size_t app_path_len = get_module_path(NULL, &app_path, NULL, 0);
+	wchar_t* app_dir = get_folder_name(app_path, app_path_len, FALSE);
+	BOOL fixedCWD = FALSE;
 
+	wchar_t* working_dir = NULL;
+	get_working_dir(&working_dir);
+
+	if (lstrcmpiW(app_dir, working_dir) != 0)
+	{
+		fixedCWD = TRUE;
+		SetCurrentDirectoryW(app_dir);
+	}
+
+	init_logger();
+	
 	LOG("Doorstop started!\n");
+
+	LOG("App dir: %S\n", app_dir);
+	LOG("Working dir: %S\n", working_dir);
+
+	if(fixedCWD)
+		LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");
+	
+	memfree(app_path);
+	memfree(app_dir);
+	memfree(working_dir);
 
 	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 

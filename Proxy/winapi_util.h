@@ -74,7 +74,7 @@ inline wchar_t *get_ini_entry(const wchar_t *config_file, const wchar_t *section
 	return result;
 }
 
-inline wchar_t *get_folder_name(wchar_t* str, size_t len)
+inline wchar_t *get_folder_name(wchar_t* str, size_t len, BOOL with_separator)
 {
 	size_t i;
 	for (i = len; i > 0; i--)
@@ -84,7 +84,7 @@ inline wchar_t *get_folder_name(wchar_t* str, size_t len)
 			break;
 	}
 
-	size_t result_len = i + 1;
+	size_t result_len = i + (with_separator ? 1 : 0);
 	wchar_t* result = memcalloc(sizeof(wchar_t) * (result_len + 1));
 	wmemcpy(result, str, result_len);
 	return result;
@@ -116,4 +116,12 @@ inline wchar_t *get_full_path(wchar_t *str, size_t len)
 	wchar_t* res = memalloc(sizeof(wchar_t) * needed);
 	GetFullPathNameW(str, needed, res, NULL);
 	return res;
+}
+
+inline size_t get_working_dir(wchar_t** result)
+{
+	size_t len = GetCurrentDirectoryW(0, NULL);
+	*result = memalloc(sizeof(wchar_t) * len);
+	GetCurrentDirectoryW(len, *result);
+	return len;
 }
