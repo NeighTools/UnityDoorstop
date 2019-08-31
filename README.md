@@ -29,8 +29,8 @@ Developers should package Doorstop into their applications for the end-users.
 To build, you will need:
 
 * PowerShell 2.0 or newer
-* Visual Studio 2017 (2015 might work as well with some modifications)
-* Visual C++ Toolset v140
+* Visual Studio 2019 (2015 might work as well with some modifications)
+* Visual C++ Toolset v142
 * .NET Framework 3.5 or newer (only for the example, not used by the proxy)
 
 Clone, open in Visual Studio, select the platform (x86/x64) and build.
@@ -42,6 +42,6 @@ You can modify which functions are proxied by adding/removing entries in dll.def
 
 The current set up allows to use the proxy for the following DLLs:
 
-* `version.dll` (All exports)
+* `winhttp.dll` (All exports)
 
 (WIP: Currently all build results are placed in separate folders; will be changed later)
