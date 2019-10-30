@@ -8,7 +8,7 @@ char buffer[4096];
 
 inline void init_logger()
 {
-	wsprintfA(buffer, "doorstop_%lu.log", GetSystemTimeAsUnixTime());
+	wsprintfA(buffer, "doorstop_%lx.log", GetTickCount64());
 	log_handle = CreateFileA(buffer, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
 	                         NULL);
 }
