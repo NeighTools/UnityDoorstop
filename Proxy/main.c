@@ -184,6 +184,21 @@ BOOL WINAPI close_handle_hook(HANDLE handle)
 	return CloseHandle(handle);
 }
 
+
+wchar_t* new_cmdline_args = NULL;
+LPWSTR WINAPI get_command_line_hook()
+{
+	if(new_cmdline_args)
+		return new_cmdline_args;
+	return GetCommandLineW();
+}
+
+#define LOG_FILE_CMD_START L" -logFile \""
+#define LOG_FILE_CMD_START_LEN STR_LEN(LOG_FILE_CMD_START)
+
+#define LOG_FILE_CMD_END L"\\output_log.txt\""
+#define LOG_FILE_CMD_END_LEN STR_LEN(LOG_FILE_CMD_END)
+
 BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 {
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
@@ -215,10 +230,6 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	if(fixedCWD)
 		LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");
 	
-	memfree(app_path);
-	memfree(app_dir);
-	memfree(working_dir);
-
 	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 #if _VERBOSE
@@ -248,6 +259,22 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	load_proxy(dll_name);
 	load_config();
 
+	if(redirect_output_log)
+	{
+		wchar_t* cmd = GetCommandLineW();
+		size_t app_dir_len = wcslen(app_dir);
+		size_t cmd_len = wcslen(cmd);
+		size_t new_cmd_size = cmd_len + LOG_FILE_CMD_START_LEN + app_path_len + LOG_FILE_CMD_END_LEN + 1024;
+		new_cmdline_args = memcalloc(sizeof(wchar_t) * new_cmd_size); // Add some padding in case some hook does the "conventional" replace
+		wmemcpy(new_cmdline_args, cmd, cmd_len);
+		wmemcpy(new_cmdline_args + cmd_len - 1, LOG_FILE_CMD_START, LOG_FILE_CMD_START_LEN);
+		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN - 1 - 1, app_dir, app_dir_len);
+		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len - 1 - 1, LOG_FILE_CMD_END, LOG_FILE_CMD_END_LEN);
+
+		LOG("Redirected output log!\n");
+		LOG("CMDLine: %S\n", new_cmdline_args);
+	}
+
 	// If the loader is disabled, don't inject anything.
 	if (enabled)
 	{
@@ -265,7 +292,8 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 		LOG("Installing IAT hook\n");
 		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &get_proc_address_detour) || 
-			!iat_hook(targetModule, "kernel32.dll", &CloseHandle, &close_handle_hook))
+			!iat_hook(targetModule, "kernel32.dll", &CloseHandle, &close_handle_hook) ||
+			!iat_hook(targetModule, "kernel32.dll", &GetCommandLineW, &get_command_line_hook))
 		{
 			LOG("Failed to install IAT hook!\n");
 			free_logger();
@@ -286,6 +314,9 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	memfree(dll_name);
 	memfree(dll_path);
+	memfree(app_dir);
+	memfree(app_path);
+	memfree(working_dir);
 
 	return TRUE;
 }

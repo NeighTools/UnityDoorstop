@@ -10,6 +10,7 @@
 #define EXE_EXTENSION_LENGTH 4
 
 BOOL enabled = FALSE;
+BOOL redirect_output_log = FALSE;
 wchar_t *target_assembly = NULL;
 
 #define STR_EQUAL(str1, str2) (lstrcmpiW(str1, str2) == 0)
@@ -30,6 +31,14 @@ inline void init_config_file()
 		enabled = TRUE;
 	else if (STR_EQUAL(enabledString, L"false"))
 		enabled = FALSE;
+
+	wmemset(enabledString, '\0', 256);
+	GetPrivateProfileStringW(L"UnityDoorstop", L"redirectOutputLog", L"false", enabledString, 256, configPath);
+
+	if (STR_EQUAL(enabledString, L"true"))
+		redirect_output_log = TRUE;
+	else if (STR_EQUAL(enabledString, L"false"))
+		redirect_output_log = FALSE;
 
 	wchar_t *tmp = get_ini_entry(configPath, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY);
 	target_assembly = get_full_path(tmp, wcslen(tmp));
@@ -59,6 +68,15 @@ inline void init_cmd_args()
 				enabled = TRUE;
 			else if (STR_EQUAL(par, L"false"))
 				enabled = FALSE;
+		}
+		else if (IS_ARGUMENT(L"--redirect-output-log"))
+		{
+			wchar_t* par = argv[++i];
+
+			if (STR_EQUAL(par, L"true"))
+				redirect_output_log = TRUE;
+			else if (STR_EQUAL(par, L"false"))
+				redirect_output_log = FALSE;
 		}
 		else if (IS_ARGUMENT(L"--doorstop-target"))
 		{
