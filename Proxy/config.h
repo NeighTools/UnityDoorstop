@@ -71,7 +71,7 @@ inline void init_cmd_args()
 		}
 		else if (IS_ARGUMENT(L"--redirect-output-log"))
 		{
-			wchar_t* par = argv[++i];
+			wchar_t *par = argv[++i];
 
 			if (STR_EQUAL(par, L"true"))
 				redirect_output_log = TRUE;

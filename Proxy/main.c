@@ -49,7 +49,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 	mono_thread_set_main(mono_thread_current());
 
-	if(mono_domain_set_config)
+	if (mono_domain_set_config)
 	{
 #define CONFIG_EXT L".config"
 
@@ -77,13 +77,13 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	SetEnvironmentVariableW(L"DOORSTOP_INVOKE_DLL_PATH", target_assembly);
 
 	// Set path to managed folder dir as an env variable
-	char* assembly_dir = mono_assembly_getrootdir();
+	char *assembly_dir = mono_assembly_getrootdir();
 	LOG("Assembly dir: %s\n", assembly_dir);
 
-	wchar_t* wide_assembly_dir = widen(assembly_dir);
+	wchar_t *wide_assembly_dir = widen(assembly_dir);
 	SetEnvironmentVariableW(L"DOORSTOP_MANAGED_FOLDER_DIR", wide_assembly_dir);
 	memfree(wide_assembly_dir);
-	
+
 	size_t len = WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, NULL, 0, NULL, NULL);
 	char *dll_path = memalloc(sizeof(char) * len);
 	WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, dll_path, len, NULL, NULL);
@@ -124,7 +124,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 		// Populate it as follows
 		// 0 => path to the game's executable
 		// 1 => --doorstop-invoke
-		
+
 		get_module_path(NULL, &app_path, NULL, 0);
 
 		void *exe_path = MONO_STRING(app_path);
@@ -185,10 +185,11 @@ BOOL WINAPI close_handle_hook(HANDLE handle)
 }
 
 
-wchar_t* new_cmdline_args = NULL;
+wchar_t *new_cmdline_args = NULL;
+
 LPWSTR WINAPI get_command_line_hook()
 {
-	if(new_cmdline_args)
+	if (new_cmdline_args)
 		return new_cmdline_args;
 	return GetCommandLineW();
 }
@@ -206,12 +207,12 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	hHeap = GetProcessHeap();
 
-	wchar_t* app_path = NULL;
+	wchar_t *app_path = NULL;
 	size_t app_path_len = get_module_path(NULL, &app_path, NULL, 0);
-	wchar_t* app_dir = get_folder_name(app_path, app_path_len, FALSE);
+	wchar_t *app_dir = get_folder_name(app_path, app_path_len, FALSE);
 	BOOL fixedCWD = FALSE;
 
-	wchar_t* working_dir = NULL;
+	wchar_t *working_dir = NULL;
 	get_working_dir(&working_dir);
 
 	if (lstrcmpiW(app_dir, working_dir) != 0)
@@ -221,15 +222,15 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	}
 
 	init_logger();
-	
+
 	LOG("Doorstop started!\n");
 
 	LOG("App dir: %S\n", app_dir);
 	LOG("Working dir: %S\n", working_dir);
 
-	if(fixedCWD)
-		LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");
-	
+	if (fixedCWD)
+	LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");
+
 	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 #if _VERBOSE
@@ -259,17 +260,19 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	load_proxy(dll_name);
 	load_config();
 
-	if(redirect_output_log)
+	if (redirect_output_log)
 	{
-		wchar_t* cmd = GetCommandLineW();
+		wchar_t *cmd = GetCommandLineW();
 		size_t app_dir_len = wcslen(app_dir);
 		size_t cmd_len = wcslen(cmd);
 		size_t new_cmd_size = cmd_len + LOG_FILE_CMD_START_LEN + app_path_len + LOG_FILE_CMD_END_LEN + 1024;
-		new_cmdline_args = memcalloc(sizeof(wchar_t) * new_cmd_size); // Add some padding in case some hook does the "conventional" replace
+		new_cmdline_args = memcalloc(sizeof(wchar_t) * new_cmd_size);
+		// Add some padding in case some hook does the "conventional" replace
 		wmemcpy(new_cmdline_args, cmd, cmd_len);
 		wmemcpy(new_cmdline_args + cmd_len - 1, LOG_FILE_CMD_START, LOG_FILE_CMD_START_LEN);
 		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN - 1 - 1, app_dir, app_dir_len);
-		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len - 1 - 1, LOG_FILE_CMD_END, LOG_FILE_CMD_END_LEN);
+		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len - 1 - 1, LOG_FILE_CMD_END,
+		        LOG_FILE_CMD_END_LEN);
 
 		LOG("Redirected output log!\n");
 		LOG("CMDLine: %S\n", new_cmdline_args);
@@ -284,14 +287,14 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 		HMODULE targetModule = GetModuleHandleA("UnityPlayer");
 
-		if(targetModule == NULL)
+		if (targetModule == NULL)
 		{
 			LOG("No UnityPlayer.dll; using EXE as the hook target.");
 			targetModule = GetModuleHandleA(NULL);
 		}
 
 		LOG("Installing IAT hook\n");
-		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &get_proc_address_detour) || 
+		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &get_proc_address_detour) ||
 			!iat_hook(targetModule, "kernel32.dll", &CloseHandle, &close_handle_hook) ||
 			!iat_hook(targetModule, "kernel32.dll", &GetCommandLineW, &get_command_line_hook))
 		{

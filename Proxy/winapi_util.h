@@ -6,7 +6,7 @@
 inline wchar_t *widen(const char *str)
 {
 	size_t req_size = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
-	wchar_t* result = memalloc(req_size * sizeof(wchar_t));
+	wchar_t *result = memalloc(req_size * sizeof(wchar_t));
 	MultiByteToWideChar(CP_UTF8, 0, str, -1, result, req_size);
 	return result;
 }
@@ -14,7 +14,7 @@ inline wchar_t *widen(const char *str)
 inline char *narrow(const wchar_t *str)
 {
 	size_t req_size = WideCharToMultiByte(CP_UTF8, 0, str, -1, NULL, 0, NULL, NULL);
-	char* result = memalloc(req_size * sizeof(char));
+	char *result = memalloc(req_size * sizeof(char));
 	WideCharToMultiByte(CP_UTF8, 0, str, -1, result, req_size, NULL, NULL);
 	return result;
 }
@@ -59,7 +59,7 @@ inline wchar_t *get_ini_entry(const wchar_t *config_file, const wchar_t *section
 	return result;
 }
 
-inline wchar_t *get_folder_name(wchar_t* str, size_t len, BOOL with_separator)
+inline wchar_t *get_folder_name(wchar_t *str, size_t len, BOOL with_separator)
 {
 	size_t i;
 	for (i = len; i > 0; i--)
@@ -70,7 +70,7 @@ inline wchar_t *get_folder_name(wchar_t* str, size_t len, BOOL with_separator)
 	}
 
 	size_t result_len = i + (with_separator ? 1 : 0);
-	wchar_t* result = memcalloc(sizeof(wchar_t) * (result_len + 1));
+	wchar_t *result = memcalloc(sizeof(wchar_t) * (result_len + 1));
 	wmemcpy(result, str, result_len);
 	return result;
 }
@@ -98,12 +98,12 @@ inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len)
 inline wchar_t *get_full_path(wchar_t *str, size_t len)
 {
 	size_t needed = GetFullPathNameW(str, 0, NULL, NULL);
-	wchar_t* res = memalloc(sizeof(wchar_t) * needed);
+	wchar_t *res = memalloc(sizeof(wchar_t) * needed);
 	GetFullPathNameW(str, needed, res, NULL);
 	return res;
 }
 
-inline size_t get_working_dir(wchar_t** result)
+inline size_t get_working_dir(wchar_t **result)
 {
 	size_t len = GetCurrentDirectoryW(0, NULL);
 	*result = memalloc(sizeof(wchar_t) * len);
