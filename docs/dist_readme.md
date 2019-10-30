@@ -21,6 +21,8 @@ Doorstop is released to the public domain under CC0 and can be distributed as-is
 enabled=true
 # Specifies the path (absolute, or relative to the game's exe) to the DLL/EXE that should be executed by Doorstop
 targetAssembly=Doorstop.dll
+# Specifies whether Unity's output log should be redirected to <current folder>\output_log.txt
+redirectOutputLog=false
 ```
 
 3. Configure Doorstop to point to your DLL/EXE.
@@ -86,6 +88,9 @@ enabled=true
 
 # Specifies the path (absolute, or relative to the game's exe) to the DLL/EXE that should be executed by Doorstop
 targetAssembly=Doorstop.dll
+
+# Specifies whether Unity's output log should be redirected to <current folder>\output_log.txt
+redirectOutputLog=false
 ```
 
 ## Configuration via command-line arguments
@@ -93,7 +98,8 @@ targetAssembly=Doorstop.dll
 Alternatively, Doorstop 2.3+ supports supplying configuration options via command-line arguments.  
 To use the feature, run the game with the following command-line arguments:
 
-* `--doorstop-enable`: enable or disable Doorstop. Allowed values are `true` and `false`
+* `--doorstop-enable`: enable or disable Doorstop. Allowed values are `true` and `false`.
 * `--doorstop-target`: Target DLL to execute. Allows a path to the DLL.
+* `----redirect-output-log`: enable or disable redirecting output_log.txt to the game's root folder. Only for Unity 5+. Allowed values are `true` and `false`.
 
 If both configuration file and command-line arguments are present **command-line arguments take precedence*.*
