@@ -317,6 +317,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>DllEntry</EntryPointSymbol>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(SolutionDir)\scripts\genproxy.ps1 -projectPath $(ProjectDir) -templatePath $(SolutionDir)\scripts -arch $(PlatformArchitecture)</Command>
