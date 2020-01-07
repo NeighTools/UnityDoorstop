@@ -269,9 +269,9 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		new_cmdline_args = memcalloc(sizeof(wchar_t) * new_cmd_size);
 		// Add some padding in case some hook does the "conventional" replace
 		wmemcpy(new_cmdline_args, cmd, cmd_len);
-		wmemcpy(new_cmdline_args + cmd_len - 1, LOG_FILE_CMD_START, LOG_FILE_CMD_START_LEN);
-		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN - 1 - 1, app_dir, app_dir_len);
-		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len - 1 - 1, LOG_FILE_CMD_END,
+		wmemcpy(new_cmdline_args + cmd_len, LOG_FILE_CMD_START, LOG_FILE_CMD_START_LEN);
+		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN - 1, app_dir, app_dir_len);
+		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len - 1, LOG_FILE_CMD_END,
 		        LOG_FILE_CMD_END_LEN);
 
 		LOG("Redirected output log!\n");
