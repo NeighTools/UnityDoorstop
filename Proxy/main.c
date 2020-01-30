@@ -278,12 +278,16 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		LOG("CMDLine: %S\n", new_cmdline_args);
 	}
 
+	if (GetFileAttributesW(target_assembly) == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG("Could not find target assembly! Cannot enable!");
+		enabled = FALSE;
+	}
+	
 	// If the loader is disabled, don't inject anything.
 	if (enabled)
 	{
 		LOG("Doorstop enabled!\n");
-
-		ASSERT_SOFT(GetFileAttributesW(target_assembly) != INVALID_FILE_ATTRIBUTES, TRUE);
 
 		HMODULE targetModule = GetModuleHandleA("UnityPlayer");
 
