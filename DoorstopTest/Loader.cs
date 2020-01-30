@@ -15,6 +15,8 @@ namespace Doorstop
                 for (int i = 0; i < args.Length; i++)
                     tw.WriteLine($"{i} => {args[i]}");
 
+                tw.WriteLine($"Command line: {Environment.CommandLine}");
+
                 tw.WriteLine();
                 tw.WriteLine("Doorstop also set the following environment variables:");
                 tw.WriteLine($"DOORSTOP_INVOKE_PATH = {Environment.GetEnvironmentVariable("DOORSTOP_INVOKE_DLL_PATH")}");
