@@ -142,6 +142,9 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	LOG("Invoking method!\n");
 	mono_runtime_invoke(method, NULL, args, NULL);
 
+	// cleanup method_desc
+	mono_method_desc_free(desc);
+
 	if (args != NULL)
 	{
 		memfree(app_path);
