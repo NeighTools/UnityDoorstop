@@ -39,6 +39,7 @@ void *(*mono_runtime_invoke)(void *method, void *obj, void **params, void **exc)
 
 void *(*mono_method_desc_new)(const char *name, int include_namespace);
 void *(*mono_method_desc_search_in_image)(void *desc, void *image);
+void (*mono_method_desc_free)(void* desc);
 void *(*mono_method_signature)(void *method);
 UINT32 (*mono_signature_get_param_count)(void *sig);
 
@@ -71,6 +72,7 @@ inline void load_mono_functions(HMODULE mono_lib)
 	GET_MONO_PROC(mono_jit_init_version);
 	GET_MONO_PROC(mono_method_desc_new);
 	GET_MONO_PROC(mono_method_desc_search_in_image);
+	GET_MONO_PROC(mono_method_desc_free);
 	GET_MONO_PROC(mono_method_signature);
 	GET_MONO_PROC(mono_signature_get_param_count);
 	GET_MONO_PROC(mono_array_new);
