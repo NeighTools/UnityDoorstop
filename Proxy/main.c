@@ -33,7 +33,7 @@
 // The hook for mono_jit_init_version
 // We use this since it will always be called once to initialize Mono's JIT
 void *init_doorstop(const char *root_domain_name, const char *runtime_version)
-{
+{	
 	LOG("Starting mono domain\n");
 
 #if _VERBOSE
@@ -46,6 +46,15 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 	// Call the original mono_jit_init_version to initialize the Unity Root Domain
 	void *domain = mono_jit_init_version(root_domain_name, runtime_version);
+
+	if (GetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", NULL, 0) != 0)
+	{
+		LOG("DOORSTOP_INITIALIZED is set! Skipping!");
+		cleanup_config();
+		free_logger();
+		return domain;
+	}
+	SetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", L"TRUE");
 
 	mono_thread_set_main(mono_thread_current());
 
@@ -310,10 +319,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		}
 		else
 		{
-			LOG("Hook installed!\n");
-
-			// Disable Doorstop to ensure we only run one instance of it
-			SetEnvironmentVariableW(L"DOORSTOP_DISABLE", L"TRUE");
+			LOG("Hook installed!!\n");
 		}
 	}
 	else
