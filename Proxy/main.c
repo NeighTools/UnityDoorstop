@@ -97,12 +97,16 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	char *dll_path = memalloc(sizeof(char) * len);
 	WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, dll_path, len, NULL, NULL);
 
+	wchar_t *app_path = NULL;
+	get_module_path(NULL, &app_path, NULL, 0);
+	SetEnvironmentVariableW(L"DOORSTOP_PROCESS_PATH", app_path);
+	
 	LOG("Loading assembly: %s\n", dll_path);
 	// Load our custom assembly into the domain
 	void *assembly = mono_domain_assembly_open(domain, dll_path);
 
 	if (assembly == NULL)
-	LOG("Failed to load assembly\n");
+		LOG("Failed to load assembly\n");
 
 	memfree(dll_path);
 	ASSERT_SOFT(assembly != NULL, domain);
@@ -110,8 +114,6 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	// Get assembly's image that contains CIL code
 	void *image = mono_assembly_get_image(assembly);
 	ASSERT_SOFT(image != NULL, domain);
-
-	// Note: we use the runtime_invoke route since jit_exec will not work on DLLs
 
 	// Create a descriptor for a random Main method
 	void *desc = mono_method_desc_new("*:Main", FALSE);
@@ -126,28 +128,15 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	UINT32 params = mono_signature_get_param_count(signature);
 
 	void **args = NULL;
-	wchar_t *app_path = NULL;
 	if (params == 1)
 	{
 		// If there is a parameter, it's most likely a string[].
-		// Populate it as follows
-		// 0 => path to the game's executable
-		// 1 => --doorstop-invoke
-
-		get_module_path(NULL, &app_path, NULL, 0);
-
-		void *exe_path = MONO_STRING(app_path);
-		void *doorstop_handle = MONO_STRING(L"--doorstop-invoke");
-
 		void *args_array = mono_array_new(domain, mono_get_string_class(), 2);
-
-		SET_ARRAY_REF(args_array, 0, exe_path);
-		SET_ARRAY_REF(args_array, 1, doorstop_handle);
-
 		args = memalloc(sizeof(void*) * 1);
 		args[0] = args_array;
 	}
 
+	// Note: we use the runtime_invoke route since jit_exec will not work on DLLs
 	LOG("Invoking method!\n");
 	mono_runtime_invoke(method, NULL, args, NULL);
 

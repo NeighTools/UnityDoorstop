@@ -14,13 +14,6 @@
 // Creates a MonoString based from a C wide string
 #define MONO_STRING(str) mono_string_new_utf16(domain, str, wcslen(str))
 
-// Set MonoArray's index to a reference type value (i.e. string)
-#define SET_ARRAY_REF(arr, index, refVal) \
-	{ \
-		void **p = (void**) mono_array_addr_with_size(arr, sizeof(void*), index); \
-		mono_gc_wbarrier_set_arrayref(arr, p, refVal); \
-	}
-
 // Here we define the pointers to some functions within mono.dll
 // Note to C learners: these are not signature definitions, but rather "variable"
 // definitions with the function pointer type.
@@ -46,8 +39,6 @@ UINT32 (*mono_signature_get_param_count)(void *sig);
 void (*mono_domain_set_config)(void* domain, char* base_dir, char* config_file_name);
 
 void *(*mono_array_new)(void *domain, void *eclass, uintptr_t n);
-void (*mono_gc_wbarrier_set_arrayref)(void *arr, void *slot_ptr, void *value);
-char *(*mono_array_addr_with_size)(void *arr, int size, uintptr_t idx);
 
 void *(*mono_get_string_class)();
 void *(*mono_string_new_utf16)(void *domain, const wchar_t *text, INT32 len);
@@ -78,8 +69,6 @@ inline void load_mono_functions(HMODULE mono_lib)
 	GET_MONO_PROC(mono_array_new);
 	GET_MONO_PROC(mono_get_string_class);
 	GET_MONO_PROC(mono_string_new_utf16);
-	GET_MONO_PROC(mono_gc_wbarrier_set_arrayref);
-	GET_MONO_PROC(mono_array_addr_with_size);
 	GET_MONO_PROC(mono_assembly_getrootdir);
 	GET_MONO_PROC(mono_thread_current);
 	GET_MONO_PROC(mono_thread_set_main);
