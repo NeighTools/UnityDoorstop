@@ -203,6 +203,8 @@ LPWSTR WINAPI get_command_line_hook()
 
 BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved)
 {
+	if (reasonForDllLoad == DLL_PROCESS_DETACH)
+		SetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL);
 	if (reasonForDllLoad != DLL_PROCESS_ATTACH)
 		return TRUE;
 
@@ -226,6 +228,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	LOG("Doorstop started!\n");
 
+	LOG("EXE Path: %S\n", app_path);
 	LOG("App dir: %S\n", app_dir);
 	LOG("Working dir: %S\n", working_dir);
 
@@ -244,18 +247,9 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	wchar_t *dll_path = NULL;
 	size_t dll_path_len = get_module_path(hInstDll, &dll_path, NULL, 0);
-
 	LOG("DLL Path: %S\n", dll_path);
 
-#if _VERBOSE
-	wchar_t* exe_path = NULL;
-	get_module_path(NULL, &exe_path, NULL, 0);
-
-	LOG("EXE Path: %S\n", exe_path);
-#endif
-
 	wchar_t *dll_name = get_file_name_no_ext(dll_path, dll_path_len);
-
 	LOG("Doorstop DLL Name: %S\n", dll_name);
 
 	load_proxy(dll_name);
@@ -309,6 +303,8 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		else
 		{
 			LOG("Hook installed!!\n");
+			// Prevent other instances of Doorstop running in the same process
+			SetEnvironmentVariableW(L"DOORSTOP_DISABLE", L"TRUE");
 		}
 	}
 	else
