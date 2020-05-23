@@ -45,16 +45,12 @@ If Doorstop encounters multiple entry points, the result is undefined (in a way 
 
 ### Entry point arguments
 
-If the entry point provides `string[]` as parameter, Doorstop will provide the following array:
+> NOTE! Breaking change in 3.0.0.0
+> Starting 3.0.0.0, no values are passed to the array. This is to increase compatibility with older Unity versions.
+> Instead, use `DOORSTOP_PROCESS_PATH` (Or `Process.GetCurrentProcess().MainModule.FileName` is `System.Core` is included with the game).
 
-```csharp
-[0] => Process.GetCurrentProcess().MainModule.FileName
-[1] => "--doorstop-invoke"
-```
-
-thus, the first parameter is the *path to the game's executable*, because the assembly will be run within the game's process. This frees the developer from importing `System.dll` and doing the lookup manually.
-
-The second argument is as a hint for the assembly that it was invoked by Doorstop and that it is running within the Unity Root Domain.
+If the entry point provides `string[]` as parameter, Doorstop will provide an empty array to simulate running with no arguments.
+Use `Environment.CommandLine` to handle application's command line arguments.
 
 ## Environment variables
 
@@ -65,6 +61,7 @@ In addition to command line arguments, Doorstop passes some important paths via 
 | `DOORSTOP_DISABLE` | A helper environment variable that disabled Doorstop execution. Can be set to `TRUE` by the user to disable Doorstop (in addition to other ways to disable it discussed below). |
 | `DOORSTOP_INVOKE_DLL_PATH` | Path to the assembly that was invoked via Doorstop. Contains the same value as in `targetAssembly` configuration option in the config file. |
 | `DOORSTOP_MANAGED_FOLDER_DIR` | Full path to the game's `Managed` folder that contains all the game's managed assemblies |
+| `DOORSTOP_PROCESS_PATH` | Full path to the game's executable. Useful when game doesn't ship with `System.Core` or you if you want to patch it. |
 
 ### Assembly references
 
@@ -100,6 +97,6 @@ To use the feature, run the game with the following command-line arguments:
 
 * `--doorstop-enable`: enable or disable Doorstop. Allowed values are `true` and `false`.
 * `--doorstop-target`: Target DLL to execute. Allows a path to the DLL.
-* `----redirect-output-log`: enable or disable redirecting output_log.txt to the game's root folder. Only for Unity 5+. Allowed values are `true` and `false`.
+* `--redirect-output-log`: enable or disable redirecting output_log.txt to the game's root folder. Only for Unity 5+. Allowed values are `true` and `false`.
 
 If both configuration file and command-line arguments are present **command-line arguments take precedence*.*
