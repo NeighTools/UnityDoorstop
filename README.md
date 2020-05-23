@@ -11,6 +11,8 @@
 
 # Unity Doorstop
 
+*NOTE:* Version 3.0.0.0 brought some breaking changes to how command line arguments are passed. Refer to the release changelogs for more info.
+
 Doorstop is a tool to execute managed assemblies inside Unity as early as possible!
 
 This repository is indented mainly for developers!  
