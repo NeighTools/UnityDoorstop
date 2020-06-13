@@ -44,6 +44,7 @@ You can modify which functions are proxied by adding/removing entries in dll.def
 
 The current set up allows to use the proxy for the following DLLs:
 
-* `winhttp.dll` (All exports)
+* `winhttp.dll` (All exports, works better with Wine)
+* `version.dll` (All exports, better support for Unity 3)
 
-(WIP: Currently all build results are placed in separate folders; will be changed later)
+Simply rename the Doorstop DLL to use it as a different proxy (as long as the exports are included).

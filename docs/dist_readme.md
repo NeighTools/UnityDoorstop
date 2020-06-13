@@ -12,7 +12,7 @@ Doorstop is released to the public domain under CC0 and can be distributed as-is
 
 ## Installation
 
-1. Put `version.dll` into the game's root directory
+1. Put `winhttp.dll` into the game's root directory
 2. In game's root directory, create a file `doorstop_config.ini` with the following contents:
 
 ```ini
@@ -29,6 +29,13 @@ redirectOutputLog=false
     * *Alternatively*, extract `Example\Doorstop.dll` into the game's root folder and use the above configuration as-is.
 4. Run the game
     * If run with the example, a file named `doorstop_is_alive.txt` should appear in the game's root with the success message.
+
+## Using Doorstop as `version.dll` proxy
+
+The official releases allow you to use Doorstop as `version.dll` proxy as well.  
+While `winhttp.dll` has been tested to have better support running on Wine, `version.dll` 
+appears more functional with Unity 3 games. As such, you can choose between `winhttp` and `version` proxies 
+by simply renaming the Doorstop DLL.
 
 ## Using Doorstop to execute assemblies
 
