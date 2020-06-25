@@ -187,6 +187,7 @@ BOOL WINAPI close_handle_hook(HANDLE handle)
 
 
 wchar_t *new_cmdline_args = NULL;
+char *cmdline_args_narrow = NULL;
 
 LPWSTR WINAPI get_command_line_hook()
 {
@@ -195,7 +196,14 @@ LPWSTR WINAPI get_command_line_hook()
 	return GetCommandLineW();
 }
 
-#define LOG_FILE_CMD_START L" -logFile \""
+LPSTR WINAPI get_command_line_hook_narrow()
+{
+	if (cmdline_args_narrow)
+		return cmdline_args_narrow;
+	return GetCommandLineA();
+}
+
+#define LOG_FILE_CMD_START L" -logfile \""
 #define LOG_FILE_CMD_START_LEN STR_LEN(LOG_FILE_CMD_START)
 
 #define LOG_FILE_CMD_END L"\\output_log.txt\""
@@ -217,7 +225,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 
 	wchar_t *working_dir = NULL;
 	get_working_dir(&working_dir);
-
+	
 	if (lstrcmpiW(app_dir, working_dir) != 0)
 	{
 		fixedCWD = TRUE;
@@ -268,6 +276,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN - 1, app_dir, app_dir_len);
 		wmemcpy(new_cmdline_args + cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len - 1, LOG_FILE_CMD_END,
 		        LOG_FILE_CMD_END_LEN);
+		cmdline_args_narrow = narrow(new_cmdline_args);
 
 		LOG("Redirected output log!\n");
 		LOG("CMDLine: %S\n", new_cmdline_args);
@@ -284,18 +293,20 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	{
 		LOG("Doorstop enabled!\n");
 
-		HMODULE targetModule = GetModuleHandleA("UnityPlayer");
+		HMODULE target_module = GetModuleHandleA("UnityPlayer");
+		HMODULE app_module = GetModuleHandleA(NULL);
 
-		if (targetModule == NULL)
+		if (!target_module)
 		{
 			LOG("No UnityPlayer.dll; using EXE as the hook target.");
-			targetModule = GetModuleHandleA(NULL);
+			target_module = app_module;
 		}
 
 		LOG("Installing IAT hook\n");
-		if (!iat_hook(targetModule, "kernel32.dll", &GetProcAddress, &get_proc_address_detour) ||
-			!iat_hook(targetModule, "kernel32.dll", &CloseHandle, &close_handle_hook) ||
-			!iat_hook(targetModule, "kernel32.dll", &GetCommandLineW, &get_command_line_hook))
+		if (!iat_hook(target_module, "kernel32.dll", &GetProcAddress, &get_proc_address_detour) ||
+			!iat_hook(target_module, "kernel32.dll", &CloseHandle, &close_handle_hook) ||
+			!iat_hook(app_module, "kernel32.dll", &GetCommandLineW, &get_command_line_hook) ||
+			!iat_hook(app_module, "kernel32.dll", &GetCommandLineA, &get_command_line_hook_narrow))
 		{
 			LOG("Failed to install IAT hook!\n");
 			free_logger();
