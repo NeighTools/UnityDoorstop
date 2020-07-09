@@ -203,7 +203,7 @@ LPSTR WINAPI get_command_line_hook_narrow()
 	return GetCommandLineA();
 }
 
-#define LOG_FILE_CMD_START L" -logfile \""
+#define LOG_FILE_CMD_START L" -logFile \""
 #define LOG_FILE_CMD_START_LEN STR_LEN(LOG_FILE_CMD_START)
 
 #define LOG_FILE_CMD_END L"\\output_log.txt\""
@@ -306,7 +306,9 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		if (!iat_hook(target_module, "kernel32.dll", &GetProcAddress, &get_proc_address_detour) ||
 			!iat_hook(target_module, "kernel32.dll", &CloseHandle, &close_handle_hook) ||
 			!iat_hook(app_module, "kernel32.dll", &GetCommandLineW, &get_command_line_hook) ||
-			!iat_hook(app_module, "kernel32.dll", &GetCommandLineA, &get_command_line_hook_narrow))
+			!iat_hook(app_module, "kernel32.dll", &GetCommandLineA, &get_command_line_hook_narrow) ||
+			!iat_hook(target_module, "kernel32.dll", &GetCommandLineW, &get_command_line_hook) ||
+			!iat_hook(target_module, "kernel32.dll", &GetCommandLineA, &get_command_line_hook_narrow))
 		{
 			LOG("Failed to install IAT hook!\n");
 			free_logger();
