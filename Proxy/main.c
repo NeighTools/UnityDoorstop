@@ -307,8 +307,10 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 			!iat_hook(target_module, "kernel32.dll", &CloseHandle, &close_handle_hook) ||
 			!iat_hook(app_module, "kernel32.dll", &GetCommandLineW, &get_command_line_hook) ||
 			!iat_hook(app_module, "kernel32.dll", &GetCommandLineA, &get_command_line_hook_narrow) ||
-			!iat_hook(target_module, "kernel32.dll", &GetCommandLineW, &get_command_line_hook) ||
-			!iat_hook(target_module, "kernel32.dll", &GetCommandLineA, &get_command_line_hook_narrow))
+			target_module != app_module && (
+				!iat_hook(target_module, "kernel32.dll", &GetCommandLineW, &get_command_line_hook) ||
+				!iat_hook(target_module, "kernel32.dll", &GetCommandLineA, &get_command_line_hook_narrow)
+			))
 		{
 			LOG("Failed to install IAT hook!\n");
 			free_logger();
