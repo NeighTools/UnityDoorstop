@@ -15,7 +15,7 @@
 
 Doorstop is a tool to execute managed assemblies inside Unity as early as possible!
 
-This repository is indented mainly for developers!  
+This repository is intended mainly for developers!  
 Developers should package Doorstop into their applications for the end-users.
 
 ## Features
