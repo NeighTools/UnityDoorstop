@@ -24,6 +24,9 @@
     <ClCompile Include="proxy.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="crt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mono.h">

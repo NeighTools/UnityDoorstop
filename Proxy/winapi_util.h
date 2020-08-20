@@ -6,7 +6,7 @@
 inline wchar_t *widen(const char *str)
 {
 	size_t req_size = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
-	wchar_t *result = memalloc(req_size * sizeof(wchar_t));
+	wchar_t *result = malloc(req_size * sizeof(wchar_t));
 	MultiByteToWideChar(CP_UTF8, 0, str, -1, result, req_size);
 	return result;
 }
@@ -14,7 +14,7 @@ inline wchar_t *widen(const char *str)
 inline char *narrow(const wchar_t *str)
 {
 	size_t req_size = WideCharToMultiByte(CP_UTF8, 0, str, -1, NULL, 0, NULL, NULL);
-	char *result = memalloc(req_size * sizeof(char));
+	char *result = malloc(req_size * sizeof(char));
 	WideCharToMultiByte(CP_UTF8, 0, str, -1, result, req_size, NULL, NULL);
 	return result;
 }
@@ -27,10 +27,10 @@ inline size_t get_module_path(HMODULE module, wchar_t **result, size_t *size, si
 	do
 	{
 		if (*result != NULL)
-			memfree(*result);
+			free(*result);
 		i++;
 		s = i * MAX_PATH + 1;
-		*result = memalloc(sizeof(wchar_t) * s);
+		*result = malloc(sizeof(wchar_t) * s);
 		len = GetModuleFileNameW(module, *result, s);
 	}
 	while (GetLastError() == ERROR_INSUFFICIENT_BUFFER || s - len < free_space);
@@ -49,10 +49,10 @@ inline wchar_t *get_ini_entry(const wchar_t *config_file, const wchar_t *section
 	do
 	{
 		if (result != NULL)
-			memfree(result);
+			free(result);
 		i++;
 		size = i * MAX_PATH + 1;
-		result = memalloc(sizeof(wchar_t) * size);
+		result = malloc(sizeof(wchar_t) * size);
 		read = GetPrivateProfileStringW(section, key, default_val, result, size, config_file);
 	}
 	while (read == size - 1);
@@ -70,7 +70,7 @@ inline wchar_t *get_folder_name(wchar_t *str, size_t len, BOOL with_separator)
 	}
 
 	size_t result_len = i + (with_separator ? 1 : 0);
-	wchar_t *result = memcalloc(sizeof(wchar_t) * (result_len + 1));
+	wchar_t *result = calloc(result_len + 1, sizeof(wchar_t));
 	wmemcpy(result, str, result_len);
 	return result;
 }
@@ -89,7 +89,7 @@ inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len)
 	}
 
 	size_t result_len = ext_index - i;
-	wchar_t *result = memcalloc(sizeof(wchar_t) * result_len);
+	wchar_t *result = calloc(result_len, sizeof(wchar_t));
 	wmemcpy(result, str + i + 1, result_len - 1);
 	return result;
 }
@@ -98,7 +98,7 @@ inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len)
 inline wchar_t *get_full_path(wchar_t *str, size_t len)
 {
 	size_t needed = GetFullPathNameW(str, 0, NULL, NULL);
-	wchar_t *res = memalloc(sizeof(wchar_t) * needed);
+	wchar_t *res = malloc(sizeof(wchar_t) * needed);
 	GetFullPathNameW(str, needed, res, NULL);
 	return res;
 }
@@ -106,7 +106,7 @@ inline wchar_t *get_full_path(wchar_t *str, size_t len)
 inline size_t get_working_dir(wchar_t **result)
 {
 	size_t len = GetCurrentDirectoryW(0, NULL);
-	*result = memalloc(sizeof(wchar_t) * len);
+	*result = malloc(sizeof(wchar_t) * len);
 	GetCurrentDirectoryW(len, *result);
 	return len;
 }

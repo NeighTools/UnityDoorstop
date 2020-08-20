@@ -74,10 +74,10 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 		mono_domain_set_config(domain, folder_path_n, exe_path_n);
 
-		memfree(exe_path);
-		memfree(folder_name);
-		memfree(exe_path_n);
-		memfree(folder_path_n);
+		free(exe_path);
+		free(folder_name);
+		free(exe_path_n);
+		free(folder_path_n);
 
 #undef CONFIG_EXT
 	}
@@ -91,10 +91,10 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 	wchar_t *wide_assembly_dir = widen(assembly_dir);
 	SetEnvironmentVariableW(L"DOORSTOP_MANAGED_FOLDER_DIR", wide_assembly_dir);
-	memfree(wide_assembly_dir);
+	free(wide_assembly_dir);
 
 	size_t len = WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, NULL, 0, NULL, NULL);
-	char *dll_path = memalloc(sizeof(char) * len);
+	char *dll_path = malloc(sizeof(char) * len);
 	WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, dll_path, len, NULL, NULL);
 
 	wchar_t *app_path = NULL;
@@ -108,7 +108,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	if (assembly == NULL)
 		LOG("Failed to load assembly\n");
 
-	memfree(dll_path);
+	free(dll_path);
 	ASSERT_SOFT(assembly != NULL, domain);
 
 	// Get assembly's image that contains CIL code
@@ -132,7 +132,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 	{
 		// If there is a parameter, it's most likely a string[].
 		void *args_array = mono_array_new(domain, mono_get_string_class(), 2);
-		args = memalloc(sizeof(void*) * 1);
+		args = malloc(sizeof(void*) * 1);
 		args[0] = args_array;
 	}
 
@@ -145,8 +145,8 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version)
 
 	if (args != NULL)
 	{
-		memfree(app_path);
-		memfree(args);
+		free(app_path);
+		free(args);
 		args = NULL;
 	}
 
@@ -269,7 +269,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 		size_t app_dir_len = wcslen(app_dir);
 		size_t cmd_len = wcslen(cmd);
 		size_t new_cmd_size = cmd_len + LOG_FILE_CMD_START_LEN + app_path_len + LOG_FILE_CMD_END_LEN + 1024;
-		new_cmdline_args = memcalloc(sizeof(wchar_t) * new_cmd_size);
+		new_cmdline_args = calloc(new_cmd_size, sizeof(wchar_t));
 		// Add some padding in case some hook does the "conventional" replace
 		wmemcpy(new_cmdline_args, cmd, cmd_len);
 		wmemcpy(new_cmdline_args + cmd_len, LOG_FILE_CMD_START, LOG_FILE_CMD_START_LEN);
@@ -324,15 +324,15 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
 	}
 	else
 	{
-		LOG("Doorstop disabled! memfreeing resources\n");
+		LOG("Doorstop disabled! freeing resources\n");
 		free_logger();
 	}
 
-	memfree(dll_name);
-	memfree(dll_path);
-	memfree(app_dir);
-	memfree(app_path);
-	memfree(working_dir);
+	free(dll_name);
+	free(dll_path);
+	free(app_dir);
+	free(app_path);
+	free(working_dir);
 
 	return TRUE;
 }

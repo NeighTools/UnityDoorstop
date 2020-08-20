@@ -21,7 +21,7 @@ inline void init_config_file()
 		return;
 
 	const size_t len = GetFullPathNameW(CONFIG_NAME, 0, NULL, NULL);
-	wchar_t *configPath = memalloc(sizeof(wchar_t) * len);
+	wchar_t *configPath = malloc(sizeof(wchar_t) * len);
 	GetFullPathNameW(CONFIG_NAME, len, configPath, NULL);
 
 	wchar_t enabledString[256] = L"true";
@@ -45,8 +45,8 @@ inline void init_config_file()
 
 	LOG("Config; Target assembly: %S\n", target_assembly);
 
-	memfree(tmp);
-	memfree(configPath);
+	free(tmp);
+	free(configPath);
 }
 
 inline void init_cmd_args()
@@ -81,9 +81,9 @@ inline void init_cmd_args()
 		else if (IS_ARGUMENT(L"--doorstop-target"))
 		{
 			if (target_assembly != NULL)
-				memfree(target_assembly);
+				free(target_assembly);
 			const size_t len = wcslen(argv[i + 1]) + 1;
-			target_assembly = memalloc(sizeof(wchar_t) * len);
+			target_assembly = malloc(sizeof(wchar_t) * len);
 			lstrcpynW(target_assembly, argv[++i], len);
 			LOG("Args; Target assembly: %S\n", target_assembly);
 		}
@@ -111,5 +111,5 @@ inline void load_config()
 inline void cleanup_config()
 {
 	if (target_assembly != NULL)
-		memfree(target_assembly);
+		free(target_assembly);
 }

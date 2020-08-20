@@ -38,10 +38,10 @@ inline void free_logger()
 #define ASSERT_F(test, message, ...)												\
 	if(!(test))																		\
 	{																				\
-		wchar_t *buff = (wchar_t*)memalloc(sizeof(wchar_t) * 1024);					\
+		wchar_t *buff = (wchar_t*)malloc(sizeof(wchar_t) * 1024);					\
 		wsprintfW(buff, message, __VA_ARGS__);								\
 		MessageBox(NULL, buff, L"Doorstop: Fatal", MB_OK | MB_ICONERROR);			\
-		memfree(buff);																	\
+		free(buff);																	\
 		ExitProcess(EXIT_FAILURE);													\
 	}
 

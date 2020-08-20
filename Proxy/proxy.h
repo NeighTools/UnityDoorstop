@@ -30,16 +30,16 @@ inline void load_proxy(wchar_t *module_name)
 	size_t module_name_len = wcslen(module_name);
 
 	size_t alt_name_len = module_name_len + STR_LEN(ALT_POSTFIX);
-	wchar_t *alt_name = memalloc(sizeof(wchar_t) * alt_name_len);
+	wchar_t *alt_name = malloc(sizeof(wchar_t) * alt_name_len);
 	wmemcpy(alt_name, module_name, module_name_len);
 	wmemcpy(alt_name + module_name_len, ALT_POSTFIX, STR_LEN(ALT_POSTFIX));
 
 	wchar_t *dll_path = NULL; // The final DLL path
 
 	const int alt_full_path_len = GetFullPathNameW(alt_name, 0, NULL, NULL);
-	wchar_t *alt_full_path = memalloc(sizeof(wchar_t) * alt_full_path_len);
+	wchar_t *alt_full_path = malloc(sizeof(wchar_t) * alt_full_path_len);
 	GetFullPathNameW(alt_name, alt_full_path_len, alt_full_path, NULL);
-	memfree(alt_name);
+	free(alt_name);
 
 	LOG("Looking for original DLL from %S\n", alt_full_path);
 
@@ -49,7 +49,7 @@ inline void load_proxy(wchar_t *module_name)
 	if (handle == NULL)
 	{
 		size_t system_dir_len = GetSystemDirectoryW(NULL, 0);
-		dll_path = memalloc(sizeof(wchar_t) * (system_dir_len + module_name_len + STR_LEN(DLL_POSTFIX)));
+		dll_path = malloc(sizeof(wchar_t) * (system_dir_len + module_name_len + STR_LEN(DLL_POSTFIX)));
 		GetSystemDirectoryW(dll_path, system_dir_len);
 		dll_path[system_dir_len - 1] = L'\\';
 		wmemcpy(dll_path + system_dir_len, module_name, module_name_len);
@@ -63,8 +63,8 @@ inline void load_proxy(wchar_t *module_name)
 	ASSERT_F(handle != NULL, L"Unable to load the original %s.dll (looked from system directory and from %s_alt.dll)!",
 		module_name, module_name);
 
-	memfree(alt_full_path);
-	memfree(dll_path);
+	free(alt_full_path);
+	free(dll_path);
 
 	loadFunctions(handle);
 }
