@@ -12,7 +12,7 @@
 // More info: https://en.wikibooks.org/wiki/X86_Disassembly/Windows_Executable_Files#Relative_Virtual_Addressing_(RVA)
 //
 // This helper macro converts the saved RVA to a fully valid pointer to the data in the PE file
-#define RVA2PTR(t,base,rva) ((t)(((PCHAR) base) + rva))
+#define RVA2PTR(t,base,rva) ((t)(((PCHAR) (base)) + (rva)))
 
 /**
  * \brief Hooks the given function through the Import Address Table
