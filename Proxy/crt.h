@@ -1,5 +1,9 @@
 // ReSharper disable CppClangTidyReadabilityRedundantDeclaration
 // ReSharper disable IdentifierTypo
+/*
+ * Custom implementation for common C runtime functions
+ * This makes the DLL essentially freestanding on Windows without having to rely on msvcrt.dll
+ */
 #pragma once
 
 HANDLE h_heap;
