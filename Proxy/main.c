@@ -225,15 +225,17 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
     LOG("App dir: %S\n", app_dir);
     LOG("Working dir: %S\n", working_dir);
 
-    if (fixedCWD)
-    LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");
+    if (fixedCWD) {
+        LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");    
+    }
+    
 
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
     VERBOSE_ONLY({
-        LOG("STDOUT handle at %p\n", stdoutHandle);
+        LOG("STDOUT handle at %p\n", stdout_handle);
         char handlepath[2046] = "\0";
-        GetFinalPathNameByHandleA(stdoutHandle, handlepath, 2046, 0);
+        GetFinalPathNameByHandleA(stdout_handle, handlepath, 2046, 0);
         LOG("Pointer to GetFinalPathNameByHandleA %p\n", &GetFinalPathNameByHandleA);
         LOG("STDOUT handle path: %s\n", handlepath);
         });

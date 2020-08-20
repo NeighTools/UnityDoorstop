@@ -24,7 +24,7 @@ inline void free_logger()
 		WriteFile(log_handle, buffer, len, NULL, NULL); \
 	}
 
-#define VERBOSE_ONLY(block) (block)
+#define VERBOSE_ONLY(block) block
 #else
 inline void init_logger() {
 }
