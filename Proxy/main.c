@@ -127,7 +127,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
     void **args = NULL;
     if (params == 1) {
         // If there is a parameter, it's most likely a string[].
-        void *args_array = mono_array_new(domain, mono_get_string_class(), 2);
+        void *args_array = mono_array_new(domain, mono_get_string_class(), 0);
         args = malloc(sizeof(void*) * 1);
         args[0] = args_array;
     }
@@ -153,7 +153,6 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
 }
 
 BOOL initialized = FALSE;
-
 void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
     if (lstrcmpA(name, "mono_jit_init_version") == 0) {
         if (!initialized) {
@@ -168,10 +167,9 @@ void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
     return (void*)GetProcAddress(module, name);
 }
 
-HANDLE stdoutHandle = NULL;
-
+HANDLE stdout_handle = NULL;
 BOOL WINAPI close_handle_hook(HANDLE handle) {
-    if (stdoutHandle && handle == stdoutHandle)
+    if (stdout_handle && handle == stdout_handle)
         return TRUE;
     return CloseHandle(handle);
 }
@@ -179,7 +177,6 @@ BOOL WINAPI close_handle_hook(HANDLE handle) {
 
 wchar_t *new_cmdline_args = NULL;
 char *cmdline_args_narrow = NULL;
-
 LPWSTR WINAPI get_command_line_hook() {
     if (new_cmdline_args)
         return new_cmdline_args;
@@ -231,7 +228,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
     if (fixedCWD)
     LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");
 
-    stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
     VERBOSE_ONLY({
         LOG("STDOUT handle at %p\n", stdoutHandle);
