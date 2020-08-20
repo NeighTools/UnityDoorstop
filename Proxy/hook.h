@@ -23,42 +23,39 @@
  * \param detour_function Address of the detour function
  * \return TRUE if successful, otherwise FALSE
  */
-inline BOOL iat_hook(HMODULE dll, char const* target_dll, void *target_function, void *detour_function)
-{
-	IMAGE_DOS_HEADER *mz = (PIMAGE_DOS_HEADER)dll;
+inline BOOL iat_hook(HMODULE dll, char const *target_dll, void *target_function, void *detour_function) {
+    IMAGE_DOS_HEADER *mz = (PIMAGE_DOS_HEADER)dll;
 
-	IMAGE_NT_HEADERS *nt = RVA2PTR(PIMAGE_NT_HEADERS, mz, mz->e_lfanew);
+    IMAGE_NT_HEADERS *nt = RVA2PTR(PIMAGE_NT_HEADERS, mz, mz->e_lfanew);
 
-	IMAGE_IMPORT_DESCRIPTOR *imports = RVA2PTR(PIMAGE_IMPORT_DESCRIPTOR, mz, nt->OptionalHeader.DataDirectory[
-		IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+    IMAGE_IMPORT_DESCRIPTOR *imports = RVA2PTR(IMAGE_IMPORT_DESCRIPTOR*, mz, nt->OptionalHeader.DataDirectory[
+                                                   IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
 
-	for (int i = 0; imports[i].Characteristics; i++)
-	{
-		char *name = RVA2PTR(char*, mz, imports[i].Name);
+    for (int i = 0; imports[i].Characteristics; i++) {
+        char *name = RVA2PTR(char*, mz, imports[i].Name);
 
-		if(lstrcmpiA(name, target_dll) != 0)
-			continue;
+        if (lstrcmpiA(name, target_dll) != 0)
+            continue;
 
-		void **thunk = RVA2PTR(void**, mz, imports[i].FirstThunk);
+        void **thunk = RVA2PTR(void**, mz, imports[i].FirstThunk);
 
-		for (; thunk; thunk++)
-		{
-			void *import = *thunk;
+        for (; thunk; thunk++) {
+            void *import = *thunk;
 
-			if (import != target_function)
-				continue;
+            if (import != target_function)
+                continue;
 
-			DWORD oldState;
-			if (!VirtualProtect(thunk, sizeof(void*), PAGE_READWRITE, &oldState))
-				return FALSE;
+            DWORD old_state;
+            if (!VirtualProtect(thunk, sizeof(void*), PAGE_READWRITE, &old_state))
+                return FALSE;
 
-			*thunk = (void*)detour_function;
+            *thunk = (void*)detour_function;
 
-			VirtualProtect(thunk, sizeof(void*), oldState, &oldState);
+            VirtualProtect(thunk, sizeof(void*), old_state, &old_state);
 
-			return TRUE;
-		}
-	}
+            return TRUE;
+        }
+    }
 
-	return FALSE;
+    return FALSE;
 }

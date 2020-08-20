@@ -23,16 +23,17 @@ inline void free_logger()
 		size_t len = wsprintfA(buffer, message, __VA_ARGS__); \
 		WriteFile(log_handle, buffer, len, NULL, NULL); \
 	}
+
+#define VERBOSE_ONLY(block) (block)
 #else
-inline void init_logger()
-{
+inline void init_logger() {
 }
 
-inline void free_logger()
-{
+inline void free_logger() {
 }
 
-#define LOG(message, ...) 
+#define LOG(message, ...)
+#define VERBOSE_ONLY(block)
 #endif
 
 #define ASSERT_F(test, message, ...)												\
