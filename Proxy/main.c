@@ -228,7 +228,6 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
     if (fixedCWD) {
         LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");    
     }
-    
 
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
