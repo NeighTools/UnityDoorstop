@@ -187,7 +187,7 @@ int init_doorstop_il2cpp(const char *domain_name) {
     mono_set_assemblies_path(mono_corlib_dir_narrow);
     mono_config_parse(NULL);
 
-    void *domain = mono_jit_init_version("Doorstop Root Domain", "");
+    void *domain = mono_jit_init_version("Doorstop Root Domain", NULL);
     LOG("Created domain: %p\n", domain);
 
     doorstop_invoke(domain);
