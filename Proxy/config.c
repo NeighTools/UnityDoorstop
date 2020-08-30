@@ -51,7 +51,6 @@ BOOL load_bool_argv(wchar_t **argv, int *i, int argc, const wchar_t *arg_name, B
         else if (STR_EQUAL(par, L"false"))
             *value = FALSE;
         LOG("ARGV: %S = %S\n", arg_name, par);
-        (*i)++;
         return TRUE;
     }
     return FALSE;
@@ -65,7 +64,6 @@ BOOL load_path_argv(wchar_t **argv, int *i, int argc, const wchar_t *arg_name, w
         *value = malloc(sizeof(wchar_t) * len);
         wmemcpy(*value, argv[++*i], len);
         LOG("ARGV: %S = %S\n", arg_name, *value);
-        (*i)++;
         return TRUE;
     }
     return FALSE;
@@ -80,7 +78,7 @@ inline void init_cmd_args() {
     if (parser(argv, &i, argc, name, &(dest)))  \
         continue;
 
-    for (int i = 0; i < argc;) {
+    for (int i = 0; i < argc; i++) {
         PARSE_ARG(L"--doorstop-enable", config.enabled, load_bool_argv);
         PARSE_ARG(L"--redirect-output-log", config.redirect_output_log, load_bool_argv);
         PARSE_ARG(L"--doorstop-target", config.target_assembly, load_path_argv);

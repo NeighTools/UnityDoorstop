@@ -26,15 +26,14 @@
 
 #include "config.h"
 #include "mono.h"
+#include "il2cpp.h"
 #include "hook.h"
 #include "assert_util.h"
 #include "proxy.h"
 
 // The hook for mono_jit_init_version
 // We use this since it will always be called once to initialize Mono's JIT
-void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
-    LOG("Starting mono domain\n");
-
+void doorstop_invoke(void *domain) {
     VERBOSE_ONLY({
         HANDLE stdout = GetStdHandle(STD_OUTPUT_HANDLE);
         LOG("STDOUT handle at %p\n", stdout);
@@ -43,14 +42,12 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
         LOG("STDOUT handle path: %s\n", handlepath);
         });
 
-    // Call the original mono_jit_init_version to initialize the Unity Root Domain
-    void *domain = mono_jit_init_version(root_domain_name, runtime_version);
 
     if (GetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", NULL, 0) != 0) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!");
         cleanup_config();
         free_logger();
-        return domain;
+        return;
     }
     SetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", L"TRUE");
 
@@ -80,7 +77,7 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
     }
 
     // Set target assembly as an environment variable for use in the managed world
-    SetEnvironmentVariableW(L"DOORSTOP_INVOKE_DLL_PATH", target_assembly);
+    SetEnvironmentVariableW(L"DOORSTOP_INVOKE_DLL_PATH", config.target_assembly);
 
     // Set path to managed folder dir as an env variable
     char *assembly_dir = mono_assembly_getrootdir();
@@ -90,9 +87,9 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
     SetEnvironmentVariableW(L"DOORSTOP_MANAGED_FOLDER_DIR", wide_assembly_dir);
     free(wide_assembly_dir);
 
-    const int len = WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, NULL, 0, NULL, NULL);
+    const int len = WideCharToMultiByte(CP_UTF8, 0, config.target_assembly, -1, NULL, 0, NULL, NULL);
     char *dll_path = malloc(sizeof(char) * len);
-    WideCharToMultiByte(CP_UTF8, 0, target_assembly, -1, dll_path, len, NULL, NULL);
+    WideCharToMultiByte(CP_UTF8, 0, config.target_assembly, -1, dll_path, len, NULL, NULL);
 
     wchar_t *app_path = NULL;
     get_module_path(NULL, &app_path, NULL, 0);
@@ -106,18 +103,18 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
     LOG("Failed to load assembly\n");
 
     free(dll_path);
-    ASSERT_SOFT(assembly != NULL, domain);
+    ASSERT_SOFT(assembly != NULL);
 
     // Get assembly's image that contains CIL code
     void *image = mono_assembly_get_image(assembly);
-    ASSERT_SOFT(image != NULL, domain);
+    ASSERT_SOFT(image != NULL);
 
     // Create a descriptor for a random Main method
     void *desc = mono_method_desc_new("*:Main", FALSE);
 
     // Find the first possible Main method in the assembly
     void *method = mono_method_desc_search_in_image(desc, image);
-    ASSERT_SOFT(method != NULL, domain);
+    ASSERT_SOFT(method != NULL);
 
     void *signature = mono_method_signature(method);
 
@@ -146,25 +143,40 @@ void *init_doorstop(const char *root_domain_name, const char *runtime_version) {
     }
 
     cleanup_config();
-
     free_logger();
+}
 
+int init_doorstop_il2cpp(const char *domain_name) {
+    LOG("Starting IL2CPP domain \"%s\"\n", domain_name);
+    const int orig_result = il2cpp_init(domain_name);
+    return orig_result;
+}
+
+void *init_doorstop_mono(const char* root_domain_name, const char* runtime_version) {
+    LOG("Starting Mono domain \"%s\"\n", root_domain_name);
+    void* domain = mono_jit_init_version(root_domain_name, runtime_version);
+    doorstop_invoke(domain);
     return domain;
 }
 
-BOOL initialized = FALSE;
+static BOOL initialized = FALSE;
 void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
-    if (lstrcmpA(name, "mono_jit_init_version") == 0) {
-        if (!initialized) {
-            initialized = TRUE;
-            LOG("Got mono.dll at %p\n", module);
-            load_mono_functions(module);
-            LOG("Loaded all mono.dll functions\n");
-        }
-        return (void*)&init_doorstop;
-    }
+#define REDIRECT_INIT(init_name, init_func, target)                 \
+    if (lstrcmpA(name, init_name) == 0) {                           \
+        if (!initialized) {                                         \
+            initialized = TRUE;                                     \
+            LOG("Got %s at %p\n", init_name, module);               \
+            init_func(module);                                      \
+            LOG("Loaded all runtime functions\n")                   \
+        }                                                           \
+        return (void*)(target);                                     \
+    }                                                               \
 
+    REDIRECT_INIT("il2cpp_init", load_il2cpp_functions, init_doorstop_il2cpp);
+    REDIRECT_INIT("mono_jit_init_version", load_mono_functions, init_doorstop_mono);
     return (void*)GetProcAddress(module, name);
+
+#undef REDIRECT_INIT
 }
 
 HANDLE stdout_handle = NULL;
@@ -173,7 +185,6 @@ BOOL WINAPI close_handle_hook(HANDLE handle) {
         return TRUE;
     return CloseHandle(handle);
 }
-
 
 wchar_t *new_cmdline_args = NULL;
 char *cmdline_args_narrow = NULL;
@@ -247,9 +258,11 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
     LOG("Doorstop DLL Name: %S\n", dll_name);
 
     load_proxy(dll_name);
+    LOG("Proxy loaded\n");
     load_config();
+    LOG("Config loaded\n");
 
-    if (redirect_output_log) {
+    if (config.redirect_output_log) {
         wchar_t *cmd = GetCommandLineW();
         const size_t app_dir_len = wcslen(app_dir);
         const size_t cmd_len = wcslen(cmd);
@@ -267,13 +280,13 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
         LOG("CMDLine: %S\n", new_cmdline_args);
     }
 
-    if (GetFileAttributesW(target_assembly) == INVALID_FILE_ATTRIBUTES) {
+    if (GetFileAttributesW(config.target_assembly) == INVALID_FILE_ATTRIBUTES) {
         LOG("Could not find target assembly! Cannot enable!");
-        enabled = FALSE;
+        config.enabled = FALSE;
     }
 
     // If the loader is disabled, don't inject anything.
-    if (enabled) {
+    if (config.enabled) {
         LOG("Doorstop enabled!\n");
 
         HMODULE target_module = GetModuleHandleA("UnityPlayer");

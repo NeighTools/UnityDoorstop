@@ -6,7 +6,7 @@
 #define DEFAULT_TARGET_ASSEMBLY L"Doorstop.dll"
 #define EXE_EXTENSION_LENGTH 4
 
-static struct {
+struct {
     BOOL enabled;
     BOOL redirect_output_log;
     wchar_t *target_assembly;

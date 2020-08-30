@@ -3,7 +3,7 @@
 
 #ifdef _VERBOSE
 #include <windows.h>
-static HANDLE log_handle;
+HANDLE log_handle;
 char buffer[4096];
 
 inline void init_logger() {
