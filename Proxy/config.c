@@ -27,7 +27,7 @@ void load_path_file(const wchar_t *path, const wchar_t *section, const wchar_t *
 }
 
 inline void init_config_file() {
-    if (GetFileAttributesW(CONFIG_NAME) == INVALID_FILE_ATTRIBUTES)
+    if (!file_exists(CONFIG_NAME))
         return;
 
     wchar_t *config_path = get_full_path(CONFIG_NAME);

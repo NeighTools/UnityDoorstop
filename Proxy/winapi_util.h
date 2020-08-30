@@ -97,3 +97,13 @@ inline size_t get_working_dir(wchar_t **result) {
     GetCurrentDirectoryW(len, *result);
     return len;
 }
+
+inline BOOL file_exists(wchar_t *file) {
+    DWORD ab = GetFileAttributesW(file);
+    return ab != INVALID_FILE_ATTRIBUTES && (ab & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
+
+inline BOOL folder_exists(wchar_t* file) {
+    DWORD ab = GetFileAttributesW(file);
+    return ab != INVALID_FILE_ATTRIBUTES && (ab & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}

@@ -130,8 +130,16 @@ void doorstop_invoke(void *domain) {
     }
 
     // Note: we use the runtime_invoke route since jit_exec will not work on DLLs
-    LOG("Invoking method!\n");
-    mono_runtime_invoke(method, NULL, args, NULL);
+    LOG("Invoking method %p\n", method);
+    void *exc = NULL;
+    mono_runtime_invoke(method, NULL, args, &exc);
+    if (exc != NULL) {
+        LOG("Error invoking code!\n");
+        void *str = mono_object_to_string(exc, NULL);
+        char *exc_str = mono_string_to_utf8(str);
+        LOG("Error message: %s\n", exc_str);
+    }
+    LOG("Done!\n");
 
     // cleanup method_desc
     mono_method_desc_free(desc);
@@ -149,17 +157,53 @@ void doorstop_invoke(void *domain) {
 int init_doorstop_il2cpp(const char *domain_name) {
     LOG("Starting IL2CPP domain \"%s\"\n", domain_name);
     const int orig_result = il2cpp_init(domain_name);
+
+    wchar_t *mono_lib_dir = get_full_path(config.mono_lib_dir);
+    wchar_t *mono_corlib_dir = get_full_path(config.mono_corlib_dir);
+    wchar_t *mono_config_dir = get_full_path(config.mono_config_dir);
+
+    LOG("Mono lib: %S\n", mono_lib_dir);
+    LOG("Mono mscorlib dir: %S\n", mono_corlib_dir);
+    LOG("Mono confgi dir: %S\n", mono_config_dir);
+
+    if (!file_exists(mono_lib_dir) || !folder_exists(mono_corlib_dir) || !folder_exists(mono_config_dir)) {
+        LOG("Mono startup dirs are not set up, skipping invoking Doorstop\n");
+        return orig_result;
+    }
+
+    const HMODULE mono_module = LoadLibraryW(mono_lib_dir);
+    LOG("Loaded mono.dll: %p\n", mono_module);
+    if (!mono_module) {
+        LOG("Failed to load mono.dll! Skipping!");
+        return orig_result;
+    }
+
+    load_mono_functions(mono_module);
+    LOG("Loaded mono.dll functions\n");
+
+    char *mono_corlib_dir_narrow = narrow(mono_corlib_dir);
+    char *mono_config_dir_narrow = narrow(mono_config_dir);
+    mono_set_dirs(mono_corlib_dir_narrow, mono_config_dir_narrow);
+    mono_set_assemblies_path(mono_corlib_dir_narrow);
+    mono_config_parse(NULL);
+
+    void *domain = mono_jit_init_version("Doorstop Root Domain", "");
+    LOG("Created domain: %p\n", domain);
+
+    doorstop_invoke(domain);
+
     return orig_result;
 }
 
-void *init_doorstop_mono(const char* root_domain_name, const char* runtime_version) {
+void *init_doorstop_mono(const char *root_domain_name, const char *runtime_version) {
     LOG("Starting Mono domain \"%s\"\n", root_domain_name);
-    void* domain = mono_jit_init_version(root_domain_name, runtime_version);
+    void *domain = mono_jit_init_version(root_domain_name, runtime_version);
     doorstop_invoke(domain);
     return domain;
 }
 
 static BOOL initialized = FALSE;
+
 void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
 #define REDIRECT_INIT(init_name, init_func, target)                 \
     if (lstrcmpA(name, init_name) == 0) {                           \
@@ -170,8 +214,7 @@ void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
             LOG("Loaded all runtime functions\n")                   \
         }                                                           \
         return (void*)(target);                                     \
-    }                                                               \
-
+    }
     REDIRECT_INIT("il2cpp_init", load_il2cpp_functions, init_doorstop_il2cpp);
     REDIRECT_INIT("mono_jit_init_version", load_mono_functions, init_doorstop_mono);
     return (void*)GetProcAddress(module, name);
@@ -180,6 +223,7 @@ void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
 }
 
 HANDLE stdout_handle = NULL;
+
 BOOL WINAPI close_handle_hook(HANDLE handle) {
     if (stdout_handle && handle == stdout_handle)
         return TRUE;
@@ -188,6 +232,7 @@ BOOL WINAPI close_handle_hook(HANDLE handle) {
 
 wchar_t *new_cmdline_args = NULL;
 char *cmdline_args_narrow = NULL;
+
 LPWSTR WINAPI get_command_line_hook() {
     if (new_cmdline_args)
         return new_cmdline_args;
@@ -236,9 +281,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
     LOG("App dir: %S\n", app_dir);
     LOG("Working dir: %S\n", working_dir);
 
-    if (fixedCWD) {
-        LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n");    
-    }
+    if (fixedCWD) { LOG("WARNING: Working directory is not the same as app directory! Fixing working directory!\n"); }
 
     stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
