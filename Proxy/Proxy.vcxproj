@@ -398,6 +398,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="config.c" />
     <ClCompile Include="crt.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="proxy.c" />
@@ -407,6 +408,7 @@
     <ClInclude Include="config.h" />
     <ClInclude Include="crt.h" />
     <ClInclude Include="hook.h" />
+    <ClInclude Include="il2cpp.h" />
     <ClInclude Include="mono.h" />
     <ClInclude Include="proxy.h" />
     <ClInclude Include="winapi_util.h" />

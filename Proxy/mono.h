@@ -66,4 +66,5 @@ inline void load_mono_functions(HMODULE mono_lib)
 	GET_MONO_PROC(mono_thread_current);
 	GET_MONO_PROC(mono_thread_set_main);
 	GET_MONO_PROC(mono_domain_set_config);
+#undef GET_MONO_PROC
 }
