@@ -33,6 +33,7 @@ inline void init_config_file() {
     wchar_t *config_path = get_full_path(CONFIG_NAME);
 
     load_bool_file(config_path, L"UnityDoorstop", L"enabled", L"true", &config.enabled);
+    load_bool_file(config_path, L"UnityDoorstop", L"ignoreDisableSwitch", L"false", &config.ignore_disabled_env);
     load_bool_file(config_path, L"UnityDoorstop", L"redirectOutputLog", L"false", &config.redirect_output_log);
     load_path_file(config_path, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
 
@@ -94,7 +95,7 @@ inline void init_cmd_args() {
 }
 
 inline void init_env_vars() {
-    if (GetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL, 0) != 0) {
+    if (!config.ignore_disabled_env && GetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL, 0) != 0) {
         LOG("DOORSTOP_DISABLE is set! Disabling Doorstop!\n");
         config.enabled = FALSE;
     }
@@ -102,6 +103,7 @@ inline void init_env_vars() {
 
 void load_config() {
     config.enabled = FALSE;
+    config.ignore_disabled_env = FALSE;
     config.redirect_output_log = FALSE;
     config.mono_config_dir = NULL;
     config.mono_corlib_dir = NULL;

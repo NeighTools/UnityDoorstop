@@ -9,6 +9,7 @@
 struct {
     BOOL enabled;
     BOOL redirect_output_log;
+    BOOL ignore_disabled_env;
     wchar_t *target_assembly;
     wchar_t *mono_lib_dir;
     wchar_t *mono_config_dir;

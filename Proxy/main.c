@@ -223,7 +223,6 @@ void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
 }
 
 HANDLE stdout_handle = NULL;
-
 BOOL WINAPI close_handle_hook(HANDLE handle) {
     if (stdout_handle && handle == stdout_handle)
         return TRUE;
@@ -232,7 +231,6 @@ BOOL WINAPI close_handle_hook(HANDLE handle) {
 
 wchar_t *new_cmdline_args = NULL;
 char *cmdline_args_narrow = NULL;
-
 LPWSTR WINAPI get_command_line_hook() {
     if (new_cmdline_args)
         return new_cmdline_args;
