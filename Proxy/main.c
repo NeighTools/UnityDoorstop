@@ -135,9 +135,12 @@ void doorstop_invoke(void *domain) {
     mono_runtime_invoke(method, NULL, args, &exc);
     if (exc != NULL) {
         LOG("Error invoking code!\n");
-        void *str = mono_object_to_string(exc, NULL);
-        char *exc_str = mono_string_to_utf8(str);
-        LOG("Error message: %s\n", exc_str);
+    	if (mono_object_to_string)
+    	{
+            void* str = mono_object_to_string(exc, NULL);
+            char* exc_str = mono_string_to_utf8(str);
+            LOG("Error message: %s\n", exc_str);
+    	}
     }
     LOG("Done!\n");
 
