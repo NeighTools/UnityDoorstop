@@ -1,4 +1,4 @@
-#include "crt.h"
+#include "wincrt.h"
 
 #pragma function(memset)
 void *memset(void *dst, int c, size_t n) {

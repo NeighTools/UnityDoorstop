@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MONO_H
+#define MONO_H
 
 void *get_mono_proc(void *lib, const char *name);
 
@@ -19,3 +20,5 @@ inline void load_mono_functions(void *mono_lib) {
 #include "mono_defs.h"
 #undef DEF_MONO_CALL
 }
+
+#endif

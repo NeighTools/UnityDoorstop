@@ -3,7 +3,8 @@
  * This makes the DLL essentially freestanding on Windows without having to rely
  * on msvcrt.dll
  */
-#pragma once
+#ifndef CRT_H
+#define CRT_H
 
 #include <windows.h>
 
@@ -43,3 +44,5 @@ extern void *malloc(size_t size);
 extern void *calloc(size_t num, size_t size);
 
 inline void free(void *mem) { HeapFree(h_heap, 0, mem); }
+
+#endif
