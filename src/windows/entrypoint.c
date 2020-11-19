@@ -1,3 +1,4 @@
+#include "../config.h"
 #include "../main.h"
 #include "wincrt.h"
 #include <windows.h>
@@ -10,4 +11,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
         return TRUE;
 
     h_heap = GetProcessHeap();
+
+    load_config();
+    init_mono(NULL, NULL);
 }

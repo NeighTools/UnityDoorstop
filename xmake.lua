@@ -7,7 +7,7 @@ target("doorstop")
     if is_plat("windows") then
         add_files("src/windows/*.c")
 
-        add_cxflags("-GS-", "-Ob2", "-MT", "-FS")
+        add_cxflags("-GS-", "-Ob2", "-MT", "-FS", "-GL-")
         add_shflags("-nodefaultlib",
                     "-entry:DllEntry",
                     "-dynamicbase kernel32.lib",

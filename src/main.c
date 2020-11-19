@@ -1,24 +1,59 @@
-#include "crt.h"
+#include "config.h"
 #include "logging.h"
 #include "mono.h"
+#include "util.h"
 
 void doorstop_bootstrap(void *mono_domain) {
+    if (!getenv(TEXT("DOORSTOP_INITIALIZED"))) {
+        LOG("DOORSTOP_INITIALIZED is set! Skipping!");
+        cleanup_config();
+        return;
+    }
+    setenv(TEXT("DOORSTOP_INITIALIZED"), TEXT("TRUE"), TRUE);
+
     mono.thread_set_main(mono.thread_current());
 
     if (mono.domain_set_config) {
-        // TODO: set config
+#define CONFIG_EXT TEXT(".config")
+        char_t *exe_path = NULL;
+        const size_t real_len =
+            get_module_path(NULL, &exe_path, NULL, STR_LEN(CONFIG_EXT));
+        char_t *folder_name = get_folder_name(exe_path, real_len, TRUE);
+        strccpy(exe_path + real_len, CONFIG_EXT, STR_LEN(CONFIG_EXT));
+
+        char *exe_path_n = narrow(exe_path);
+        char *folder_path_n = narrow(folder_name);
+
+        LOG("Setting config paths: base dir: %s; config path: %s\n",
+            folder_path_n, exe_path_n);
+
+        mono.domain_set_config(mono_domain, folder_path_n, exe_path_n);
+
+        free(exe_path);
+        free(folder_name);
+        free(exe_path_n);
+        free(folder_path_n);
+#undef CONFIG_EXT
     }
 
     char *assembly_dir = mono.assembly_getrootdir();
     LOG("Assembly dir: %s\n", assembly_dir);
 
-    // TODO: set env
+    char_t *norm_assembly_dir = widen(assembly_dir);
+    setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), norm_assembly_dir, TRUE);
+    free(norm_assembly_dir);
 
-    char *dll_path = NULL;
-    char *app_path = NULL;
+    char *dll_path = narrow(config.target_assembly);
+
+    char_t *app_path = NULL;
+    get_module_path(NULL, &app_path, NULL, 0);
+    setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
 
     LOG("Loading assembly: %s\n", dll_path);
     void *assembly = mono.domain_assembly_open(mono_domain, dll_path);
+
+    if (assembly == NULL)
+        LOG("Failed to load assembly\n");
 
     free(dll_path);
     ASSERT_SOFT(assembly != NULL);
@@ -47,9 +82,11 @@ void doorstop_bootstrap(void *mono_domain) {
     mono.runtime_invoke(method, NULL, args, &exc);
     if (exc != NULL) {
         LOG("Error invoking code!\n");
-        void *str = mono.object_to_string(exc, NULL);
-        char *exc_str = mono.string_to_utf8(str);
-        LOG("Error message: %s\n", exc_str);
+        if (mono.object_to_string) {
+            void *str = mono.object_to_string(exc, NULL);
+            char *exc_str = mono.string_to_utf8(str);
+            LOG("Error message: %s\n", exc_str);
+        }
     }
     LOG("Done\n");
 
@@ -59,4 +96,13 @@ void doorstop_bootstrap(void *mono_domain) {
         free(app_path);
         free(args);
     }
+
+    cleanup_config();
+}
+
+void *init_mono(const char *root_domain_name, const char *runtime_version) {
+    LOG("Starting mono domain \"%s\"", root_domain_name);
+    void *domain = mono.jit_init_version(root_domain_name, runtime_version);
+    doorstop_bootstrap(domain);
+    return domain;
 }
