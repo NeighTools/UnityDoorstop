@@ -1,4 +1,5 @@
 #include "config.h"
+#include "crt.h"
 #include "logging.h"
 #include "mono.h"
 #include "util.h"

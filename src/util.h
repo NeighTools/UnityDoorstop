@@ -1,7 +1,8 @@
-#if _WIN32
-#include "windows/wincrt.h"
-#include <windows.h>
+#ifndef UTIL_H
+#define UTIL_H
 
+#if _WIN32
+#include <windows.h>
 typedef TCHAR char_t;
 typedef BOOL bool_t;
 
@@ -14,9 +15,6 @@ typedef BOOL bool_t;
 #endif
 
 #elif defined(__APPLE__) || defined(__linux__)
-#include <stdio.h>
-#include <stdlib.h>
-
 typedef char char_t;
 typedef int bool_t;
 
@@ -34,3 +32,5 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
 char_t *get_folder_name(char_t *str, size_t len, int with_separator);
 char_t *get_full_path(char_t *path);
 bool_t file_exists(char_t *file);
+
+#endif

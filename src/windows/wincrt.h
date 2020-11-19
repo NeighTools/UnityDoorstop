@@ -3,8 +3,8 @@
  * This makes the DLL essentially freestanding on Windows without having to rely
  * on msvcrt.dll
  */
-#ifndef CRT_H
-#define CRT_H
+#ifndef WIN_CRT_H
+#define WIN_CRT_H
 
 #include "../util.h"
 #include <windows.h>
