@@ -19,18 +19,21 @@ void *memset(void *dst, int c, size_t n);
 void *memcpy(void *dst, const void *src, size_t n);
 #pragma intrinsic(memcpy)
 
-size_t strlen(char_t const *str);
-#pragma intrinsic(strlen)
+size_t strlen_wide(char_t const *str);
+#define strlen strlen_wide
 
 void *malloc(size_t size);
 
 void *calloc(size_t num, size_t size);
 
-char_t *strcat(char_t *dst, char_t *src);
+char_t *strcat_wide(char_t *dst, char_t *src);
+#define strcat strcat_wide
 
-char_t *strcpy(char_t *dst, char_t *src);
+char_t *strcpy_wide(char_t *dst, char_t *src);
+#define strcpy strcpy_wide
 
-char_t *strncpy(char_t *dst, char_t *src, size_t len);
+char_t *strncpy_wide(char_t *dst, char_t *src, size_t len);
+#define strncpy strncpy_wide
 
 char_t *dirname(char_t *path);
 
@@ -50,20 +53,14 @@ inline int setenv(const char_t *name, const char_t *value, int overwrite) {
     return !SetEnvironmentVariable(name, value);
 }
 
-inline char_t *getenv(const char_t *name) {
-    DWORD size = GetEnvironmentVariable(name, NULL, 0);
-    if (size == 0)
-        return NULL;
-    char_t *buf = calloc(size + 1, sizeof(char_t));
-    GetEnvironmentVariable(name, buf, size + 1);
-    return buf;
-}
+char_t *getenv_wide(const char_t *name);
+#define getenv getenv_wide
 
 #ifndef UNICODE
 #define CommandLineToArgv CommandLineToArgvA
-extern char **CommandLineToArgvA(char *cmd_line, int *argc);
+char **CommandLineToArgvA(char *cmd_line, int *argc);
 #else
-#define CommandLineToArgv CommandLineToArgvA
+#define CommandLineToArgv CommandLineToArgvW
 #endif
 
 #endif

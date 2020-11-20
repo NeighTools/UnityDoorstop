@@ -11,7 +11,9 @@ target("doorstop")
         add_shflags("-nodefaultlib",
                     "-entry:DllEntry",
                     "-dynamicbase kernel32.lib",
+                    "-dynamicbase shell32.lib",
                     { force = true })
+        add_defines("UNICODE")
     end
 
-    add_files("src/*.c")
+    add_files("src/*.c")    

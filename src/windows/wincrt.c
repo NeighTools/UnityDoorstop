@@ -17,8 +17,7 @@ void *memcpy(void *dst, const void *src, size_t n) {
     return dst;
 }
 
-#pragma function(strlen)
-size_t strlen(char_t const *str) {
+size_t strlen_wide(char_t const *str) {
     size_t result = 0;
     while (*str++)
         result++;
@@ -33,13 +32,13 @@ void *calloc(size_t num, size_t size) {
     return HeapAlloc(h_heap, HEAP_ZERO_MEMORY, size * num);
 }
 
-char_t *strcat(char_t *dst, const char_t *src) {
+char_t *strcat_wide(char_t *dst, const char_t *src) {
     size_t size = strlen(dst);
     size_t size2 = strlen(src);
     return strncpy(dst + size, src, size2 + 1);
 }
 
-char_t *strcpy(char_t *dst, char_t *src) {
+char_t *strcpy_wide(char_t *dst, char_t *src) {
     char_t *d = dst;
     const char_t *s = src;
     while (*s)
@@ -48,7 +47,7 @@ char_t *strcpy(char_t *dst, char_t *src) {
     return dst;
 }
 
-char_t *strncpy(char_t *dst, const char_t *src, size_t n) {
+char_t *strncpy_wide(char_t *dst, const char_t *src, size_t n) {
     char_t *d = dst;
     const char_t *s = src;
     while (n--)
@@ -69,6 +68,15 @@ char_t *dirname(char_t *path) {
     char_t *result = calloc(result_len + 1, sizeof(char_t));
     strncpy(result, path, result_len);
     return result;
+}
+
+char_t *getenv_wide(const char_t *name) {
+    DWORD size = GetEnvironmentVariable(name, NULL, 0);
+    if (size == 0)
+        return NULL;
+    char_t *buf = calloc(size + 1, sizeof(char_t));
+    GetEnvironmentVariable(name, buf, size + 1);
+    return buf;
 }
 
 #ifndef UNICODE
