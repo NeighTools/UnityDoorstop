@@ -93,9 +93,9 @@ bool_t load_path_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
     if (STR_EQUAL(argv[*i], arg_name) && *i < argc) {
         if (*value != NULL)
             free(*value);
-        const size_t len = cslen(argv[*i + 1]) + 1;
+        const size_t len = strlen(argv[*i + 1]) + 1;
         *value = malloc(sizeof(char_t) * len);
-        strccpy(*value, argv[++*i], len);
+        strncpy(*value, argv[++*i], len);
         LOG("ARGV: %S = %S\n", arg_name, *value);
         return TRUE;
     }

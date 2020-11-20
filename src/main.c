@@ -17,23 +17,27 @@ void doorstop_bootstrap(void *mono_domain) {
 
     if (mono.domain_set_config) {
 #define CONFIG_EXT TEXT(".config")
-        char_t *exe_path = NULL;
-        const size_t real_len =
-            get_module_path(NULL, &exe_path, NULL, STR_LEN(CONFIG_EXT));
-        char_t *folder_name = get_folder_name(exe_path, real_len, TRUE);
-        strccpy(exe_path + real_len, CONFIG_EXT, STR_LEN(CONFIG_EXT));
+        char_t *app_path = NULL;
+        program_path(&app_path);
+        char_t *config_path =
+            calloc(strlen(app_path) + 1 + STR_LEN(CONFIG_EXT), sizeof(char_t));
+        strcpy(config_path, app_path);
 
-        char *exe_path_n = narrow(exe_path);
-        char *folder_path_n = narrow(folder_name);
+        strcat(config_path, CONFIG_EXT);
+        char_t *folder_path = dirname(app_path);
+
+        char *config_path_n = narrow(config_path);
+        char *folder_path_n = narrow(folder_path);
 
         LOG("Setting config paths: base dir: %s; config path: %s\n",
-            folder_path_n, exe_path_n);
+            folder_path_n, config_path_n);
 
-        mono.domain_set_config(mono_domain, folder_path_n, exe_path_n);
+        mono.domain_set_config(mono_domain, folder_path_n, config_path_n);
 
-        free(exe_path);
-        free(folder_name);
-        free(exe_path_n);
+        free(app_path);
+        free(folder_path);
+        free(config_path);
+        free(config_path_n);
         free(folder_path_n);
 #undef CONFIG_EXT
     }

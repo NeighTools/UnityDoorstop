@@ -44,20 +44,6 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
     return len;
 }
 
-char_t *get_folder_name(char_t *str, size_t len, int with_separator) {
-    size_t i;
-    for (i = len; i > 0; i--) {
-        char_t c = *(str + i);
-        if (c == TEXT('\\') || c == TEXT('/'))
-            break;
-    }
-
-    const size_t result_len = i + (with_separator ? 1 : 0);
-    char_t *result = calloc(result_len + 1, sizeof(char_t));
-    strccpy(result, str, result_len);
-    return result;
-}
-
 char_t *get_full_path(char_t *path) {
     const DWORD needed = GetFullPathName(path, 0, NULL, NULL);
     wchar_t *res = malloc(sizeof(char_t) * needed);
@@ -71,8 +57,4 @@ bool_t file_exists(char_t *file) {
            (ab & FILE_ATTRIBUTE_DIRECTORY) == 0;
 }
 
-bool_t folder_exists(char_t *folder) {
-    DWORD ab = GetFileAttributes(folder);
-    return ab != INVALID_FILE_ATTRIBUTES &&
-           (ab & FILE_ATTRIBUTE_DIRECTORY) != 0;
-}
+void program_path(char_t *app_path) {}

@@ -17,16 +17,8 @@ void *memcpy(void *dst, const void *src, size_t n) {
     return dst;
 }
 
-#pragma function(wcslen)
-size_t wcslen(wchar_t const *str) {
-    size_t result = 0;
-    while (*str++)
-        result++;
-    return result;
-}
-
 #pragma function(strlen)
-size_t strlen(char const *str) {
+size_t strlen(char_t const *str) {
     size_t result = 0;
     while (*str++)
         result++;
@@ -41,19 +33,42 @@ void *calloc(size_t num, size_t size) {
     return HeapAlloc(h_heap, HEAP_ZERO_MEMORY, size * num);
 }
 
-inline wchar_t *wmemcpy(wchar_t *dst, const wchar_t *src, size_t n) {
-    wchar_t *d = dst;
-    const wchar_t *s = src;
+char_t *strcat(char_t *dst, const char_t *src) {
+    size_t size = strlen(dst);
+    size_t size2 = strlen(src);
+    return strncpy(dst + size, src, size2 + 1);
+}
+
+char_t *strcpy(char_t *dst, char_t *src) {
+    char_t *d = dst;
+    const char_t *s = src;
+    while (*s)
+        *d++ = *s++;
+    *d = *s;
+    return dst;
+}
+
+char_t *strncpy(char_t *dst, const char_t *src, size_t n) {
+    char_t *d = dst;
+    const char_t *s = src;
     while (n--)
         *d++ = *s++;
     return dst;
 }
 
-inline void *wmemset(wchar_t *dst, wchar_t c, size_t n) {
-    wchar_t *d = dst;
-    while (n--)
-        *d++ = c;
-    return dst;
+char_t *dirname(char_t *path) {
+    size_t len = strlen(path);
+    size_t i;
+    for (i = len; i > 0; i--) {
+        char_t c = *(path + i);
+        if (c == TEXT('\\') || c == TEXT('/'))
+            break;
+    }
+
+    const size_t result_len = i;
+    char_t *result = calloc(result_len + 1, sizeof(char_t));
+    strncpy(result, path, result_len);
+    return result;
 }
 
 #ifndef UNICODE
