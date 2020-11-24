@@ -33,6 +33,16 @@ extern wchar_t *wmemcpy(wchar_t *dst, const wchar_t *src, size_t n);
 
 extern void *wmemset(wchar_t *dst, wchar_t c, size_t n);
 
+inline void *dlsym(void *handle, const char *name) {
+    return GetProcAddress((HMODULE)handle, name);
+}
+
+#define RTLD_LAZY 0x00001
+
+inline void *dlopen(const char_t *filename, int flag) {
+    return LoadLibrary(filename);
+}
+
 inline void free(void *mem) { HeapFree(h_heap, 0, mem); }
 
 inline int setenv(const char_t *name, const char_t *value, int overwrite) {
