@@ -32,5 +32,6 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
 char_t *get_folder_name(char_t *str, size_t len, int with_separator);
 char_t *get_full_path(char_t *path);
 bool_t file_exists(char_t *file);
+bool_t folder_exists(char_t *folder);
 
 #endif

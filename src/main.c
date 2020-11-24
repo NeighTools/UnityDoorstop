@@ -1,5 +1,6 @@
 #include "config.h"
 #include "crt.h"
+#include "il2cpp.h"
 #include "logging.h"
 #include "mono.h"
 #include "util.h"
@@ -106,4 +107,45 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     void *domain = mono.jit_init_version(root_domain_name, runtime_version);
     doorstop_bootstrap(domain);
     return domain;
+}
+
+int init_il2cpp(const char *domain_name) {
+    LOG("Starting IL2CPP domain \"%s\"\n", domain_name);
+    const int orig_result = il2cpp.init(domain_name);
+
+    char_t *mono_lib_dir = get_full_path(config.mono_lib_dir);
+    char_t *mono_corlib_dir = get_full_path(config.mono_corlib_dir);
+    char_t *mono_config_dir = get_full_path(config.mono_config_dir);
+
+    LOG("Mono lib: %S\n", mono_lib_dir);
+    LOG("Mono mscorlib dir: %S\n", mono_corlib_dir);
+    LOG("Mono confgi dir: %S\n", mono_config_dir);
+
+    if (!file_exists(mono_lib_dir) || !folder_exists(mono_corlib_dir) ||
+        !folder_exists(mono_config_dir)) {
+        LOG("Mono startup dirs are not set up, skipping invoking Doorstop\n");
+        return orig_result;
+    }
+
+    const void *mono_module = dlopen(mono_lib_dir, RTLD_LAZY);
+    LOG("Loaded mono.dll: %p\n", mono_module);
+    if (!mono_module) {
+        LOG("Failed to load mono.dll! Skipping!");
+        return orig_result;
+    }
+
+    load_mono_funcs(mono_module);
+    LOG("Loaded mono.dll functions\n");
+
+    char *mono_corlib_dir_narrow = narrow(mono_corlib_dir);
+    char *mono_config_dir_narrow = narrow(mono_config_dir);
+    mono.set_dirs(mono_corlib_dir_narrow, mono_config_dir_narrow);
+    mono.config_parse(NULL);
+
+    void *domain = mono.jit_init_version("Doorstop Root Domain", NULL);
+    LOG("Created domain: %p\n", domain);
+
+    doorstop_bootstrap(domain);
+
+    return orig_result;
 }

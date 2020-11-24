@@ -70,3 +70,9 @@ bool_t file_exists(char_t *file) {
     return ab != INVALID_FILE_ATTRIBUTES &&
            (ab & FILE_ATTRIBUTE_DIRECTORY) == 0;
 }
+
+bool_t folder_exists(char_t *folder) {
+    DWORD ab = GetFileAttributes(folder);
+    return ab != INVALID_FILE_ATTRIBUTES &&
+           (ab & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
