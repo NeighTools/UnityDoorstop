@@ -1,0 +1,13 @@
+/* ==================================
+ * COMPUTER GENERATED -- DO NOT EDIT
+ * ==================================
+ */
+
+#include <windows.h>
+
+${PROXY_DEFS}
+
+void load_functions(HMODULE dll)
+{
+${PROXY_ADDS}
+}
