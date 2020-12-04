@@ -43,7 +43,7 @@ void doorstop_invoke(void *domain) {
         });
 
 
-    if (GetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", NULL, 0) != 0) {
+    if (!config.ignore_disabled_env && GetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", NULL, 0) != 0) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!");
         cleanup_config();
         free_logger();
