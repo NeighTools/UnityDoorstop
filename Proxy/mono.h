@@ -38,7 +38,6 @@ void *(*mono_array_new)(void *domain, void *eclass, uintptr_t n);
 void *(*mono_get_string_class)();
 
 char *(*mono_assembly_getrootdir)();
-void (*mono_assembly_setrootdir)(const char*);
 
 // Additional funcs to bootstrap custom MONO
 void (*mono_set_dirs)(const char* assembly_dir, const char* config_dir);
@@ -73,7 +72,6 @@ inline void load_mono_functions(HMODULE mono_lib) {
     GET_MONO_PROC(mono_array_new);
     GET_MONO_PROC(mono_get_string_class);
     GET_MONO_PROC(mono_assembly_getrootdir);
-    GET_MONO_PROC(mono_assembly_setrootdir);
     GET_MONO_PROC(mono_thread_current);
     GET_MONO_PROC(mono_thread_set_main);
     GET_MONO_PROC(mono_domain_set_config);

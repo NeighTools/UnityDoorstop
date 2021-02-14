@@ -205,11 +205,11 @@ int init_doorstop_il2cpp(const char *domain_name) {
 void *init_doorstop_mono(const char *root_domain_name, const char *runtime_version) {
     LOG("Starting Mono domain \"%s\"\n", root_domain_name);
     char* root_dir = mono_assembly_getrootdir();
-    if (config.mono_corlib_redirect_dir) {
+    if (config.mono_dll_search_path_override) {
         size_t len = strlen(root_dir);
         LOG("Current root dir: %s\n", root_dir);
 
-        wchar_t *mono_bcl_root_dir_full = get_full_path(config.mono_corlib_redirect_dir);
+        wchar_t *mono_bcl_root_dir_full = get_full_path(config.mono_dll_search_path_override);
         char *mono_bcl_root_dir_narrow = narrow(mono_bcl_root_dir_full);
         size_t len_bcl = strlen(mono_bcl_root_dir_narrow);
         LOG("New root path: %s\n", mono_bcl_root_dir_narrow);
@@ -223,9 +223,6 @@ void *init_doorstop_mono(const char *root_domain_name, const char *runtime_versi
         mono_set_assemblies_path(search_path);
         SetEnvironmentVariableA("DOORSTOP_DLL_SEARCH_DIRS", search_path);
         free(search_path);
-
-        mono_assembly_setrootdir(mono_bcl_root_dir_narrow);
-
         free(mono_bcl_root_dir_narrow);
         free(mono_bcl_root_dir_full);
     } else {
@@ -239,16 +236,16 @@ void *init_doorstop_mono(const char *root_domain_name, const char *runtime_versi
 void *hook_mono_image_open_from_data_with_name(void *data, DWORD data_len, int need_copy, void *status, int refonly,
                                                const char *name) {
     void *result = NULL;
-    if (config.mono_corlib_redirect_dir) {
+    if (config.mono_dll_search_path_override) {
         wchar_t *name_wide = widen(name);
         wchar_t *name_file = get_file_name(name_wide, strlen(name), TRUE);
         free(name_wide);
 
         size_t name_file_len = wcslen(name_file);
-        size_t bcl_root_len = wcslen(config.mono_corlib_redirect_dir);
+        size_t bcl_root_len = wcslen(config.mono_dll_search_path_override);
 
         wchar_t *new_full_path = calloc(name_file_len + bcl_root_len + 2, sizeof(wchar_t));
-        wmemcpy(new_full_path, config.mono_corlib_redirect_dir, bcl_root_len);
+        wmemcpy(new_full_path, config.mono_dll_search_path_override, bcl_root_len);
         new_full_path[bcl_root_len] = L'\\';
         wmemcpy(new_full_path + bcl_root_len + 1, name_file, name_file_len);
         free(name_file);
