@@ -36,7 +36,7 @@ inline void init_config_file() {
     load_bool_file(config_path, L"UnityDoorstop", L"ignoreDisableSwitch", L"false", &config.ignore_disabled_env);
     load_bool_file(config_path, L"UnityDoorstop", L"redirectOutputLog", L"false", &config.redirect_output_log);
     load_path_file(config_path, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
-    load_path_file(config_path, L"UnityDoorstop", L"bclRedirectDir", NULL, &config.mono_bcl_root_dir);
+    load_path_file(config_path, L"UnityDoorstop", L"corlibRedirectDir", NULL, &config.mono_corlib_redirect_dir);
 
     load_path_file(config_path, L"MonoBackend", L"runtimeLib", NULL, &config.mono_lib_dir);
     load_path_file(config_path, L"MonoBackend", L"configDir", NULL, &config.mono_config_dir);
@@ -110,7 +110,7 @@ void load_config() {
     config.mono_corlib_dir = NULL;
     config.mono_lib_dir = NULL;
     config.target_assembly = NULL;
-    config.mono_bcl_root_dir = NULL;
+    config.mono_corlib_redirect_dir = NULL;
 
     init_config_file();
     init_cmd_args();

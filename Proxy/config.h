@@ -14,7 +14,7 @@ struct {
     wchar_t *mono_lib_dir;
     wchar_t *mono_config_dir;
     wchar_t *mono_corlib_dir;
-    wchar_t *mono_bcl_root_dir;
+    wchar_t *mono_corlib_redirect_dir;
 } config;
 
 
