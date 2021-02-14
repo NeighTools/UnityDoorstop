@@ -69,6 +69,7 @@ In addition to command line arguments, Doorstop passes some important paths via 
 | `DOORSTOP_INVOKE_DLL_PATH` | Path to the assembly that was invoked via Doorstop. Contains the same value as in `targetAssembly` configuration option in the config file. |
 | `DOORSTOP_MANAGED_FOLDER_DIR` | Full path to the game's `Managed` folder that contains all the game's managed assemblies |
 | `DOORSTOP_PROCESS_PATH` | Full path to the game's executable. Useful when game doesn't ship with `System.Core` or you if you want to patch it. |
+| `DOORSTOP_DLL_SEARCH_DIRS` | List of paths where mono searches DLLs for before resorting to managed assembly resolvers. Paths are separated with `;` |
 
 ### Assembly references
 
