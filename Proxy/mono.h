@@ -38,6 +38,7 @@ void *(*mono_array_new)(void *domain, void *eclass, uintptr_t n);
 void *(*mono_get_string_class)();
 
 char *(*mono_assembly_getrootdir)();
+void (*mono_assembly_setrootdir)(const char*);
 
 // Additional funcs to bootstrap custom MONO
 void (*mono_set_dirs)(const char* assembly_dir, const char* config_dir);
@@ -45,6 +46,9 @@ void (*mono_config_parse)(const char* filename);
 void (*mono_set_assemblies_path)(const char* path);
 void *(*mono_object_to_string)(void* obj, void** exc);
 char *(*mono_string_to_utf8)(void* s);
+
+void *(*mono_image_open_from_data_with_name)(void *data, DWORD data_len, int need_copy, void *status, int refonly,
+                                             const char *name);
 
 
 /**
@@ -69,6 +73,7 @@ inline void load_mono_functions(HMODULE mono_lib) {
     GET_MONO_PROC(mono_array_new);
     GET_MONO_PROC(mono_get_string_class);
     GET_MONO_PROC(mono_assembly_getrootdir);
+    GET_MONO_PROC(mono_assembly_setrootdir);
     GET_MONO_PROC(mono_thread_current);
     GET_MONO_PROC(mono_thread_set_main);
     GET_MONO_PROC(mono_domain_set_config);
@@ -77,6 +82,7 @@ inline void load_mono_functions(HMODULE mono_lib) {
     GET_MONO_PROC(mono_set_assemblies_path);
     GET_MONO_PROC(mono_object_to_string);
     GET_MONO_PROC(mono_string_to_utf8);
+    GET_MONO_PROC(mono_image_open_from_data_with_name);
 
 #undef GET_MONO_PROC
 }

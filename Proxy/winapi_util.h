@@ -46,7 +46,7 @@ inline wchar_t *get_ini_entry(const wchar_t *config_file, const wchar_t *section
             free(result);
         i++;
         size = i * MAX_PATH + 1;
-        result = malloc(sizeof(wchar_t) * size);
+        result = calloc(sizeof(wchar_t), size);
         read = GetPrivateProfileStringW(section, key, default_val, result, size, config_file);
     }
     while (read == size - 1);
@@ -67,7 +67,7 @@ inline wchar_t *get_folder_name(wchar_t *str, size_t len, BOOL with_separator) {
     return result;
 }
 
-inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len) {
+inline wchar_t *get_file_name(wchar_t *str, size_t len, BOOL ext) {
     size_t ext_index = len;
     size_t i;
     for (i = len; i > 0; i--) {
@@ -78,7 +78,7 @@ inline wchar_t *get_file_name_no_ext(wchar_t *str, size_t len) {
             break;
     }
 
-    const size_t result_len = ext_index - i;
+    const size_t result_len = (ext ? len : ext_index) - i;
     wchar_t *result = calloc(result_len, sizeof(wchar_t));
     wmemcpy(result, str + i + 1, result_len - 1);
     return result;

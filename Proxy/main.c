@@ -31,6 +31,8 @@
 #include "assert_util.h"
 #include "proxy.h"
 
+static BOOL initialized = FALSE;
+
 // The hook for mono_jit_init_version
 // We use this since it will always be called once to initialize Mono's JIT
 void doorstop_invoke(void *domain) {
@@ -42,10 +44,8 @@ void doorstop_invoke(void *domain) {
         LOG("STDOUT handle path: %s\n", handlepath);
         });
 
-
     if (!config.ignore_disabled_env && GetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", NULL, 0) != 0) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!");
-        cleanup_config();
         free_logger();
         return;
     }
@@ -153,13 +153,17 @@ void doorstop_invoke(void *domain) {
         args = NULL;
     }
 
-    cleanup_config();
     free_logger();
 }
 
 int init_doorstop_il2cpp(const char *domain_name) {
     LOG("Starting IL2CPP domain \"%s\"\n", domain_name);
     const int orig_result = il2cpp_init(domain_name);
+
+    if (!config.mono_lib_dir || !config.mono_corlib_dir || !config.mono_config_dir) {
+        LOG("No mono paths set! Skipping loading...\n");
+        return orig_result;
+    }
 
     wchar_t *mono_lib_dir = get_full_path(config.mono_lib_dir);
     wchar_t *mono_corlib_dir = get_full_path(config.mono_corlib_dir);
@@ -200,12 +204,68 @@ int init_doorstop_il2cpp(const char *domain_name) {
 
 void *init_doorstop_mono(const char *root_domain_name, const char *runtime_version) {
     LOG("Starting Mono domain \"%s\"\n", root_domain_name);
+    if (config.mono_bcl_root_dir) {
+        char *root_dir = mono_assembly_getrootdir();
+        size_t len = strlen(root_dir);
+        LOG("Current root dir: %s\n", root_dir);
+
+        wchar_t *mono_bcl_root_dir_full = get_full_path(config.mono_bcl_root_dir);
+        char *mono_bcl_root_dir_narrow = narrow(mono_bcl_root_dir_full);
+        size_t len_bcl = strlen(mono_bcl_root_dir_narrow);
+        LOG("New root path: %s\n", mono_bcl_root_dir_narrow);
+
+        char *search_path = (char*)calloc(len + len_bcl + 2, sizeof(char));
+        memcpy(search_path, mono_bcl_root_dir_narrow, len_bcl);
+        search_path[len_bcl] = ';';
+        memcpy(search_path + len_bcl + 1, root_dir, len);
+        search_path[len + len_bcl + 1] = ';';
+
+        LOG("Search path: %s\n", search_path);
+        mono_set_assemblies_path(search_path);
+        free(search_path);
+
+        mono_assembly_setrootdir(mono_bcl_root_dir_narrow);
+
+        free(mono_bcl_root_dir_narrow);
+        free(mono_bcl_root_dir_full);
+    }
     void *domain = mono_jit_init_version(root_domain_name, runtime_version);
     doorstop_invoke(domain);
     return domain;
 }
 
-static BOOL initialized = FALSE;
+void *hook_mono_image_open_from_data_with_name(void *data, DWORD data_len, int need_copy, void *status, int refonly,
+                                               const char *name) {
+    void *result = NULL;
+    if (config.mono_bcl_root_dir) {
+        wchar_t *name_wide = widen(name);
+        wchar_t *name_file = get_file_name(name_wide, strlen(name), TRUE);
+        free(name_wide);
+
+        size_t name_file_len = wcslen(name_file);
+        size_t bcl_root_len = wcslen(config.mono_bcl_root_dir);
+
+        wchar_t *new_full_path = calloc(name_file_len + bcl_root_len + 2, sizeof(wchar_t));
+        wmemcpy(new_full_path, config.mono_bcl_root_dir, bcl_root_len);
+        new_full_path[bcl_root_len] = L'\\';
+        wmemcpy(new_full_path + bcl_root_len + 1, name_file, name_file_len);
+        free(name_file);
+
+        if (file_exists(new_full_path)) {
+            HANDLE h = CreateFileW(new_full_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                                   FILE_ATTRIBUTE_NORMAL, NULL);
+            DWORD size = GetFileSize(h, NULL);
+            void *buf = malloc(size);
+            BOOL res = ReadFile(h, buf, size, &size, NULL);
+            CloseHandle(h);
+            result = mono_image_open_from_data_with_name(buf, size, need_copy, status, refonly, name);
+        }
+        free(new_full_path);
+    }
+
+    if (!result) { result = mono_image_open_from_data_with_name(data, data_len, need_copy, status, refonly, name); }
+    return result;
+}
 
 void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
 #define REDIRECT_INIT(init_name, init_func, target)                 \
@@ -220,6 +280,7 @@ void * WINAPI get_proc_address_detour(HMODULE module, char const *name) {
     }
     REDIRECT_INIT("il2cpp_init", load_il2cpp_functions, init_doorstop_il2cpp);
     REDIRECT_INIT("mono_jit_init_version", load_mono_functions, init_doorstop_mono);
+    REDIRECT_INIT("mono_image_open_from_data_with_name", load_mono_functions, hook_mono_image_open_from_data_with_name);
     return (void*)GetProcAddress(module, name);
 
 #undef REDIRECT_INIT
@@ -298,7 +359,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad, LPVOID reserved
     const size_t dll_path_len = get_module_path(hInstDll, &dll_path, NULL, 0);
     LOG("DLL Path: %S\n", dll_path);
 
-    wchar_t *dll_name = get_file_name_no_ext(dll_path, dll_path_len);
+    wchar_t *dll_name = get_file_name(dll_path, dll_path_len, FALSE);
     LOG("Doorstop DLL Name: %S\n", dll_name);
 
     load_proxy(dll_name);

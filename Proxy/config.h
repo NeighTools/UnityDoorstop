@@ -14,8 +14,8 @@ struct {
     wchar_t *mono_lib_dir;
     wchar_t *mono_config_dir;
     wchar_t *mono_corlib_dir;
+    wchar_t *mono_bcl_root_dir;
 } config;
 
 
 void load_config();
-void cleanup_config();

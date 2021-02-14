@@ -20,7 +20,7 @@ void load_path_file(const wchar_t *path, const wchar_t *section, const wchar_t *
                     wchar_t **value) {
     wchar_t *tmp = get_ini_entry(path, section, key, def);
     LOG("CONFIG: %S.%S = %S\n", section, key, tmp);
-    if (!tmp)
+    if (!tmp || wcslen(tmp) == 0)
         return;
     *value = get_full_path(tmp);
     free(tmp);
@@ -36,6 +36,7 @@ inline void init_config_file() {
     load_bool_file(config_path, L"UnityDoorstop", L"ignoreDisableSwitch", L"false", &config.ignore_disabled_env);
     load_bool_file(config_path, L"UnityDoorstop", L"redirectOutputLog", L"false", &config.redirect_output_log);
     load_path_file(config_path, L"UnityDoorstop", L"targetAssembly", DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
+    load_path_file(config_path, L"UnityDoorstop", L"bclRedirectDir", NULL, &config.mono_bcl_root_dir);
 
     load_path_file(config_path, L"MonoBackend", L"runtimeLib", NULL, &config.mono_lib_dir);
     load_path_file(config_path, L"MonoBackend", L"configDir", NULL, &config.mono_config_dir);
@@ -109,21 +110,9 @@ void load_config() {
     config.mono_corlib_dir = NULL;
     config.mono_lib_dir = NULL;
     config.target_assembly = NULL;
+    config.mono_bcl_root_dir = NULL;
 
     init_config_file();
     init_cmd_args();
     init_env_vars();
-}
-
-void cleanup_config() {
-#define FREE_NON_NULL(val)  \
-    if ((val) != NULL)      \
-        free(val)
-
-    FREE_NON_NULL(config.target_assembly);
-    FREE_NON_NULL(config.mono_lib_dir);
-    FREE_NON_NULL(config.mono_config_dir);
-    FREE_NON_NULL(config.mono_corlib_dir);
-
-#undef FREE_NON_NULL
 }
