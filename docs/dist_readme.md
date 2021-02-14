@@ -97,12 +97,12 @@ redirectOutputLog=false
 # If enabled, DOORSTOP_DISABLE env var value is ignored
 # USE THIS ONLY WHEN ASKED TO OR YOU KNOW WHAT THIS MEANS
 ignoreDisableSwitch=false
-# Redirect the mono root directory to the given path
+# Overrides default Mono DLL search path
 # Sometimes it is needed to instruct Mono to seek its assemblies from a different path
 # (e.g. mscorlib is stripped in original game)
-# This option causes Mono to seek mscorlib and core libraries from a different folder
+# This option causes Mono to seek mscorlib and core libraries from a different folder before Managed
 # Original Managed folder is added as a secondary folder in the search path
-corlibRedirectDir=
+dllSearchPathOverride=
 
 
 # Settings related to bootstrapping a custom Mono runtime
