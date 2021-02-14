@@ -204,8 +204,8 @@ int init_doorstop_il2cpp(const char *domain_name) {
 
 void *init_doorstop_mono(const char *root_domain_name, const char *runtime_version) {
     LOG("Starting Mono domain \"%s\"\n", root_domain_name);
+    char* root_dir = mono_assembly_getrootdir();
     if (config.mono_corlib_redirect_dir) {
-        char *root_dir = mono_assembly_getrootdir();
         size_t len = strlen(root_dir);
         LOG("Current root dir: %s\n", root_dir);
 
@@ -218,16 +218,18 @@ void *init_doorstop_mono(const char *root_domain_name, const char *runtime_versi
         memcpy(search_path, mono_bcl_root_dir_narrow, len_bcl);
         search_path[len_bcl] = ';';
         memcpy(search_path + len_bcl + 1, root_dir, len);
-        search_path[len + len_bcl + 1] = ';';
 
         LOG("Search path: %s\n", search_path);
         mono_set_assemblies_path(search_path);
+        SetEnvironmentVariableA("DOORSTOP_DLL_SEARCH_DIRS", search_path);
         free(search_path);
 
         mono_assembly_setrootdir(mono_bcl_root_dir_narrow);
 
         free(mono_bcl_root_dir_narrow);
         free(mono_bcl_root_dir_full);
+    } else {
+        SetEnvironmentVariableA("DOORSTOP_DLL_SEARCH_DIRS", root_dir);
     }
     void *domain = mono_jit_init_version(root_domain_name, runtime_version);
     doorstop_invoke(domain);
