@@ -89,12 +89,31 @@ The structure of the configuration file is as follows:
 [UnityDoorstop]
 # Specifies whether assembly executing is enabled
 enabled=true
-
 # Specifies the path (absolute, or relative to the game's exe) to the DLL/EXE that should be executed by Doorstop
 targetAssembly=Doorstop.dll
-
 # Specifies whether Unity's output log should be redirected to <current folder>\output_log.txt
 redirectOutputLog=false
+# If enabled, DOORSTOP_DISABLE env var value is ignored
+# USE THIS ONLY WHEN ASKED TO OR YOU KNOW WHAT THIS MEANS
+ignoreDisableSwitch=false
+# Redirect the mono root directory to the given path
+# Sometimes it is needed to instruct Mono to seek its assemblies from a different path
+# (e.g. mscorlib is stripped in original game)
+# This option causes Mono to seek mscorlib and core libraries from a different folder
+# Original Managed folder is added as a secondary folder in the search path
+corlibRedirectDir=
+
+
+# Settings related to bootstrapping a custom Mono runtime
+# Do not use this in managed games!
+# These options are intended running custom mono in IL2CPP games!
+[MonoBackend]
+# Path to main mono.dll runtime library
+runtimeLib=
+# Path to mono config/etc directory
+configDir=
+# Path to core managed assemblies (mscorlib et al.) directory
+corlibDir=
 ```
 
 ## Configuration via command-line arguments
