@@ -135,12 +135,19 @@ void doorstop_invoke(void *domain) {
     mono_runtime_invoke(method, NULL, args, &exc);
     if (exc != NULL) {
         LOG("Error invoking code!\n");
-    	if (mono_object_to_string)
-    	{
-            void* str = mono_object_to_string(exc, NULL);
-            char* exc_str = mono_string_to_utf8(str);
-            LOG("Error message: %s\n", exc_str);
-    	}
+        void *ex_klass = mono_get_exception_class();
+        void *to_string_desc = mono_method_desc_new("*:ToString()", FALSE);
+        void *to_string_method = mono_method_desc_search_in_class(to_string_desc, ex_klass);
+        mono_method_desc_free(to_string_desc);
+        if (to_string_method) {
+            void *real_to_string_method = mono_object_get_virtual_method(exc, to_string_method);
+            void *exc2 = NULL;
+            void *str = mono_runtime_invoke(real_to_string_method, exc, NULL, &exc2);
+            if (!exc2) {
+                char *exc_str = mono_string_to_utf8(str);
+                LOG("Error message: %s\n", exc_str);
+            }
+        }
     }
     LOG("Done!\n");
 

@@ -28,7 +28,8 @@ void *(*mono_assembly_get_image)(void *assembly);
 void *(*mono_runtime_invoke)(void *method, void *obj, void **params, void **exc);
 
 void *(*mono_method_desc_new)(const char *name, int include_namespace);
-void *(*mono_method_desc_search_in_image)(void *desc, void *image);
+void* (*mono_method_desc_search_in_image)(void* desc, void* image);
+void *(*mono_method_desc_search_in_class)(void *desc, void *klass);
 void (*mono_method_desc_free)(void *desc);
 void *(*mono_method_signature)(void *method);
 UINT32 (*mono_signature_get_param_count)(void *sig);
@@ -49,6 +50,8 @@ char *(*mono_string_to_utf8)(void* s);
 void *(*mono_image_open_from_data_with_name)(void *data, DWORD data_len, int need_copy, void *status, int refonly,
                                              const char *name);
 
+void* (*mono_get_exception_class)();
+void* (*mono_object_get_virtual_method)(void* obj_raw, void* method);
 
 /**
 * \brief Loads Mono C API function pointers so that the above definitions can be called.
@@ -65,6 +68,7 @@ inline void load_mono_functions(HMODULE mono_lib) {
     GET_MONO_PROC(mono_runtime_invoke);
     GET_MONO_PROC(mono_jit_init_version);
     GET_MONO_PROC(mono_method_desc_new);
+    GET_MONO_PROC(mono_method_desc_search_in_class);
     GET_MONO_PROC(mono_method_desc_search_in_image);
     GET_MONO_PROC(mono_method_desc_free);
     GET_MONO_PROC(mono_method_signature);
@@ -81,6 +85,8 @@ inline void load_mono_functions(HMODULE mono_lib) {
     GET_MONO_PROC(mono_object_to_string);
     GET_MONO_PROC(mono_string_to_utf8);
     GET_MONO_PROC(mono_image_open_from_data_with_name);
+    GET_MONO_PROC(mono_get_exception_class);
+    GET_MONO_PROC(mono_object_get_virtual_method);
 
 #undef GET_MONO_PROC
 }
