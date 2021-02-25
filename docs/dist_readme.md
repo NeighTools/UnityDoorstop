@@ -125,5 +125,6 @@ To use the feature, run the game with the following command-line arguments:
 * `--doorstop-enable`: enable or disable Doorstop. Allowed values are `true` and `false`.
 * `--doorstop-target`: Target DLL to execute. Allows a path to the DLL.
 * `--redirect-output-log`: enable or disable redirecting output_log.txt to the game's root folder. Only for Unity 5+. Allowed values are `true` and `false`.
+* `--doorstop-dll-search-override`: Overrides default Mono DLL search path, see `dllSearchPathOverride` in configuration file for more details.
 
 If both configuration file and command-line arguments are present **command-line arguments take precedence*.*
