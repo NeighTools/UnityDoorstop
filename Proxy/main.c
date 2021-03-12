@@ -271,6 +271,8 @@ void *hook_mono_image_open_from_data_with_name(void *data, DWORD data_len, int n
             BOOL res = ReadFile(h, buf, size, &size, NULL);
             CloseHandle(h);
             result = mono_image_open_from_data_with_name(buf, size, need_copy, status, refonly, name);
+            if (need_copy)
+                free(buf);
         }
         free(new_full_path);
     }
