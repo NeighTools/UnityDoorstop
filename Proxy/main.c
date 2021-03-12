@@ -230,12 +230,16 @@ void *init_doorstop_mono(const char *root_domain_name, const char *runtime_versi
 
         LOG("Search path: %s\n", search_path);
         mono_set_assemblies_path(search_path);
-        SetEnvironmentVariableA("DOORSTOP_DLL_SEARCH_DIRS", search_path);
+        wchar_t* search_path_wide = widen(search_path);
+        SetEnvironmentVariableW(L"DOORSTOP_DLL_SEARCH_DIRS", search_path_wide);
+        free(search_path_wide);
         free(search_path);
         free(mono_bcl_root_dir_narrow);
         free(mono_bcl_root_dir_full);
     } else {
+        wchar_t* root_dir_wide = widen(root_dir);
         SetEnvironmentVariableA("DOORSTOP_DLL_SEARCH_DIRS", root_dir);
+        free(root_dir_wide);
     }
     void *domain = mono_jit_init_version(root_domain_name, runtime_version);
     doorstop_invoke(domain);
