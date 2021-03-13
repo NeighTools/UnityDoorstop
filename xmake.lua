@@ -12,10 +12,10 @@ target("doorstop")
         add_cxflags("-GS-", "-Ob2", "-MT", "-FS", "-GL-")
         add_shflags("-nodefaultlib",
                     "-entry:DllEntry",
-                    "-dynamicbase kernel32.lib",
-                    "-dynamicbase shell32.lib",
+                    "-dynamicbase:no",
                     {force=true})
+		add_links("shell32", "kernel32")
         add_defines("UNICODE")
     end
 
-    add_files("src/*.c")    
+    add_files("src/*.c")
