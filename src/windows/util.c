@@ -57,4 +57,36 @@ bool_t file_exists(char_t *file) {
            (ab & FILE_ATTRIBUTE_DIRECTORY) == 0;
 }
 
-void program_path(char_t *app_path) {}
+bool_t folder_exists(char_t *folder) {
+    DWORD ab = GetFileAttributes(folder);
+    return ab != INVALID_FILE_ATTRIBUTES &&
+           (ab & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+char_t *program_path() {
+    char_t *app_path = NULL;
+    get_module_path(NULL, &app_path, NULL, 0);
+    return app_path;
+}
+
+char_t *get_folder_name(char_t *path) {
+    size_t len = strlen(path);
+    size_t i;
+    for (i = len; i > 0; i--) {
+        char_t c = *(path + i);
+        if (c == TEXT('\\') || c == TEXT('/'))
+            break;
+    }
+    size_t result_len = i;
+    char_t *result = malloc((result_len + 1) * sizeof(char_t));
+    strncpy(result, path, result_len);
+    result[result_len] = TEXT('\0');
+    return result;
+}
+
+char_t *get_working_dir() {
+    DWORD len = GetCurrentDirectory(0, NULL);
+    char_t *result = malloc(sizeof(char_t) * len);
+    GetCurrentDirectory(len, *result);
+    return result;
+}

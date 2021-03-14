@@ -24,7 +24,7 @@ void doorstop_bootstrap(void *mono_domain) {
         strcpy(config_path, app_path);
 
         strcat(config_path, CONFIG_EXT);
-        char_t *folder_path = dirname(app_path);
+        char_t *folder_path = get_folder_name(app_path);
 
         char *config_path_n = narrow(config_path);
         char *folder_path_n = narrow(folder_path);
