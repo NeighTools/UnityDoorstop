@@ -55,21 +55,6 @@ char_t *strncpy_wide(char_t *dst, const char_t *src, size_t n) {
     return dst;
 }
 
-char_t *dirname(char_t *path) {
-    size_t len = strlen(path);
-    size_t i;
-    for (i = len; i > 0; i--) {
-        char_t c = *(path + i);
-        if (c == TEXT('\\') || c == TEXT('/'))
-            break;
-    }
-
-    const size_t result_len = i;
-    char_t *result = calloc(result_len + 1, sizeof(char_t));
-    strncpy(result, path, result_len);
-    return result;
-}
-
 char_t *getenv_wide(const char_t *name) {
     DWORD size = GetEnvironmentVariable(name, NULL, 0);
     if (size == 0)

@@ -35,8 +35,6 @@ char_t *strcpy_wide(char_t *dst, char_t *src);
 char_t *strncpy_wide(char_t *dst, char_t *src, size_t len);
 #define strncpy strncpy_wide
 
-char_t *dirname(char_t *path);
-
 inline void *dlsym(void *handle, const char *name) {
     return GetProcAddress((HMODULE)handle, name);
 }
@@ -59,8 +57,11 @@ char_t *getenv_wide(const char_t *name);
 #ifndef UNICODE
 #define CommandLineToArgv CommandLineToArgvA
 char **CommandLineToArgvA(char *cmd_line, int *argc);
+
+#define strcmpi lstrcmpiA
 #else
 #define CommandLineToArgv CommandLineToArgvW
+#define strcmpi lstrcmpiW
 #endif
 
 #endif
