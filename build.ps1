@@ -1,3 +1,12 @@
+param (
+    [ValidateSet("x86", "x64")]
+    [string[]]
+    $arch = @("x86", "x64"),
+    [Parameter(Position = 0, Mandatory = $false, ValueFromRemainingArguments = $true)]
+    [string[]]
+    $ScriptArgs
+)
+
 $VERSION = "2.5.2"
 
 function writeErrorTip($msg) {
@@ -34,6 +43,7 @@ if (!(Test-Path $XMAKE_DIR)) {
     }
     catch {
         writeErrorTip "Failed to extract!"
+        throw
     }
     finally {
         Remove-Item -Path $outfile
@@ -41,7 +51,7 @@ if (!(Test-Path $XMAKE_DIR)) {
 }
 
 $XMAKE_EXE = Join-Path $XMAKE_DIR "xmake.exe"
-Invoke-Expression "& $XMAKE_EXE f -a x86"
-Invoke-Expression "& $XMAKE_EXE $($args -join " ")"
-Invoke-Expression "& $XMAKE_EXE f -a x64"
-Invoke-Expression "& $XMAKE_EXE $($args -join " ")"
+foreach ($a in $Arch) {
+    Invoke-Expression "& $XMAKE_EXE f -a $a"
+    Invoke-Expression "& $XMAKE_EXE $($ScriptArgs -join " ")"
+}
