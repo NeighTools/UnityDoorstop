@@ -238,7 +238,7 @@ void *init_doorstop_mono(const char *root_domain_name, const char *runtime_versi
         free(mono_bcl_root_dir_full);
     } else {
         wchar_t* root_dir_wide = widen(root_dir);
-        SetEnvironmentVariableA("DOORSTOP_DLL_SEARCH_DIRS", root_dir);
+        SetEnvironmentVariableW(L"DOORSTOP_DLL_SEARCH_DIRS", root_dir_wide);
         free(root_dir_wide);
     }
     void *domain = mono_jit_init_version(root_domain_name, runtime_version);
