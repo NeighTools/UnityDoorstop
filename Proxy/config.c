@@ -41,6 +41,7 @@ inline void init_config_file() {
     load_path_file(config_path, L"MonoBackend", L"runtimeLib", NULL, &config.mono_lib_dir);
     load_path_file(config_path, L"MonoBackend", L"configDir", NULL, &config.mono_config_dir);
     load_path_file(config_path, L"MonoBackend", L"corlibDir", NULL, &config.mono_corlib_dir);
+    load_bool_file(config_path, L"MonoBackend", L"debug", L"false", &config.mono_debug);
 
     free(config_path);
 }
@@ -89,6 +90,7 @@ inline void init_cmd_args() {
         PARSE_ARG(L"--mono-runtime-lib", config.mono_lib_dir, load_path_argv);
         PARSE_ARG(L"--mono-config-dir", config.mono_config_dir, load_path_argv);
         PARSE_ARG(L"--mono-corlib-dir", config.mono_config_dir, load_path_argv);
+        PARSE_ARG(L"--mono-debug", config.mono_debug, load_bool_argv);
     }
 
     LocalFree(argv);

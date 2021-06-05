@@ -15,6 +15,7 @@ struct {
     wchar_t *mono_config_dir;
     wchar_t *mono_corlib_dir;
     wchar_t *mono_dll_search_path_override;
+    BOOL mono_debug;
 } config;
 
 
