@@ -48,6 +48,7 @@ inline void init_config_file() {
     load_path_file(config_path, L"MonoBackend", L"configDir", NULL, &config.mono_config_dir);
     load_path_file(config_path, L"MonoBackend", L"corlibDir", NULL, &config.mono_corlib_dir);
     load_bool_file(config_path, L"MonoBackend", L"debugEnabled", L"false", &config.mono_debug_enabled);
+    load_bool_file(config_path, L"MonoBackend", L"debugSuspend", L"false", &config.mono_debug_suspend);
     load_string_file(config_path, L"MonoBackend", L"debugAddress", L"127.0.0.1:10000", &config.mono_debug_address);
 
     free(config_path);
@@ -111,6 +112,7 @@ inline void init_cmd_args() {
         PARSE_ARG(L"--mono-config-dir", config.mono_config_dir, load_path_argv);
         PARSE_ARG(L"--mono-corlib-dir", config.mono_config_dir, load_path_argv);
         PARSE_ARG(L"--mono-debug-enabled", config.mono_debug_enabled, load_bool_argv);
+        PARSE_ARG(L"--mono-debug-suspend", config.mono_debug_suspend, load_bool_argv);
         PARSE_ARG(L"--mono-debug-address", config.mono_debug_address, load_string_argv);
     }
 

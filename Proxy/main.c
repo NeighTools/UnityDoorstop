@@ -208,11 +208,19 @@ int init_doorstop_il2cpp(const char *domain_name) {
         size_t len_debugger_option = strlen(debugger_option);
         char* debug_address = narrow(config.mono_debug_address);
         size_t len_debug_address = strlen(debug_address);
+        const char* no_suspend = ",suspend=n";
+        size_t len_no_suspend = strlen(no_suspend);
 
         size_t len_option = len_debugger_option + len_debug_address;
+        if (!config.mono_debug_suspend) {
+            len_option += len_no_suspend;
+        }
         char* option = malloc((len_option + 1) * sizeof(char));
         memcpy(option, debugger_option, len_debugger_option);
         memcpy(option + len_debugger_option, debug_address, len_debug_address);
+        if (!config.mono_debug_suspend) {
+            memcpy(option + len_debugger_option + len_debug_address, no_suspend, len_no_suspend);
+        }
         option[len_option + 1] = '\0';
 
         const char* options[] = {
