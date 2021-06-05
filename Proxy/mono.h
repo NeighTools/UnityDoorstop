@@ -53,6 +53,18 @@ void *(*mono_image_open_from_data_with_name)(void *data, DWORD data_len, int nee
 void* (*mono_get_exception_class)();
 void* (*mono_object_get_virtual_method)(void* obj_raw, void* method);
 
+void* (*mono_jit_parse_options)(int argc, const char *argv);
+
+typedef enum {
+    MONO_DEBUG_FORMAT_NONE,
+    MONO_DEBUG_FORMAT_MONO,
+    /* Deprecated, the mdb debugger is not longer supported. */
+    MONO_DEBUG_FORMAT_DEBUGGER
+} MonoDebugFormat;
+
+void* (*mono_debug_init)(MonoDebugFormat format);
+void* (*mono_debug_domain_create)(void *domain);
+
 /**
 * \brief Loads Mono C API function pointers so that the above definitions can be called.
 * \param mono_lib Mono.dll module.
@@ -87,6 +99,9 @@ inline void load_mono_functions(HMODULE mono_lib) {
     GET_MONO_PROC(mono_image_open_from_data_with_name);
     GET_MONO_PROC(mono_get_exception_class);
     GET_MONO_PROC(mono_object_get_virtual_method);
+    GET_MONO_PROC(mono_jit_parse_options);
+    GET_MONO_PROC(mono_debug_init);
+    GET_MONO_PROC(mono_debug_domain_create);
 
 #undef GET_MONO_PROC
 }

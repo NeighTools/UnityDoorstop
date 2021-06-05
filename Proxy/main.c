@@ -203,7 +203,18 @@ int init_doorstop_il2cpp(const char *domain_name) {
     mono_set_assemblies_path(mono_corlib_dir_narrow);
     mono_config_parse(NULL);
 
+    const char* opt[2] =
+    {
+        "--debugger-agent=address=0.0.0.0:10000,transport=dt_socket,server=y",
+        "--soft-breakpoints"
+    };
+
+    mono_jit_parse_options(2, opt);
+
+    mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+
     void *domain = mono_jit_init_version("Doorstop Root Domain", NULL);
+    mono_debug_domain_create(domain);
     LOG("Created domain: %p\n", domain);
 
     doorstop_invoke(domain);
