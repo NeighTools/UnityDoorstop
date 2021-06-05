@@ -203,18 +203,34 @@ int init_doorstop_il2cpp(const char *domain_name) {
     mono_set_assemblies_path(mono_corlib_dir_narrow);
     mono_config_parse(NULL);
 
-    const char* opt[2] =
-    {
-        "--debugger-agent=address=0.0.0.0:10000,transport=dt_socket,server=y",
-        "--soft-breakpoints"
-    };
+    if (config.mono_debug_enabled) {
+        const char* debugger_option = "--debugger-agent=transport=dt_socket,server=y,address=";
+        size_t len_debugger_option = strlen(debugger_option);
+        char* debug_address = narrow(config.mono_debug_address);
+        size_t len_debug_address = strlen(debug_address);
 
-    mono_jit_parse_options(2, opt);
+        size_t len_option = len_debugger_option + len_debug_address;
+        char* option = malloc((len_option + 1) * sizeof(char));
+        memcpy(option, debugger_option, len_debugger_option);
+        memcpy(option + len_debugger_option, debug_address, len_debug_address);
+        option[len_option + 1] = '\0';
 
-    mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+        const char* options[] = {
+            option,
+            "--soft-breakpoints"
+        };
+        mono_jit_parse_options(2, options);
+        mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+        LOG("Mono debugger listening on %s\n", debug_address);
+
+        free(option);
+        free(debug_address);
+    }
 
     void *domain = mono_jit_init_version("Doorstop Root Domain", NULL);
-    mono_debug_domain_create(domain);
+    if (config.mono_debug_enabled) {
+        mono_debug_domain_create(domain);
+    }
     LOG("Created domain: %p\n", domain);
 
     doorstop_invoke(domain);

@@ -115,6 +115,10 @@ runtimeLib=
 configDir=
 # Path to core managed assemblies (mscorlib et al.) directory
 corlibDir=
+# Specifies whether the mono soft debugger is enabled
+debugEnabled=false
+# Specifies the listening address the soft debugger
+debugAddress=127.0.0.1:10000
 ```
 
 ## Configuration via command-line arguments
