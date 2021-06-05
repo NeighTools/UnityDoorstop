@@ -26,6 +26,12 @@ void load_path_file(const wchar_t *path, const wchar_t *section, const wchar_t *
     free(tmp);
 }
 
+void load_string_file(const wchar_t* path, const wchar_t* section, const wchar_t* key, const wchar_t* def,
+    wchar_t** value) {
+    *value = get_ini_entry(path, section, key, def);
+    LOG("CONFIG: %S.%S = %S\n", section, key, *value);
+}
+
 inline void init_config_file() {
     if (!file_exists(CONFIG_NAME))
         return;
@@ -41,6 +47,8 @@ inline void init_config_file() {
     load_path_file(config_path, L"MonoBackend", L"runtimeLib", NULL, &config.mono_lib_dir);
     load_path_file(config_path, L"MonoBackend", L"configDir", NULL, &config.mono_config_dir);
     load_path_file(config_path, L"MonoBackend", L"corlibDir", NULL, &config.mono_corlib_dir);
+    load_bool_file(config_path, L"MonoBackend", L"debugEnabled", L"false", &config.mono_debug_enabled);
+    load_string_file(config_path, L"MonoBackend", L"debugAddress", L"127.0.0.1:10000", &config.mono_debug_address);
 
     free(config_path);
 }
@@ -71,6 +79,19 @@ BOOL load_path_argv(wchar_t **argv, int *i, int argc, const wchar_t *arg_name, w
     return FALSE;
 }
 
+BOOL load_string_argv(wchar_t** argv, int* i, int argc, const wchar_t* arg_name, wchar_t** value) {
+    if (STR_EQUAL(argv[*i], arg_name) && *i < argc) {
+        if (*value != NULL)
+            free(*value);
+        const size_t len = wcslen(argv[*i + 1]) + 1;
+        *value = malloc(sizeof(wchar_t) * len);
+        wmemcpy(*value, argv[++ * i], len);
+        LOG("ARGV: %S = %S\n", arg_name, *value);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 inline void init_cmd_args() {
     wchar_t *args = GetCommandLineW();
     int argc = 0;
@@ -89,6 +110,8 @@ inline void init_cmd_args() {
         PARSE_ARG(L"--mono-runtime-lib", config.mono_lib_dir, load_path_argv);
         PARSE_ARG(L"--mono-config-dir", config.mono_config_dir, load_path_argv);
         PARSE_ARG(L"--mono-corlib-dir", config.mono_config_dir, load_path_argv);
+        PARSE_ARG(L"--mono-debug-enabled", config.mono_debug_enabled, load_bool_argv);
+        PARSE_ARG(L"--mono-debug-address", config.mono_debug_address, load_string_argv);
     }
 
     LocalFree(argv);
