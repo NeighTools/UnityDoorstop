@@ -53,7 +53,7 @@ void *(*mono_image_open_from_data_with_name)(void *data, DWORD data_len, int nee
 void* (*mono_get_exception_class)();
 void* (*mono_object_get_virtual_method)(void* obj_raw, void* method);
 
-void* (*mono_jit_parse_options)(int argc, const char* argv);
+void* (*mono_jit_parse_options)(int argc, const char** argv);
 
 typedef enum {
     MONO_DEBUG_FORMAT_NONE,
