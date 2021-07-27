@@ -1,13 +1,13 @@
 param (
     [ValidateSet("x86", "x64")]
     [string[]]
-    $arch = @("x86", "x64"),
+    $Arch = @("x86", "x64"),
     [Parameter(Position = 0, Mandatory = $false, ValueFromRemainingArguments = $true)]
     [string[]]
     $ScriptArgs
 )
 
-$VERSION = "2.5.2"
+$VERSION = "2.5.6"
 
 function writeErrorTip($msg) {
     Write-Host $msg -BackgroundColor Red -ForegroundColor White
@@ -24,11 +24,11 @@ if ((Test-Path $PSScriptRoot) -and !(Test-Path $TOOLS_DIR)) {
 }
 
 if (!(Test-Path $XMAKE_DIR)) {
-    $outfile = Join-Path $temppath "$pid-xmake.zip"
+    $outfile = Join-Path $TOOLS_DIR "$pid-xmake.zip"
     $x64arch = @('AMD64', 'IA64', 'ARM64')
-    $arch = if ($env:PROCESSOR_ARCHITECTURE -in $x64arch -or $env:PROCESSOR_ARCHITEW6432 -in $x64arch) { 'win64' } else { 'win32' }
-    $url = "https://github.com/xmake-io/xmake/releases/download/v$VERSION/xmake-v$VERSION.$arch.zip"
-    Write-Host "Downloading xmake ($arch) from $url..."
+    $os_arch = if ($env:PROCESSOR_ARCHITECTURE -in $x64arch -or $env:PROCESSOR_ARCHITEW6432 -in $x64arch) { 'win64' } else { 'win32' }
+    $url = "https://github.com/xmake-io/xmake/releases/download/v$VERSION/xmake-v$VERSION.$os_arch.zip"
+    Write-Host "Downloading xmake ($os_arch) from $url..."
 
     try {
         Invoke-WebRequest $url -OutFile $outfile -UseBasicParsing
