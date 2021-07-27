@@ -1,4 +1,5 @@
 #include "../util.h"
+#include "wincrt.h"
 #include <windows.h>
 
 char *narrow(const char_t *str) {
