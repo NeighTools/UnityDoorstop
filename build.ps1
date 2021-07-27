@@ -1,4 +1,6 @@
 param (
+    [Parameter(Mandatory = $false)]
+    [switch] $with_logging = $false,
     [ValidateSet("x86", "x64")]
     [string[]]
     $Arch = @("x86", "x64"),
@@ -52,6 +54,7 @@ if (!(Test-Path $XMAKE_DIR)) {
 
 $XMAKE_EXE = Join-Path $XMAKE_DIR "xmake.exe"
 foreach ($a in $Arch) {
-    Invoke-Expression "& $XMAKE_EXE f -a $a"
+    $verbose_opt = if ($with_logging) { "--include_logging=y" } else { "" }
+    Invoke-Expression "& $XMAKE_EXE f -a $a $verbose_opt"
     Invoke-Expression "& $XMAKE_EXE $($ScriptArgs -join " ")"
 }
