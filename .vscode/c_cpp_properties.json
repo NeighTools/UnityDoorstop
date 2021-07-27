@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Release",
+            "defines": [
+                "UNICODE"
+            ]
+        },
+        {
+            "name": "Verbose",
+            "defines": [
+                "VERBOSE",
+                "UNICODE"
+            ]
+        }
+    ],
+    "version": 4
+}

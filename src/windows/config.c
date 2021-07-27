@@ -77,7 +77,7 @@ inline void init_config_file() {
 bool_t load_bool_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
                       bool_t *value) {
     if (STR_EQUAL(argv[*i], arg_name) && *i < argc) {
-        wchar_t *par = argv[++*i];
+        char_t *par = argv[++*i];
         if (STR_EQUAL(par, TEXT("true")))
             *value = TRUE;
         else if (STR_EQUAL(par, TEXT("false")))
@@ -132,11 +132,12 @@ inline void init_cmd_args() {
 }
 
 inline void init_env_vars() {
-    if (!config.ignore_disabled_env &&
-        getenv(TEXT("DOORSTOP_DISABLE"), NULL, 0) != 0) {
+    char_t *disable_env = getenv(TEXT("DOORSTOP_DISABLE"));
+    if (!config.ignore_disabled_env && disable_env != 0) {
         LOG("DOORSTOP_DISABLE is set! Disabling Doorstop!\n");
         config.enabled = FALSE;
     }
+    shutenv(disable_env);
 }
 
 void load_config() {

@@ -4,7 +4,9 @@
 
 char *narrow(const char_t *str) {
 #ifndef UNICODE
-    return str;
+    char *result = (char *)malloc(strlen(str) + 1);
+    strcpy(result, str);
+    return result;
 #else
     const int req_size =
         WideCharToMultiByte(CP_UTF8, 0, str, -1, NULL, 0, NULL, NULL);
@@ -16,7 +18,9 @@ char *narrow(const char_t *str) {
 
 char_t *widen(const char *str) {
 #ifndef UNICODE
-    return str;
+    char_t *result = (char_t *)malloc(strlen(str) + 1);
+    strcpy(result, str);
+    return result;
 #else
     const int req_size = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
     wchar_t *result = malloc(req_size * sizeof(wchar_t));
@@ -47,7 +51,7 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
 
 char_t *get_full_path(char_t *path) {
     const DWORD needed = GetFullPathName(path, 0, NULL, NULL);
-    wchar_t *res = malloc(sizeof(char_t) * needed);
+    char_t *res = malloc(sizeof(char_t) * needed);
     GetFullPathName(path, needed, res, NULL);
     return res;
 }
@@ -88,6 +92,6 @@ char_t *get_folder_name(char_t *path) {
 char_t *get_working_dir() {
     DWORD len = GetCurrentDirectory(0, NULL);
     char_t *result = malloc(sizeof(char_t) * len);
-    GetCurrentDirectory(len, *result);
+    GetCurrentDirectory(len, result);
     return result;
 }

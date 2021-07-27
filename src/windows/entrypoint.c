@@ -27,7 +27,7 @@ bool_t fix_cwd() {
     free(app_path);
     free(app_dir);
     free(working_dir);
-    return fix_cwd;
+    return fixed_cwd;
 }
 
 BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,

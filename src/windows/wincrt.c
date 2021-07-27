@@ -38,7 +38,7 @@ char_t *strcat_wide(char_t *dst, const char_t *src) {
     return strncpy(dst + size, src, size2 + 1);
 }
 
-char_t *strcpy_wide(char_t *dst, char_t *src) {
+char_t *strcpy_wide(char_t *dst, const char_t *src) {
     char_t *d = dst;
     const char_t *s = src;
     while (*s)
@@ -64,6 +64,12 @@ char_t *getenv_wide(const char_t *name) {
     return buf;
 }
 
+void shutenv(char_t *buf) {
+    if (buf) {
+        free(buf);
+    }
+}
+
 #ifndef UNICODE
 LPSTR *CommandLineToArgvA(LPCSTR cmd_line, int *argc) {
     ULONG len = strlen(cmd_line);
@@ -83,7 +89,7 @@ LPSTR *CommandLineToArgvA(LPCSTR cmd_line, int *argc) {
     i = 0;
 
     CHAR a;
-    while (a = cmd_line[i]) {
+    while ((a = cmd_line[i])) {
         if (in_qm) {
             if (a == '\"') {
                 in_qm = FALSE;

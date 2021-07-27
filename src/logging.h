@@ -1,18 +1,6 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-/**
- * @brief Log a message in verbose mode
- */
-#define LOG(message, ...)
-
-#define ASSERT_F(test, message, ...)
-#define ASSERT(test, message)
-#define ASSERT_SOFT(test, ...)
-
-void init_logger();
-void free_logger();
-
 #if VERBOSE
 
 #if _WIN32
@@ -23,6 +11,15 @@ void free_logger();
 #endif
 
 #else
+
+/**
+ * @brief Log a message in verbose mode
+ */
+#define LOG(message, ...)
+
+#define ASSERT_F(test, message, ...)
+#define ASSERT(test, message)
+#define ASSERT_SOFT(test, ...)
 
 inline void init_logger() {}
 inline void free_logger() {}

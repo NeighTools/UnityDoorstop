@@ -19,20 +19,20 @@ void *memset(void *dst, int c, size_t n);
 void *memcpy(void *dst, const void *src, size_t n);
 #pragma intrinsic(memcpy)
 
-size_t strlen_wide(char_t const *str);
+size_t strlen_wide(const char_t *str);
 #define strlen strlen_wide
 
 void *malloc(size_t size);
 
 void *calloc(size_t num, size_t size);
 
-char_t *strcat_wide(char_t *dst, char_t *src);
+char_t *strcat_wide(char_t *dst, const char_t *src);
 #define strcat strcat_wide
 
-char_t *strcpy_wide(char_t *dst, char_t *src);
+char_t *strcpy_wide(char_t *dst, const char_t *src);
 #define strcpy strcpy_wide
 
-char_t *strncpy_wide(char_t *dst, char_t *src, size_t len);
+char_t *strncpy_wide(char_t *dst, const char_t *src, size_t len);
 #define strncpy strncpy_wide
 
 inline void *dlsym(void *handle, const char *name) {
@@ -54,9 +54,11 @@ inline int setenv(const char_t *name, const char_t *value, int overwrite) {
 char_t *getenv_wide(const char_t *name);
 #define getenv getenv_wide
 
+void shutenv(char_t *val);
+
 #ifndef UNICODE
 #define CommandLineToArgv CommandLineToArgvA
-char **CommandLineToArgvA(char *cmd_line, int *argc);
+LPSTR *CommandLineToArgvA(LPCSTR cmd_line, int *argc);
 
 #define strcmpi lstrcmpiA
 #else

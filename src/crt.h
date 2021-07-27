@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define shutenv(val)
+
 #endif
 
 #endif

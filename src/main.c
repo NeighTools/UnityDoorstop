@@ -131,7 +131,7 @@ int init_il2cpp(const char *domain_name) {
         return orig_result;
     }
 
-    const void *mono_module = dlopen(mono_lib_dir, RTLD_LAZY);
+    void *mono_module = dlopen(mono_lib_dir, RTLD_LAZY);
     LOG("Loaded mono.dll: %p\n", mono_module);
     if (!mono_module) {
         LOG("Failed to load mono.dll! Skipping!");
