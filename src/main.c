@@ -153,3 +153,26 @@ int init_il2cpp(const char *domain_name) {
 
     return orig_result;
 }
+
+void start_logger(void *doorstop_module, bool_t fixed_cwd) {
+    init_logger();
+    char_t *app_path = program_path();
+    char_t *app_dir = get_folder_name(app_path);
+    char_t *working_dir = get_working_dir();
+    char_t *doorstop_path = NULL;
+    size_t doorstop_path_len =
+        get_module_path(doorstop_module, &doorstop_path, NULL, 0);
+
+    LOG("Doorstop started!\n") LOG("Executable path: %s\n", app_path);
+    LOG("Application dir: %s\n", app_dir);
+    LOG("Working dir: %s\n", working_dir);
+
+    if (fixed_cwd) {
+        LOG("WARN: Working directory was not the same as app directory, fixed "
+            "it automatically.\n");
+    }
+
+    free(app_path);
+    free(app_dir);
+    free(working_dir);
+}

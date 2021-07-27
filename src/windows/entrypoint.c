@@ -1,4 +1,5 @@
 #include "../config.h"
+#include "../logging.h"
 #include "../main.h"
 #include "wincrt.h"
 #include <windows.h>
@@ -39,5 +40,6 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     h_heap = GetProcessHeap();
     load_config();
-    fix_cwd();
+    bool_t fixed_cwd = fix_cwd();
+    start_logger(hInstDll, fixed_cwd);
 }
