@@ -86,6 +86,17 @@ char_t *get_full_path(char_t *path);
 char_t *get_folder_name(char_t *path);
 
 /**
+ * @brief Get the file name from the full path
+ *
+ * @remark Returned value must be freed by the caller.
+ *
+ * @param path Full path to get file name from.
+ * @param with_ext Whether to include file extension or not.
+ * @return char_t* File name part of the path.
+ */
+char_t *get_file_name(char_t *path, bool_t with_ext);
+
+/**
  * @brief Check if a file exists.
  *
  * @param file File path to check.
@@ -118,5 +129,7 @@ char_t *get_working_dir();
  * @return char_t* Absolue path to the current executable.
  */
 char_t *program_path();
+
+size_t get_file_size(void *file);
 
 #endif

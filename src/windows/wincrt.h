@@ -56,6 +56,10 @@ char_t *getenv_wide(const char_t *name);
 
 void shutenv(char_t *val);
 
+void *fopen(char_t *filename, const char_t *mode);
+size_t fread(void *ptr, size_t size, size_t count, void *stream);
+int fclose(void *stream);
+
 #ifndef UNICODE
 #define CommandLineToArgv CommandLineToArgvA
 LPSTR *CommandLineToArgvA(LPCSTR cmd_line, int *argc);

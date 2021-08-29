@@ -1,3 +1,4 @@
+#include "main.h"
 #include "config.h"
 #include "crt.h"
 #include "il2cpp.h"
@@ -154,25 +155,70 @@ int init_il2cpp(const char *domain_name) {
     return orig_result;
 }
 
-void start_logger(void *doorstop_module, bool_t fixed_cwd) {
+DoorstopPaths init(void *doorstop_module, bool_t fixed_cwd) {
     init_logger();
     char_t *app_path = program_path();
     char_t *app_dir = get_folder_name(app_path);
     char_t *working_dir = get_working_dir();
     char_t *doorstop_path = NULL;
-    size_t doorstop_path_len =
-        get_module_path(doorstop_module, &doorstop_path, NULL, 0);
+    get_module_path(doorstop_module, &doorstop_path, NULL, 0);
 
-    LOG("Doorstop started!\n") LOG("Executable path: %s\n", app_path);
+    char_t *doorstop_filename = get_file_name(doorstop_path, FALSE);
+
+    LOG("Doorstop started!\n");
+    LOG("Executable path: %s\n", app_path);
     LOG("Application dir: %s\n", app_dir);
     LOG("Working dir: %s\n", working_dir);
+    LOG("Doorstop library path: %s\n", doorstop_path);
+    LOG("Doorstop library name: %s\n", doorstop_filename);
 
     if (fixed_cwd) {
         LOG("WARN: Working directory was not the same as app directory, fixed "
             "it automatically.\n");
     }
 
-    free(app_path);
-    free(app_dir);
-    free(working_dir);
+    return (DoorstopPaths){app_path, app_dir, working_dir, doorstop_path,
+                           doorstop_filename};
+}
+
+void *hook_mono_image_open_from_data_with_name(void *data,
+                                               unsigned long data_len,
+                                               int need_copy,
+                                               MonoImageOpenStatus *status,
+                                               int refonly, const char *name) {
+    void *result = NULL;
+    if (config.mono_dll_search_path_override) {
+        char_t *name_wide = widen(name);
+        char_t *name_file = get_file_name(name_wide, strlen(name), TRUE);
+        free(name_wide);
+
+        size_t name_file_len = strlen(name_file);
+        size_t bcl_root_len = strlen(config.mono_dll_search_path_override);
+
+        char_t *new_full_path =
+            calloc(name_file_len + bcl_root_len + 2, sizeof(char_t));
+        strcpy(new_full_path, config.mono_dll_search_path_override);
+        new_full_path[bcl_root_len] = TEXT('/');
+        strcpy(new_full_path + bcl_root_len + 1, name_file);
+        free(name_file);
+
+        if (file_exists(new_full_path)) {
+            void *file = fopen(new_full_path, "r");
+            size_t size = get_file_size(file);
+            void *buf = malloc(size);
+            fread(buf, 1, size, file);
+            fclose(file);
+            result = mono.image_open_from_data_with_name(buf, size, need_copy,
+                                                         status, refonly, name);
+            if (need_copy)
+                free(buf);
+        }
+        free(new_full_path);
+    }
+
+    if (!result) {
+        result = mono.image_open_from_data_with_name(data, data_len, need_copy,
+                                                     status, refonly, name);
+    }
+    return result;
 }

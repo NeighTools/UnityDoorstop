@@ -74,17 +74,39 @@ char_t *program_path() {
     return app_path;
 }
 
-char_t *get_folder_name(char_t *path) {
+typedef struct {
+    size_t ext;
+    size_t parent;
+    size_t len;
+} PathParts;
+
+PathParts split_path(char_t *path) {
     size_t len = strlen(path);
+    size_t ext = len;
     size_t i;
     for (i = len; i > 0; i--) {
         char_t c = *(path + i);
-        if (c == TEXT('\\') || c == TEXT('/'))
+        if (c == TEXT('.') && ext == len)
+            ext = i;
+        else if (c == TEXT('\\') || c == TEXT('/'))
             break;
     }
-    size_t result_len = i;
+    return (PathParts){.ext = ext, .parent = i, .len = len};
+}
+
+char_t *get_folder_name(char_t *path) {
+    PathParts parts = split_path(path);
+    char_t *result = malloc((parts.parent + 1) * sizeof(char_t));
+    strncpy(result, path, parts.parent);
+    result[parts.parent] = TEXT('\0');
+    return result;
+}
+
+char_t *get_file_name(char_t *path, bool_t with_ext) {
+    PathParts parts = split_path(path);
+    size_t result_len = (with_ext ? parts.len : parts.ext) - parts.parent;
     char_t *result = malloc((result_len + 1) * sizeof(char_t));
-    strncpy(result, path, result_len);
+    strncpy(result, path + parts.parent + 1, result_len - 1);
     result[result_len] = TEXT('\0');
     return result;
 }
@@ -95,3 +117,5 @@ char_t *get_working_dir() {
     GetCurrentDirectory(len, result);
     return result;
 }
+
+size_t get_file_size(void *file) { return (size_t)GetFileSize(file, NULL); }

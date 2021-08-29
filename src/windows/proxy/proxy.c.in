@@ -7,7 +7,7 @@
 
 ${PROXY_DEFS}
 
-void load_functions(HMODULE dll)
+void load_functions(void *dll)
 {
 ${PROXY_ADDS}
 }

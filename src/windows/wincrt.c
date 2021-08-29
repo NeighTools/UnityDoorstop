@@ -70,6 +70,19 @@ void shutenv(char_t *buf) {
     }
 }
 
+void *fopen(char_t *filename, const char_t *mode) {
+    return CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
+                      OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+}
+
+size_t fread(void *ptr, size_t size, size_t count, void *stream) {
+    size_t read_size = 0;
+    ReadFile(stream, ptr, size * count, &read_size, NULL);
+    return read_size;
+}
+
+int fclose(void *stream) { CloseHandle(stream); }
+
 #ifndef UNICODE
 LPSTR *CommandLineToArgvA(LPCSTR cmd_line, int *argc) {
     ULONG len = strlen(cmd_line);

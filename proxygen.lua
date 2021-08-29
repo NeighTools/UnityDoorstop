@@ -29,8 +29,9 @@ function add_proxydef(filename)
             proxy_defs = proxy_defs ..
                              format("extern FARPROC __%s__;\r\n", func)
             proxy_adds = proxy_adds ..
-                             format("__%s__ = GetProcAddress(dll, \"%s\");\r\n",
-                                    func, func)
+                             format(
+                                 "__%s__ = GetProcAddress((HMODULE)dll, \"%s\");\r\n",
+                                 func, func)
 
             exports_funcs = exports_funcs .. func .. "\r\n"
         end

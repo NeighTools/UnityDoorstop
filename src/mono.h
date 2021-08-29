@@ -27,10 +27,20 @@ DEF_CALL(void, config_parse, const char *filename)
 DEF_CALL(void, set_assemblies_path, const char *path)
 DEF_CALL(void *, object_to_string, void *obj, void **exc)
 DEF_CALL(char *, string_to_utf8, void *s)
+DEF_CALL(void *, image_open_from_data_with_name, void *data,
+         unsigned long data_len, int need_copy, MonoImageOpenStatus *status,
+         int refonly, const char *name)
 #endif
 
 #ifndef MONO_H
 #define MONO_H
+
+typedef enum {
+    MONO_IMAGE_OK,
+    MONO_IMAGE_ERROR_ERRNO,
+    MONO_IMAGE_MISSING_ASSEMBLYREF,
+    MONO_IMAGE_IMAGE_INVALID
+} MonoImageOpenStatus;
 
 #define IMPORT_PREFIX mono
 #include "func_import.h"

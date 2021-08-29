@@ -49,6 +49,8 @@ struct {
      * @brief Path to mono root directory when bootstrapping Il2Cpp.
      */
     char_t *mono_corlib_dir;
+
+    char_t *mono_dll_search_path_override;
 } config;
 
 /**
