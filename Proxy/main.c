@@ -66,7 +66,9 @@ void doorstop_invoke(void *domain) {
 
         LOG("Setting config paths: base dir: %s; config path: %s\n", folder_path_n, exe_path_n);
 
-        mono_domain_set_config(domain, folder_path_n, exe_path_n);
+        // TODO: Doesn't yet work with .NET mono but it is needed by Unity mono
+        //mono_domain_set_config(domain, folder_path_n, exe_path_n);
+        LOG("Done setting config paths\n");
 
         free(exe_path);
         free(folder_name);
@@ -201,7 +203,8 @@ int init_doorstop_il2cpp(const char *domain_name) {
     char *mono_config_dir_narrow = narrow(mono_config_dir);
     mono_set_dirs(mono_corlib_dir_narrow, mono_config_dir_narrow);
     mono_set_assemblies_path(mono_corlib_dir_narrow);
-    mono_config_parse(NULL);
+    if (mono_config_parse)
+        mono_config_parse(NULL);
 
     if (config.mono_debug_enabled) {
         const char* debugger_option = "--debugger-agent=transport=dt_socket,server=y,address=";
