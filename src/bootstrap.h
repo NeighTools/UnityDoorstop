@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef BOOTSTRAP_H
+#define BOOTSTRAP_H
 
 #include "il2cpp.h"
 #include "mono.h"
@@ -12,15 +12,5 @@ void *hook_mono_image_open_from_data_with_name(void *data,
                                                int need_copy,
                                                MonoImageOpenStatus *status,
                                                int refonly, const char *name);
-typedef struct {
-    char_t *app_path;
-    char_t *app_dir;
-    char_t *working_dir;
-    char_t *doorstop_path;
-    char_t *doorstop_filename;
-} DoorstopPaths;
-
-DoorstopPaths *paths_init(void *doorstop_module, bool_t fixed_cwd);
-void paths_free(DoorstopPaths *paths);
 
 #endif

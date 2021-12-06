@@ -31,7 +31,7 @@ DEF_CALL(void *, image_open_from_data_with_name, void *data,
          unsigned long data_len, int need_copy, MonoImageOpenStatus *status,
          int refonly, const char *name)
 DEF_CALL(void *, assembly_load_from_full, void *image, const char *fname,
-         MonoImageOpenStatus *status, int refonly);
+         MonoImageOpenStatus *status, int refonly)
 #endif
 
 #ifndef MONO_H

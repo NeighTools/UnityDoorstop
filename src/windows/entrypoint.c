@@ -1,7 +1,8 @@
+#include "../bootstrap.h"
 #include "../config.h"
 #include "../crt.h"
 #include "../logging.h"
-#include "../main.h"
+#include "../paths.h"
 #include "hook.h"
 #include "proxy/proxy.h"
 #include <windows.h>
@@ -159,6 +160,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     h_heap = GetProcessHeap();
     bool_t fixed_cwd = fix_cwd();
+    init_logger();
     DoorstopPaths *paths = paths_init(hInstDll, fixed_cwd);
 
     GetStdHandle(STD_OUTPUT_HANDLE);
@@ -185,7 +187,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     inject(paths);
 
-    paths_free(&paths);
+    paths_free(paths);
 
     return TRUE;
 }

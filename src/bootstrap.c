@@ -1,9 +1,10 @@
-#include "main.h"
+#include "bootstrap.h"
 #include "config.h"
 #include "crt.h"
 #include "il2cpp.h"
 #include "logging.h"
 #include "mono.h"
+#include "paths.h"
 #include "util.h"
 
 void doorstop_bootstrap(void *mono_domain) {
@@ -130,6 +131,30 @@ void doorstop_bootstrap(void *mono_domain) {
 
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
     LOG("Starting mono domain \"%s\"", root_domain_name);
+    char_t *root_dir = widen(mono.assembly_getrootdir());
+    LOG("Current root: %s\n", root_dir);
+    if (config.mono_dll_search_path_override) {
+        LOG("Overriding mono DLL search path\n");
+
+        char_t *override_dir_full =
+            get_full_path(config.mono_dll_search_path_override);
+        LOG("Override root path: %s\n", override_dir_full);
+
+        char_t *mono_search_path = calloc(
+            strlen(root_dir) + strlen(override_dir_full) + 2, sizeof(char_t));
+        strcat(mono_search_path, override_dir_full);
+        strcat(mono_search_path, TEXT(";"));
+        strcat(mono_search_path, root_dir);
+
+        LOG("Mono search path: %s\n", mono_search_path);
+        char *mono_search_path_n = narrow(mono_search_path);
+        mono.set_assemblies_path(mono_search_path_n);
+        setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), mono_search_path, TRUE);
+        free(mono_search_path);
+        free(override_dir_full);
+    } else {
+        setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), root_dir, TRUE);
+    }
     void *domain = mono.jit_init_version(root_domain_name, runtime_version);
     doorstop_bootstrap(domain);
     return domain;
@@ -143,9 +168,9 @@ int init_il2cpp(const char *domain_name) {
     char_t *mono_corlib_dir = get_full_path(config.mono_corlib_dir);
     char_t *mono_config_dir = get_full_path(config.mono_config_dir);
 
-    LOG("Mono lib: %S\n", mono_lib_dir);
-    LOG("Mono mscorlib dir: %S\n", mono_corlib_dir);
-    LOG("Mono confgi dir: %S\n", mono_config_dir);
+    LOG("Mono lib: %s\n", mono_lib_dir);
+    LOG("Mono mscorlib dir: %s\n", mono_corlib_dir);
+    LOG("Mono confgi dir: %s\n", mono_config_dir);
 
     if (!file_exists(mono_lib_dir) || !folder_exists(mono_corlib_dir) ||
         !folder_exists(mono_config_dir)) {
@@ -176,45 +201,6 @@ int init_il2cpp(const char *domain_name) {
     return orig_result;
 }
 
-DoorstopPaths *paths_init(void *doorstop_module, bool_t fixed_cwd) {
-    init_logger();
-    char_t *app_path = program_path();
-    char_t *app_dir = get_folder_name(app_path);
-    char_t *working_dir = get_working_dir();
-    char_t *doorstop_path = NULL;
-    get_module_path(doorstop_module, &doorstop_path, NULL, 0);
-
-    char_t *doorstop_filename = get_file_name(doorstop_path, FALSE);
-
-    LOG("Doorstop started!\n");
-    LOG("Executable path: %s\n", app_path);
-    LOG("Application dir: %s\n", app_dir);
-    LOG("Working dir: %s\n", working_dir);
-    LOG("Doorstop library path: %s\n", doorstop_path);
-    LOG("Doorstop library name: %s\n", doorstop_filename);
-
-    if (fixed_cwd) {
-        LOG("WARN: Working directory was not the same as app directory, fixed "
-            "it automatically.\n");
-    }
-
-    DoorstopPaths *paths = malloc(sizeof(DoorstopPaths));
-    paths->app_path = app_path;
-    paths->app_dir = app_dir;
-    paths->working_dir = working_dir;
-    paths->doorstop_path = doorstop_path;
-    paths->doorstop_filename = doorstop_filename;
-    return paths;
-}
-
-void paths_free(DoorstopPaths *const paths) {
-    free(paths->app_path);
-    free(paths->app_dir);
-    free(paths->working_dir);
-    free(paths->doorstop_path);
-    free(paths->doorstop_filename);
-}
-
 void *hook_mono_image_open_from_data_with_name(void *data,
                                                unsigned long data_len,
                                                int need_copy,
@@ -223,7 +209,7 @@ void *hook_mono_image_open_from_data_with_name(void *data,
     void *result = NULL;
     if (config.mono_dll_search_path_override) {
         char_t *name_wide = widen(name);
-        char_t *name_file = get_file_name(name_wide, strlen(name), TRUE);
+        char_t *name_file = get_file_name(name_wide, TRUE);
         free(name_wide);
 
         size_t name_file_len = strlen(name_file);
@@ -231,10 +217,9 @@ void *hook_mono_image_open_from_data_with_name(void *data,
 
         char_t *new_full_path =
             calloc(name_file_len + bcl_root_len + 2, sizeof(char_t));
-        strcpy(new_full_path, config.mono_dll_search_path_override);
-        new_full_path[bcl_root_len] = TEXT('/');
-        strcpy(new_full_path + bcl_root_len + 1, name_file);
-        free(name_file);
+        strcat(new_full_path, config.mono_dll_search_path_override);
+        strcat(new_full_path, TEXT("/"));
+        strcat(new_full_path, name_file);
 
         if (file_exists(new_full_path)) {
             void *file = fopen(new_full_path, "r");
