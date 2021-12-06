@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "util.h"
+#include "../util/util.h"
 
 /**
  * @brief Doorstop configuration

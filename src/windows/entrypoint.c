@@ -1,8 +1,8 @@
 #include "../bootstrap.h"
-#include "../config.h"
+#include "../config/config.h"
 #include "../crt.h"
-#include "../logging.h"
-#include "../paths.h"
+#include "../util/logging.h"
+#include "../util/paths.h"
 #include "hook.h"
 #include "proxy/proxy.h"
 #include <windows.h>

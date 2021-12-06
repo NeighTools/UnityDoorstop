@@ -2,8 +2,8 @@
 #define PROXY_H
 
 #include "../../crt.h"
-#include "../../logging.h"
-#include "../../util.h"
+#include "../../util/logging.h"
+#include "../../util/util.h"
 #include <windows.h>
 
 #define ALT_POSTFIX TEXT("_alt.dll")

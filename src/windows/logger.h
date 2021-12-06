@@ -2,8 +2,8 @@
 #define LOGGER_H
 #if VERBOSE
 
-#include "../logging.h"
-#include "../util.h"
+#include "../util/logging.h"
+#include "../util/util.h"
 #include <windows.h>
 
 HANDLE log_handle;

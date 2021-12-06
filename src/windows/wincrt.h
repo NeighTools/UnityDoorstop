@@ -6,7 +6,7 @@
 #ifndef WIN_CRT_H
 #define WIN_CRT_H
 
-#include "../util.h"
+#include "../util/util.h"
 #include <windows.h>
 
 HANDLE h_heap;

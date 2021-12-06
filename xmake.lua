@@ -24,3 +24,5 @@ target("doorstop")
     end
 
     add_files("src/*.c")
+    add_files("src/config/*.c")
+    add_files("src/util/*.c")

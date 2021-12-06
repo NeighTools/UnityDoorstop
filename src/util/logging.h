@@ -4,10 +4,10 @@
 #if VERBOSE
 
 #if _WIN32
-#include "windows/logger.h"
+#include "../windows/logger.h"
 
 #elif defined(__APPLE__) || defined(__linux__)
-#include "unix/logger.h"
+#include "../nix/logger.h"
 #endif
 
 #else

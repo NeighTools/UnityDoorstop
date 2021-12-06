@@ -1,7 +1,7 @@
-#include "../config.h"
+#include "../config/config.h"
 #include "../crt.h"
-#include "../logging.h"
-#include "../util.h"
+#include "../util/logging.h"
+#include "../util/util.h"
 
 #define CONFIG_NAME TEXT("doorstop_config.ini")
 #define DEFAULT_TARGET_ASSEMBLY TEXT("Doorstop.dll")

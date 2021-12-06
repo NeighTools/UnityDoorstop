@@ -8,7 +8,7 @@
 #ifndef HOOK_H
 #define HOOK_H
 
-#include "../util.h"
+#include "../util/util.h"
 #include <windows.h>
 
 // PE format uses RVAs (Relative Virtual Addresses) to save addresses relative
