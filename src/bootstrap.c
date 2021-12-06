@@ -1,11 +1,12 @@
 #include "bootstrap.h"
-#include "config.h"
+#include "config/config.h"
 #include "crt.h"
-#include "il2cpp.h"
-#include "logging.h"
-#include "mono.h"
-#include "paths.h"
-#include "util.h"
+#include "runtimes/coreclr.h"
+#include "runtimes/il2cpp.h"
+#include "runtimes/mono.h"
+#include "util/logging.h"
+#include "util/paths.h"
+#include "util/util.h"
 
 void doorstop_bootstrap(void *mono_domain) {
     if (!getenv(TEXT("DOORSTOP_INITIALIZED"))) {
@@ -164,39 +165,76 @@ int init_il2cpp(const char *domain_name) {
     LOG("Starting IL2CPP domain \"%s\"\n", domain_name);
     const int orig_result = il2cpp.init(domain_name);
 
-    char_t *mono_lib_dir = get_full_path(config.mono_lib_dir);
-    char_t *mono_corlib_dir = get_full_path(config.mono_corlib_dir);
-    char_t *mono_config_dir = get_full_path(config.mono_config_dir);
-
-    LOG("Mono lib: %s\n", mono_lib_dir);
-    LOG("Mono mscorlib dir: %s\n", mono_corlib_dir);
-    LOG("Mono confgi dir: %s\n", mono_config_dir);
-
-    if (!file_exists(mono_lib_dir) || !folder_exists(mono_corlib_dir) ||
-        !folder_exists(mono_config_dir)) {
-        LOG("Mono startup dirs are not set up, skipping invoking Doorstop\n");
+    if (!config.clr_corlib_dir || !config.clr_runtime_coreclr_path) {
+        LOG("No CoreCLR paths set, skipping loading\n");
         return orig_result;
     }
 
-    void *mono_module = dlopen(mono_lib_dir, RTLD_LAZY);
-    LOG("Loaded mono.dll: %p\n", mono_module);
-    if (!mono_module) {
-        LOG("Failed to load mono.dll! Skipping!");
+    LOG("CoreCLR runtime path: %s\n", config.clr_runtime_coreclr_path);
+    LOG("CoreCLR corlib dir: %s\n", config.clr_corlib_dir);
+
+    if (!file_exists(config.clr_runtime_coreclr_path) ||
+        !folder_exists(config.clr_corlib_dir)) {
+        LOG("CoreCLR startup dirs are not set up skipping invoking Doorstop\n");
         return orig_result;
     }
 
-    load_mono_funcs(mono_module);
-    LOG("Loaded mono.dll functions\n");
+    void *coreclr_module = dlopen(config.clr_runtime_coreclr_path, RTLD_LAZY);
+    LOG("Loaded coreclr.dll: %p\n", coreclr_module);
+    if (!coreclr_module) {
+        LOG("Failed to load CoreCLR runtime!\n");
+        return orig_result;
+    }
 
-    char *mono_corlib_dir_narrow = narrow(mono_corlib_dir);
-    char *mono_config_dir_narrow = narrow(mono_config_dir);
-    mono.set_dirs(mono_corlib_dir_narrow, mono_config_dir_narrow);
-    mono.config_parse(NULL);
+    load_coreclr_funcs(coreclr_module);
 
-    void *domain = mono.jit_init_version("Doorstop Root Domain", NULL);
-    LOG("Created domain: %p\n", domain);
+    char_t *app_path;
+    get_module_path(NULL, &app_path, NULL, 0);
+    char *app_path_n = narrow(app_path);
 
-    doorstop_bootstrap(domain);
+    char_t *target_dir = get_folder_name(config.target_assembly);
+    char *target_dir_n = narrow(target_dir);
+    char_t *target_name = get_file_name(config.target_assembly, FALSE);
+    char *target_name_n = narrow(target_name);
+
+    char_t *app_paths_env =
+        calloc(strlen(config.clr_corlib_dir) + 1 + strlen(target_dir) + 1,
+               sizeof(char_t));
+    strcat(app_paths_env, config.clr_corlib_dir);
+    strcat(app_paths_env, TEXT(";"));
+    strcat(app_paths_env, target_dir);
+    char *app_paths_env_n = narrow(app_paths_env);
+
+    LOG("App path: %s\n", app_path);
+    LOG("Target dir: %s\n", target_dir);
+    LOG("APP_PATHS: %s\n", app_paths_env);
+
+    char *props[1] = {"APP_PATHS"};
+
+    setenv(TEXT("DOORSTOP_INITIALIZED"), TEXT("TRUE"), TRUE);
+    setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
+    setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), config.clr_corlib_dir, TRUE);
+    setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
+
+    void *host = NULL;
+    unsigned int domain_id = 0;
+    int result = coreclr.initialize(app_path_n, "Doorstop Domain", 1, props,
+                                    &app_paths_env_n, &host, &domain_id);
+    if (result != 0) {
+        LOG("Failed to initialize CoreCLR: %d\n", result);
+        return orig_result;
+    }
+
+    void (*startup)() = NULL;
+    result = coreclr.create_delegate(host, domain_id, target_name_n,
+                                     "Doorstop.Entrypoint", "Main", &startup);
+    if (result != 0) {
+        LOG("Failed to get entrypoint delegate: %d\n", result);
+        return orig_result;
+    }
+
+    LOG("Invoking Doorstop.Entrypoint.Main()\n");
+    startup();
 
     return orig_result;
 }
