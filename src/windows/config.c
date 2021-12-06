@@ -71,6 +71,11 @@ inline void init_config_file() {
     load_path_file(config_path, TEXT("MonoBackend"), TEXT("corlibDir"), NULL,
                    &config.mono_corlib_dir);
 
+    load_path_file(config_path, TEXT("CoreCLRBackend"), TEXT("coreclrPath"),
+                   NULL, &config.clr_runtime_coreclr_path);
+    load_path_file(config_path, TEXT("CoreCLRBackend"), TEXT("corlibDir"), NULL,
+                   &config.clr_corlib_dir);
+
     free(config_path);
 }
 
@@ -141,30 +146,8 @@ inline void init_env_vars() {
 }
 
 void load_config() {
-    config.enabled = FALSE;
-    config.ignore_disabled_env = FALSE;
-    config.redirect_output_log = FALSE;
-    config.mono_config_dir = NULL;
-    config.mono_corlib_dir = NULL;
-    config.mono_lib_dir = NULL;
-    config.target_assembly = NULL;
-
+    init_config_defaults();
     init_config_file();
     init_cmd_args();
     init_env_vars();
-}
-
-void cleanup_config() {
-#define FREE_NON_NULL(val)                                                     \
-    if (val != NULL) {                                                         \
-        free(val);                                                             \
-        val = NULL;                                                            \
-    }
-
-    FREE_NON_NULL(config.target_assembly);
-    FREE_NON_NULL(config.mono_lib_dir);
-    FREE_NON_NULL(config.mono_config_dir);
-    FREE_NON_NULL(config.mono_corlib_dir);
-
-#undef FREE_NON_NULL
 }

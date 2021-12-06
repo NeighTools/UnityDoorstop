@@ -50,13 +50,32 @@ struct {
      */
     char_t *mono_corlib_dir;
 
+    /**
+     * @brief Path to use as the main DLL search path. If enabled, this folder
+     * takes precedence over the default Managed folder.
+     */
     char_t *mono_dll_search_path_override;
+
+    /**
+     * @brief Path to the CoreCLR runtime library.
+     */
+    char_t *clr_runtime_coreclr_path;
+
+    /**
+     * @brief Path to the CoreCLR core libraries folder.
+     */
+    char_t *clr_corlib_dir;
 } config;
 
 /**
  * @brief Load configuration.
  */
 void load_config();
+
+/**
+ * @brief Initialize default values for configuration.
+ */
+void init_config_defaults();
 
 /**
  * @brief Clean up configuration.
