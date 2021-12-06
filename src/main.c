@@ -57,19 +57,42 @@ void doorstop_bootstrap(void *mono_domain) {
     setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
 
     LOG("Loading assembly: %s\n", dll_path);
-    void *assembly = mono.domain_assembly_open(mono_domain, dll_path);
 
-    if (assembly == NULL)
-        LOG("Failed to load assembly\n");
+    void *file = fopen(config.target_assembly, "r");
+    if (!file) {
+        LOG("Failed to open assembly: %s\n", config.target_assembly);
+        return;
+    }
+
+    size_t size = get_file_size(file);
+    void *data = malloc(size);
+    fread(data, size, 1, file);
+    fclose(file);
+
+    MonoImageOpenStatus s = MONO_IMAGE_OK;
+    void *image = mono.image_open_from_data_with_name(data, size, TRUE, &s,
+                                                      FALSE, dll_path);
+    free(data);
+    if (s != MONO_IMAGE_OK) {
+        LOG("Failed to load assembly image: %s. Got result: %d\n",
+            config.target_assembly, s);
+        return;
+    }
 
     free(dll_path);
-    ASSERT_SOFT(assembly != NULL);
 
-    void *image = mono.assembly_get_image(assembly);
-    ASSERT_SOFT(image != NULL);
+    s = MONO_IMAGE_OK;
+    void *assembly = mono.assembly_load_from_full(image, dll_path, &s, FALSE);
+
+    if (s != MONO_IMAGE_OK) {
+        LOG("Failed to load assembly: %s. Got result: %d\n",
+            config.target_assembly, s);
+        return;
+    }
 
     void *desc = mono.method_desc_new("*:Main", FALSE);
     void *method = mono.method_desc_search_in_image(desc, image);
+    mono.method_desc_free(desc);
     ASSERT_SOFT(method != NULL);
 
     void *signature = mono.method_signature(method);
@@ -96,8 +119,6 @@ void doorstop_bootstrap(void *mono_domain) {
         }
     }
     LOG("Done\n");
-
-    mono.method_desc_free(desc);
 
     if (args != NULL) {
         free(app_path);
@@ -155,7 +176,7 @@ int init_il2cpp(const char *domain_name) {
     return orig_result;
 }
 
-DoorstopPaths init(void *doorstop_module, bool_t fixed_cwd) {
+DoorstopPaths *paths_init(void *doorstop_module, bool_t fixed_cwd) {
     init_logger();
     char_t *app_path = program_path();
     char_t *app_dir = get_folder_name(app_path);
@@ -177,8 +198,21 @@ DoorstopPaths init(void *doorstop_module, bool_t fixed_cwd) {
             "it automatically.\n");
     }
 
-    return (DoorstopPaths){app_path, app_dir, working_dir, doorstop_path,
-                           doorstop_filename};
+    DoorstopPaths *paths = malloc(sizeof(DoorstopPaths));
+    paths->app_path = app_path;
+    paths->app_dir = app_dir;
+    paths->working_dir = working_dir;
+    paths->doorstop_path = doorstop_path;
+    paths->doorstop_filename = doorstop_filename;
+    return paths;
+}
+
+void paths_free(DoorstopPaths *const paths) {
+    free(paths->app_path);
+    free(paths->app_dir);
+    free(paths->working_dir);
+    free(paths->doorstop_path);
+    free(paths->doorstop_filename);
 }
 
 void *hook_mono_image_open_from_data_with_name(void *data,
