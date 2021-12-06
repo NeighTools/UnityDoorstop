@@ -156,8 +156,10 @@ void load_config() {
 
 void cleanup_config() {
 #define FREE_NON_NULL(val)                                                     \
-    if ((val) != NULL)                                                         \
-    free(val)
+    if (val != NULL) {                                                         \
+        free(val);                                                             \
+        val = NULL;                                                            \
+    }
 
     FREE_NON_NULL(config.target_assembly);
     FREE_NON_NULL(config.mono_lib_dir);

@@ -20,6 +20,7 @@ typedef struct {
     char_t *doorstop_filename;
 } DoorstopPaths;
 
-DoorstopPaths init(void *doorstop_module, bool_t fixed_cwd);
+DoorstopPaths *paths_init(void *doorstop_module, bool_t fixed_cwd);
+void paths_free(DoorstopPaths *paths);
 
 #endif

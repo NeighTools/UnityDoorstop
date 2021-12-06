@@ -84,12 +84,12 @@ void *WINAPI get_proc_address_detour(void *module, char *name) {
 #undef REDIRECT_INIT
 }
 
-void redirect_output_log(DoorstopPaths paths) {
+void redirect_output_log(DoorstopPaths const *paths) {
     if (!config.redirect_output_log)
         return;
 
     char_t *cmd = GetCommandLine();
-    size_t app_dir_len = strlen(paths.doorstop_filename);
+    size_t app_dir_len = strlen(paths->doorstop_filename);
     size_t cmd_len = strlen(cmd);
     size_t new_cmd_len = cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len +
                          LOG_FILE_CMD_END_LEN + LOG_FILE_CMD_EXTRA;
@@ -97,7 +97,7 @@ void redirect_output_log(DoorstopPaths paths) {
 
     char_t *s = strcpy(new_cmdline_args, cmd);
     s = strcpy(s + cmd_len, LOG_FILE_CMD_START);
-    s = strcpy(s + LOG_FILE_CMD_START_LEN - 1, paths.app_dir);
+    s = strcpy(s + LOG_FILE_CMD_START_LEN - 1, paths->app_dir);
     s = strcpy(s + app_dir_len, LOG_FILE_CMD_END);
 
     new_cmdline_args_narrow = narrow(new_cmdline_args);
@@ -106,7 +106,7 @@ void redirect_output_log(DoorstopPaths paths) {
     LOG("CMD line: %s\n", new_cmdline_args);
 }
 
-void inject(DoorstopPaths paths) {
+void inject(DoorstopPaths const *paths) {
     if (!config.enabled) {
         LOG("Doorstop disabled!\n");
         free_logger();
@@ -159,7 +159,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     h_heap = GetProcessHeap();
     bool_t fixed_cwd = fix_cwd();
-    DoorstopPaths paths = init(hInstDll, fixed_cwd);
+    DoorstopPaths *paths = paths_init(hInstDll, fixed_cwd);
 
     GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -170,7 +170,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
     LOG("Standard output handle path: %s\n", handle_path);
 #endif
 
-    load_proxy(paths.doorstop_filename);
+    load_proxy(paths->doorstop_filename);
     LOG("Proxy loaded\n");
 
     load_config();
@@ -185,11 +185,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     inject(paths);
 
-    free(paths.app_dir);
-    free(paths.app_path);
-    free(paths.doorstop_filename);
-    free(paths.doorstop_path);
-    free(paths.working_dir);
+    paths_free(&paths);
 
     return TRUE;
 }
