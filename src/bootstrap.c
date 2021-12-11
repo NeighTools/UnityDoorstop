@@ -92,7 +92,7 @@ void doorstop_bootstrap(void *mono_domain) {
         return;
     }
 
-    void *desc = mono.method_desc_new("*:Main", FALSE);
+    void *desc = mono.method_desc_new("Doorstop.Entrypoint:Start", TRUE);
     void *method = mono.method_desc_search_in_image(desc, image);
     mono.method_desc_free(desc);
     ASSERT_SOFT(method != NULL);
@@ -100,18 +100,11 @@ void doorstop_bootstrap(void *mono_domain) {
     void *signature = mono.method_signature(method);
 
     unsigned int params = mono.signature_get_param_count(signature);
-
-    void **args = NULL;
-    if (params == 1) {
-        void *args_array =
-            mono.array_new(mono_domain, mono.get_string_class(), 0);
-        args = malloc(sizeof(void *) * 1);
-        args[0] = args_array;
-    }
+    ASSERT_SOFT(params == 0);
 
     LOG("Invoking method %p\n", method);
     void *exc = NULL;
-    mono.runtime_invoke(method, NULL, args, &exc);
+    mono.runtime_invoke(method, NULL, NULL, &exc);
     if (exc != NULL) {
         LOG("Error invoking code!\n");
         if (mono.object_to_string) {
@@ -122,11 +115,7 @@ void doorstop_bootstrap(void *mono_domain) {
     }
     LOG("Done\n");
 
-    if (args != NULL) {
-        free(app_path);
-        free(args);
-    }
-
+    free(app_path);
     cleanup_config();
 }
 
@@ -229,7 +218,7 @@ int init_il2cpp(const char *domain_name) {
 
     void (*startup)() = NULL;
     result = coreclr.create_delegate(host, domain_id, target_name_n,
-                                     "Doorstop.Entrypoint", "Main", &startup);
+                                     "Doorstop.Entrypoint", "Start", &startup);
     if (result != 0) {
         LOG("Failed to get entrypoint delegate: %d\n", result);
         return orig_result;
