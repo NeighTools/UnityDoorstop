@@ -26,7 +26,9 @@ inline void free_logger() { CloseHandle(log_handle); }
 #define LOG(message, ...)                                                      \
     {                                                                          \
         size_t len = printf(buffer, TEXT(message), __VA_ARGS__);               \
-        WriteFile(log_handle, buffer, len, NULL, NULL);                        \
+        char *log_data = narrow(buffer);                                       \
+        WriteFile(log_handle, log_data, len, NULL, NULL);                      \
+        free(log_data);                                                        \
     }
 
 #define ASSERT_F(test, message, ...)                                           \
