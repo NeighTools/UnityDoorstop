@@ -1,7 +1,9 @@
 add_rules("mode.debug", "mode.release")
 includes("proxygen.lua")
 
-option("include_logging", { default = false, showmenu = true, description = "Include verbose logging on run" })
+option("include_logging")
+    set_showmenu(true)
+    set_description("Include verbose logging on run")
     add_defines("VERBOSE")
 
 
