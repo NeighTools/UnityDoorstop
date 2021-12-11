@@ -9,5 +9,34 @@
         "**/Thumbs.db": true,
         "tools/": true,
         ".xmake/": true,
-    }
+    },
+    "spellright.language": [
+        "en"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext"
+    ],
+    "grammarly.overrides": [
+        {
+            "files": [
+                "**/README.md"
+            ],
+            "config": {
+                "audience": "general",
+                "dialect": "british",
+                "domain": "technical",
+                "emotions": [
+                    "neutral",
+                    "confident",
+                    "friendly"
+                ],
+                "goals": [
+                    "describe",
+                    "convince"
+                ]
+            }
+        }
+    ]
 }
