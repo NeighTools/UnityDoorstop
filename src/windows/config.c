@@ -53,27 +53,22 @@ inline void init_config_file() {
 
     char_t *config_path = get_full_path(CONFIG_NAME);
 
-    load_bool_file(config_path, TEXT("UnityDoorstop"), TEXT("enabled"),
-                   TEXT("true"), &config.enabled);
-    load_bool_file(config_path, TEXT("UnityDoorstop"),
-                   TEXT("ignoreDisableSwitch"), TEXT("false"),
-                   &config.ignore_disabled_env);
-    load_bool_file(config_path, TEXT("UnityDoorstop"),
-                   TEXT("redirectOutputLog"), TEXT("false"),
-                   &config.redirect_output_log);
-    load_path_file(config_path, TEXT("UnityDoorstop"), TEXT("targetAssembly"),
+    load_bool_file(config_path, TEXT("General"), TEXT("enabled"), TEXT("true"),
+                   &config.enabled);
+    load_bool_file(config_path, TEXT("General"), TEXT("ignore_disable_switch"),
+                   TEXT("false"), &config.ignore_disabled_env);
+    load_bool_file(config_path, TEXT("General"), TEXT("redirect_output_log"),
+                   TEXT("false"), &config.redirect_output_log);
+    load_path_file(config_path, TEXT("General"), TEXT("target_assembly"),
                    DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
 
-    load_path_file(config_path, TEXT("MonoBackend"), TEXT("runtimeLib"), NULL,
-                   &config.mono_lib_dir);
-    load_path_file(config_path, TEXT("MonoBackend"), TEXT("configDir"), NULL,
-                   &config.mono_config_dir);
-    load_path_file(config_path, TEXT("MonoBackend"), TEXT("corlibDir"), NULL,
-                   &config.mono_corlib_dir);
+    load_path_file(config_path, TEXT("UnityMono"),
+                   TEXT("dll_search_path_override"), NULL,
+                   &config.mono_dll_search_path_override);
 
-    load_path_file(config_path, TEXT("CoreCLRBackend"), TEXT("coreclrPath"),
-                   NULL, &config.clr_runtime_coreclr_path);
-    load_path_file(config_path, TEXT("CoreCLRBackend"), TEXT("corlibDir"), NULL,
+    load_path_file(config_path, TEXT("Il2Cpp"), TEXT("coreclr_path"), NULL,
+                   &config.clr_runtime_coreclr_path);
+    load_path_file(config_path, TEXT("Il2Cpp"), TEXT("corlib_dir"), NULL,
                    &config.clr_corlib_dir);
 
     free(config_path);
@@ -117,18 +112,19 @@ inline void init_cmd_args() {
         continue;
 
     for (int i = 0; i < argc; i++) {
-        PARSE_ARG(TEXT("--doorstop-enable"), config.enabled, load_bool_argv);
-        PARSE_ARG(TEXT("--redirect-output-log"), config.redirect_output_log,
+        PARSE_ARG(TEXT("--ud-enabled"), config.enabled, load_bool_argv);
+        PARSE_ARG(TEXT("--ud-redirect-output-log"), config.redirect_output_log,
                   load_bool_argv);
-        PARSE_ARG(TEXT("--doorstop-target"), config.target_assembly,
+        PARSE_ARG(TEXT("--ud-target-assembly"), config.target_assembly,
                   load_path_argv);
 
-        PARSE_ARG(TEXT("--mono-runtime-lib"), config.mono_lib_dir,
+        PARSE_ARG(TEXT("--ud-mono-dll-search-path-override"),
+                  config.mono_dll_search_path_override, load_path_argv);
+
+        PARSE_ARG(TEXT("--ud-clr-corlib-dir"), config.clr_corlib_dir,
                   load_path_argv);
-        PARSE_ARG(TEXT("--mono-config-dir"), config.mono_config_dir,
-                  load_path_argv);
-        PARSE_ARG(TEXT("--mono-corlib-dir"), config.mono_config_dir,
-                  load_path_argv);
+        PARSE_ARG(TEXT("--ud-clr-runtime-coreclr-path"),
+                  config.clr_runtime_coreclr_path, load_path_argv);
     }
 
     LocalFree(argv);

@@ -36,21 +36,6 @@ struct {
     char_t *target_assembly;
 
     /**
-     * @brief Path to mono library when bootstrapping Il2Cpp.
-     */
-    char_t *mono_lib_dir;
-
-    /**
-     * @brief Path to mono config directory when bootstrapping Il2Cpp.
-     */
-    char_t *mono_config_dir;
-
-    /**
-     * @brief Path to mono root directory when bootstrapping Il2Cpp.
-     */
-    char_t *mono_corlib_dir;
-
-    /**
      * @brief Path to use as the main DLL search path. If enabled, this folder
      * takes precedence over the default Managed folder.
      */
