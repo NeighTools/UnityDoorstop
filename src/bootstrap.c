@@ -162,7 +162,9 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
 }
 
 int init_il2cpp(const char *domain_name) {
-    LOG("Starting IL2CPP domain \"%s\"\n", domain_name);
+    char_t *domain_name_w = widen(domain_name);
+    LOG("Starting IL2CPP domain \"%s\"\n", domain_name_w);
+    free(domain_name_w);
     const int orig_result = il2cpp.init(domain_name);
 
     if (!config.clr_corlib_dir || !config.clr_runtime_coreclr_path) {

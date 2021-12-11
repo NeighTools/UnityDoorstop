@@ -69,7 +69,7 @@ void *WINAPI get_proc_address_detour(void *module, char *name) {
     if (lstrcmpA(name, init_name) == 0) {                                      \
         if (!initialized) {                                                    \
             initialized = TRUE;                                                \
-            LOG("Got %s at %p\n", init_name, module);                          \
+            LOG("Got %S at %p\n", init_name, module);                          \
             init_func(module);                                                 \
             LOG("Loaded all runtime functions\n")                              \
         }                                                                      \
