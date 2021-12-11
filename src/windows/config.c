@@ -12,7 +12,7 @@ void load_bool_file(const char_t *path, const char_t *section,
                     const char_t *key, const char_t *def, bool_t *value) {
     char_t enabled_string[256] = TEXT("true");
     GetPrivateProfileString(section, key, def, enabled_string, 256, path);
-    LOG("CONFIG: %S.%S = %S\n", section, key, enabled_string);
+    LOG("CONFIG: %s.%s = %s\n", section, key, enabled_string);
 
     if (STR_EQUAL(enabled_string, TEXT("true")))
         *value = TRUE;
@@ -40,10 +40,11 @@ char_t *get_ini_entry(const char_t *config_file, const char_t *section,
 void load_path_file(const char_t *path, const char_t *section,
                     const char_t *key, const char_t *def, char_t **value) {
     char_t *tmp = get_ini_entry(path, section, key, def);
-    LOG("CONFIG: %S.%S = %S\n", section, key, tmp);
-    if (!tmp)
+    LOG("CONFIG: %s.%s = %s\n", section, key, tmp);
+    if (!tmp || strlen(tmp) == 0)
         return;
     *value = get_full_path(tmp);
+    LOG("(%s.%s) %s => %s\n", section, key, tmp, *value);
     free(tmp);
 }
 
@@ -82,7 +83,7 @@ bool_t load_bool_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
             *value = TRUE;
         else if (STR_EQUAL(par, TEXT("false")))
             *value = FALSE;
-        LOG("ARGV: %S = %S\n", arg_name, par);
+        LOG("ARGV: %s = %s\n", arg_name, par);
         return TRUE;
     }
     return FALSE;
@@ -96,7 +97,7 @@ bool_t load_path_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
         const size_t len = strlen(argv[*i + 1]) + 1;
         *value = malloc(sizeof(char_t) * len);
         strncpy(*value, argv[++*i], len);
-        LOG("ARGV: %S = %S\n", arg_name, *value);
+        LOG("ARGV: %s = %s\n", arg_name, *value);
         return TRUE;
     }
     return FALSE;

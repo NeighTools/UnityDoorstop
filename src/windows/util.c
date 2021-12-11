@@ -105,9 +105,9 @@ char_t *get_folder_name(char_t *path) {
 char_t *get_file_name(char_t *path, bool_t with_ext) {
     PathParts parts = split_path(path);
     size_t result_len = (with_ext ? parts.len : parts.ext) - parts.parent;
-    char_t *result = malloc((result_len + 1) * sizeof(char_t));
+    char_t *result = malloc(result_len * sizeof(char_t));
     strncpy(result, path + parts.parent + 1, result_len - 1);
-    result[result_len] = TEXT('\0');
+    result[result_len - 1] = TEXT('\0');
     return result;
 }
 
