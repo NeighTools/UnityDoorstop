@@ -10,7 +10,7 @@
 
 void doorstop_bootstrap(void *mono_domain) {
     if (!getenv(TEXT("DOORSTOP_INITIALIZED"))) {
-        LOG("DOORSTOP_INITIALIZED is set! Skipping!");
+        LOG("DOORSTOP_INITIALIZED is set! Skipping!\n");
         cleanup_config();
         return;
     }
@@ -131,7 +131,7 @@ void doorstop_bootstrap(void *mono_domain) {
 }
 
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
-    LOG("Starting mono domain \"%s\"", root_domain_name);
+    LOG("Starting mono domain \"%s\"\n", root_domain_name);
     char_t *root_dir = widen(mono.assembly_getrootdir());
     LOG("Current root: %s\n", root_dir);
     if (config.mono_dll_search_path_override) {

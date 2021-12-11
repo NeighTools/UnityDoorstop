@@ -146,7 +146,7 @@ void inject(DoorstopPaths const *paths) {
         LOG("Failed to install IAT hook!\n");
         free_logger();
     } else {
-        LOG("Hooks installed, marking DOORSTOP_DISALBE = TRUE");
+        LOG("Hooks installed, marking DOORSTOP_DISALBE = TRUE\n");
         setenv(TEXT("DOORSTOP_DISABLE"), TEXT("TRUE"), TRUE);
     }
 }
