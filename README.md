@@ -6,6 +6,8 @@
 
 Doorstop is a tool to execute managed .NET assemblies inside Unity as early as possible.
 
+**This is a full rewrite of UnityDoorstop 3.x. See [list of breaking changes](CHANGES.md) for more information.**
+
 ## Features
 
 * **Runs first**: Doorstop runs its code before Unity can do so
@@ -43,3 +45,4 @@ Current progress:
 ## Building
 
 Doorstop uses [xmake](https://xmake.io/) to build the project. In order to build, run `build.bat` or `build.ps1`.
+Add `-with_logging` if you want to build with logging enabled.
