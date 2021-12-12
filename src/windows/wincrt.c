@@ -1,5 +1,9 @@
 #include "wincrt.h"
 
+static HANDLE h_heap;
+
+void init_crt() { h_heap = GetProcessHeap(); }
+
 #pragma function(memset)
 void *memset(void *dst, int c, size_t n) {
     char *d = dst;
@@ -15,6 +19,18 @@ void *memcpy(void *dst, const void *src, size_t n) {
     while (n--)
         *d++ = *s++;
     return dst;
+}
+
+void *dlsym(void *handle, const char *name) {
+    return GetProcAddress((HMODULE)handle, name);
+}
+
+void *dlopen(const char_t *filename, int flag) { return LoadLibrary(filename); }
+
+void free(void *mem) { HeapFree(h_heap, 0, mem); }
+
+int setenv(const char_t *name, const char_t *value, int overwrite) {
+    return !SetEnvironmentVariable(name, value);
 }
 
 size_t strlen_wide(char_t const *str) {

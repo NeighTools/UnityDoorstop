@@ -6,7 +6,7 @@
 /**
  * @brief Doorstop configuration
  */
-struct {
+typedef struct {
     /**
      * @brief Whether Doorstop is enabled (enables hooking methods and executing
      * target assembly).
@@ -50,20 +50,22 @@ struct {
      * @brief Path to the CoreCLR core libraries folder.
      */
     char_t *clr_corlib_dir;
-} config;
+} Config;
+
+extern Config config;
 
 /**
  * @brief Load configuration.
  */
-void load_config();
+extern void load_config();
 
 /**
  * @brief Initialize default values for configuration.
  */
-void init_config_defaults();
+extern void init_config_defaults();
 
 /**
  * @brief Clean up configuration.
  */
-void cleanup_config();
+extern void cleanup_config();
 #endif

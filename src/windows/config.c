@@ -48,7 +48,7 @@ void load_path_file(const char_t *path, const char_t *section,
     free(tmp);
 }
 
-inline void init_config_file() {
+static inline void init_config_file() {
     if (!file_exists(CONFIG_NAME))
         return;
 
@@ -103,7 +103,7 @@ bool_t load_path_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
     return FALSE;
 }
 
-inline void init_cmd_args() {
+static inline void init_cmd_args() {
     char_t *args = GetCommandLine();
     int argc = 0;
     char_t **argv = CommandLineToArgv(args, &argc);
@@ -133,7 +133,7 @@ inline void init_cmd_args() {
 #undef PARSE_ARG
 }
 
-inline void init_env_vars() {
+static inline void init_env_vars() {
     char_t *disable_env = getenv(TEXT("DOORSTOP_DISABLE"));
     if (!config.ignore_disabled_env && disable_env != 0) {
         LOG("DOORSTOP_DISABLE is set! Disabling Doorstop!\n");

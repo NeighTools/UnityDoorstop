@@ -12,19 +12,27 @@ target("doorstop")
     set_optimize("smallest")
     add_options("include_logging")
 
-    if is_plat("windows") then
+    if is_os("windows") then
         add_proxydef("src/windows/proxy/proxylist.txt")
         add_files("src/windows/*.c")
+        add_defines("UNICODE")
+    end
 
-        add_cxflags("-GS-", "-Ob2", "-MT", "-FS", "-GL-")
+    add_links("shell32", "kernel32", "user32")
+
+    if is_plat("windows") then
+        add_cxflags("-GS-", "-Ob2", "-MT", "-GL-", "-FS")
         add_shflags("-nodefaultlib",
                     "-entry:DllEntry",
                     "-dynamicbase:no",
                     {force=true})
-		add_links("shell32", "kernel32", "user32")
-        add_defines("UNICODE")
+    end
+
+    if is_plat("mingw") then
+        add_shflags("-nodefaultlibs", "-nostdlib", "-nolibc", "-e DllEntry", {force=true})
     end
 
     add_files("src/*.c")
     add_files("src/config/*.c")
     add_files("src/util/*.c")
+    add_files("src/runtimes/*.c")

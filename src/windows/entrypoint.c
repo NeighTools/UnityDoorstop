@@ -86,6 +86,7 @@ void *WINAPI get_proc_address_detour(void *module, char *name) {
 }
 
 void redirect_output_log(DoorstopPaths const *paths) {
+
     if (!config.redirect_output_log)
         return;
 
@@ -108,6 +109,7 @@ void redirect_output_log(DoorstopPaths const *paths) {
 }
 
 void inject(DoorstopPaths const *paths) {
+
     if (!config.enabled) {
         LOG("Doorstop disabled!\n");
         free_logger();
@@ -158,7 +160,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
     if (reasonForDllLoad != DLL_PROCESS_ATTACH)
         return TRUE;
 
-    h_heap = GetProcessHeap();
+    init_crt();
     bool_t fixed_cwd = fix_cwd();
     init_logger();
     DoorstopPaths *paths = paths_init(hInstDll, fixed_cwd);

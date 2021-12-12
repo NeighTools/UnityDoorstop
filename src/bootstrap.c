@@ -198,9 +198,10 @@ int init_il2cpp(const char *domain_name) {
 
     LOG("App path: %s\n", app_path);
     LOG("Target dir: %s\n", target_dir);
+    LOG("Target name: %s\n", target_name);
     LOG("APP_PATHS: %s\n", app_paths_env);
 
-    char *props[1] = {"APP_PATHS"};
+    char *props = "APP_PATHS";
 
     setenv(TEXT("DOORSTOP_INITIALIZED"), TEXT("TRUE"), TRUE);
     setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
@@ -209,7 +210,7 @@ int init_il2cpp(const char *domain_name) {
 
     void *host = NULL;
     unsigned int domain_id = 0;
-    int result = coreclr.initialize(app_path_n, "Doorstop Domain", 1, props,
+    int result = coreclr.initialize(app_path_n, "Doorstop Domain", 1, &props,
                                     &app_paths_env_n, &host, &domain_id);
     if (result != 0) {
         LOG("Failed to initialize CoreCLR: %d\n", result);

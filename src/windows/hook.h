@@ -32,7 +32,7 @@
  * @param detour_function Address of the detour function
  * @return bool_t TRUE if successful, otherwise FALSE
  */
-inline bool_t iat_hook(void *dll, char const *target_dll, void *target_function,
+static bool_t iat_hook(void *dll, char const *target_dll, void *target_function,
                        void *detour_function) {
     IMAGE_DOS_HEADER *mz = (PIMAGE_DOS_HEADER)dll;
 

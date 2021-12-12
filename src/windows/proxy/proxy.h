@@ -9,9 +9,9 @@
 #define ALT_POSTFIX TEXT("_alt.dll")
 #define DLL_POSTFIX TEXT(".dll")
 
-void load_functions(void *dll);
+extern void load_functions(void *dll);
 
-inline void load_proxy(char_t *module_name) {
+static inline void load_proxy(char_t *module_name) {
     size_t module_name_len = strlen(module_name);
 
     char_t *alt_name = (char_t *)malloc(

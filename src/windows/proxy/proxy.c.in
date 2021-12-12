@@ -11,3 +11,5 @@ void load_functions(void *dll)
 {
 ${PROXY_ADDS}
 }
+
+${PROXY_FUNCS}

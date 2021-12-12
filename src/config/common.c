@@ -1,5 +1,7 @@
 #include "config.h"
 
+Config config;
+
 void cleanup_config() {
 #define FREE_NON_NULL(val)                                                     \
     if (val != NULL) {                                                         \

@@ -21,8 +21,8 @@
 #define ASSERT(test, message)
 #define ASSERT_SOFT(test, ...)
 
-inline void init_logger() {}
-inline void free_logger() {}
+static inline void init_logger() {}
+static inline void free_logger() {}
 
 #endif
 
