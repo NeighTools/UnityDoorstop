@@ -1,3 +1,4 @@
+#include "entrypoint.h"
 #include "../bootstrap.h"
 #include "../config/config.h"
 #include "../crt.h"
@@ -5,7 +6,6 @@
 #include "../util/paths.h"
 #include "hook.h"
 #include "proxy/proxy.h"
-#include <windows.h>
 
 /**
  * @brief Ensures current working directory is the game folder
@@ -166,13 +166,6 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
     DoorstopPaths *paths = paths_init(hInstDll, fixed_cwd);
 
     GetStdHandle(STD_OUTPUT_HANDLE);
-
-#if VERBOSE
-    LOG("Standard output handle at %p\n", stdout_handle);
-    char_t handle_path[MAX_PATH] = TEXT("\0");
-    GetFinalPathNameByHandle(stdout_handle, handle_path, MAX_PATH, 0);
-    LOG("Standard output handle path: %s\n", handle_path);
-#endif
 
     load_proxy(paths->doorstop_filename);
     LOG("Proxy loaded\n");

@@ -29,7 +29,13 @@ target("doorstop")
     end
 
     if is_plat("mingw") then
-        add_shflags("-nodefaultlibs", "-nostdlib", "-nolibc", "-e DllEntry", {force=true})
+        add_shflags("-nostdlib", "-nolibc", {force=true})
+
+        if is_arch("i386") then
+            add_shflags("-e _DllEntry", "-Wl,--enable-stdcall-fixup", {force=true})
+        elseif is_arch("x86_64") then
+            add_shflags("-e DllEntry", {force=true})
+        end
     end
 
     add_files("src/*.c")
