@@ -14,10 +14,15 @@
 #define IMPORT_PREFIX mono
 #endif
 
+#ifndef IMPORT_CONVENTION
+#define IMPORT_CONVENTION __cdecl
+#endif
+
 #define IMPORT_LIB STR(H(IMPORT_PREFIX))
 #define LOADER_FUNC_NAME CAT(load_, IMPORT_PREFIX, _funcs)
 
-#define DEF_CALL(retType, name, ...) typedef retType (*name##_t)(__VA_ARGS__);
+#define DEF_CALL(retType, name, ...)                                           \
+    typedef retType(IMPORT_CONVENTION *name##_t)(__VA_ARGS__);
 #include IMPORT_LIB
 #undef DEF_CALL
 
