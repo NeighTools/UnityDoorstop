@@ -167,6 +167,15 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     GetStdHandle(STD_OUTPUT_HANDLE);
 
+// TODO: Some MinGW distributons don't seem to have GetFinalPathNameByHandle
+// properly defined
+#if VERBOSE && !defined(__MINGW32__)
+    LOG("Standard output handle at %p\n", stdout_handle);
+    char_t handle_path[MAX_PATH] = TEXT("\0");
+    GetFinalPathNameByHandle(stdout_handle, handle_path, MAX_PATH, 0);
+    LOG("Standard output handle path: %s\n", handle_path);
+#endif
+
     load_proxy(paths->doorstop_filename);
     LOG("Proxy loaded\n");
 
