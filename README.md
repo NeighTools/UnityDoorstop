@@ -38,11 +38,15 @@ Current progress:
 * [x] Port Windows support
 * [x] Port mono support
 * [x] Update Il2Cpp to use CoreCLR runtime 
-* [ ] Port Unix support
-* [ ] Add Unix build scripts
+* [x] Port Unix support
+* [x] Add Unix build scripts
 * [ ] Test that ports actually work
+* [ ] Add automated CI builds
 
 ## Building
 
-Doorstop uses [xmake](https://xmake.io/) to build the project. In order to build, run `build.bat` or `build.ps1`.
+Doorstop uses [xmake](https://xmake.io/) to build the project. In order to build, run `build.bat`, `build.ps1` or `build.sh`.
 Add `-with_logging` if you want to build with logging enabled.
+
+> **Note:** Initial build times are usually slower because the build script automatically downloads and installs xmake.  
+> On Unix, xmake is built directly from source.
