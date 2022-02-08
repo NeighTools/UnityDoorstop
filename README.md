@@ -40,6 +40,7 @@ Current progress:
 * [x] Update Il2Cpp to use CoreCLR runtime 
 * [x] Port Unix support
 * [x] Add Unix build scripts
+* [ ] Add example run/configure script for Unix
 * [ ] Test that ports actually work
 * [ ] Add automated CI builds
 
