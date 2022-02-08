@@ -133,7 +133,7 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
         char_t *mono_search_path = calloc(
             strlen(root_dir) + strlen(override_dir_full) + 2, sizeof(char_t));
         strcat(mono_search_path, override_dir_full);
-        strcat(mono_search_path, TEXT(";"));
+        strcat(mono_search_path, PATH_SEP);
         strcat(mono_search_path, root_dir);
 
         LOG("Mono search path: %s\n", mono_search_path);

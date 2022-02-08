@@ -26,7 +26,8 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
 }
 
 char_t *get_full_path(char_t *path) {
-    char_t *full_path = realpath(path, NULL);
+    char_t *buf = (char_t *)malloc(MAX_PATH);
+    char_t *full_path = realpath(path, buf);
     if (full_path == NULL) {
         free(full_path);
         return NULL;

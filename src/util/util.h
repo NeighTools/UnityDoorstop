@@ -15,6 +15,8 @@ typedef TCHAR char_t;
  */
 typedef BOOL bool_t;
 
+#define PATH_SEP TEXT(";")
+
 #elif defined(__APPLE__) || defined(__linux__)
 #include <stddef.h>
 typedef char char_t;
@@ -25,6 +27,8 @@ typedef int bool_t;
 #define NULL 0
 
 #define TEXT(text) text
+
+#define PATH_SEP TEXT(":")
 #endif
 
 #define STR_LEN(str) (sizeof(str) / sizeof((str)[0]))
