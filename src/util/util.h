@@ -16,8 +16,13 @@ typedef TCHAR char_t;
 typedef BOOL bool_t;
 
 #elif defined(__APPLE__) || defined(__linux__)
+#include <stddef.h>
 typedef char char_t;
 typedef int bool_t;
+
+#define TRUE 1
+#define FALSE 0
+#define NULL 0
 
 #define TEXT(text) text
 #endif

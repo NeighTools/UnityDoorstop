@@ -32,7 +32,7 @@ DEF_CALL(void *, image_open_from_data_with_name, void *data,
          int refonly, const char *name)
 DEF_CALL(void *, assembly_load_from_full, void *image, const char *fname,
          MonoImageOpenStatus *status, int refonly)
-#endif
+#else
 
 #ifndef MONO_H
 #define MONO_H
@@ -45,7 +45,14 @@ typedef enum {
 } MonoImageOpenStatus;
 
 #define IMPORT_PREFIX mono
+#if _WIN32
+#define IMPORT_CONV __cdecl
+#else
+#define IMPORT_CONV __attribute__((cdecl))
+#endif
 #include "func_import.h"
 #undef IMPORT_PREFIX
+#undef IMPORT_CONV
 
+#endif
 #endif

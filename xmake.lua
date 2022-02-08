@@ -16,9 +16,13 @@ target("doorstop")
         add_proxydef("src/windows/proxy/proxylist.txt")
         add_files("src/windows/*.c")
         add_defines("UNICODE")
+        add_links("shell32", "kernel32", "user32")
     end
 
-    add_links("shell32", "kernel32", "user32")
+    if is_os("linux") or is_os("macosx") then
+        add_files("src/nix/*.c")
+        add_files("src/nix/plthook/*.c")
+    end
 
     if is_plat("windows") then
         add_cxflags("-GS-", "-Ob2", "-MT", "-GL-", "-FS")

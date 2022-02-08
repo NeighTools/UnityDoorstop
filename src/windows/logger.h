@@ -1,5 +1,5 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#ifndef LOGGER_WIN_H
+#define LOGGER_WIN_H
 #if VERBOSE
 
 #include "../util/logging.h"
