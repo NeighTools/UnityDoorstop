@@ -192,7 +192,7 @@ int init_il2cpp(const char *domain_name) {
         calloc(strlen(config.clr_corlib_dir) + 1 + strlen(target_dir) + 1,
                sizeof(char_t));
     strcat(app_paths_env, config.clr_corlib_dir);
-    strcat(app_paths_env, TEXT(";"));
+    strcat(app_paths_env, PATH_SEP);
     strcat(app_paths_env, target_dir);
     char *app_paths_env_n = narrow(app_paths_env);
 
