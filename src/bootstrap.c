@@ -165,7 +165,9 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     mono.set_assemblies_path(mono_search_path_n);
     setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), mono_search_path, TRUE);
     free(mono_search_path);
-    free(override_dir_full);
+    if (override_dir_full) {
+        free(override_dir_full);
+    }
     free(target_path_full);
     free(target_path_folder);
 
