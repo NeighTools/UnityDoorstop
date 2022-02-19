@@ -8,7 +8,7 @@
 #include "util/paths.h"
 #include "util/util.h"
 
-void doorstop_bootstrap(void *mono_domain) {
+void mono_doorstop_bootstrap(void *mono_domain) {
     if (getenv(TEXT("DOORSTOP_INITIALIZED"))) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!\n");
         cleanup_config();
@@ -134,42 +134,50 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     free(root_domain_name_w);
     char_t *root_dir = widen(mono.assembly_getrootdir());
     LOG("Current root: %s\n", root_dir);
+
+    LOG("Overriding mono DLL search path\n");
+
+    size_t override_extra_len = 0;
+    char_t *target_path_full = get_full_path(config.target_assembly);
+    char_t *target_path_folder = get_folder_name(target_path_full);
+    override_extra_len += strlen(target_path_folder) + 1;
+    LOG("Adding %s to mono search path\n", target_path_folder);
+
+    char_t *override_dir_full = NULL;
     if (config.mono_dll_search_path_override) {
-        LOG("Overriding mono DLL search path\n");
+        override_dir_full = get_full_path(config.mono_dll_search_path_override);
+        override_dir_full += strlen(root_dir) + 1;
+        LOG("Adding root path: %s\n", override_dir_full);
+    }
 
-        char_t *override_dir_full =
-            get_full_path(config.mono_dll_search_path_override);
-        LOG("Override root path: %s\n", override_dir_full);
-
-        char_t *mono_search_path = calloc(
-            strlen(root_dir) + strlen(override_dir_full) + 2, sizeof(char_t));
+    char_t *mono_search_path =
+        calloc(strlen(root_dir) + 1 + override_dir_full, sizeof(char_t));
+    if (config.mono_dll_search_path_override) {
         strcat(mono_search_path, override_dir_full);
         strcat(mono_search_path, PATH_SEP);
-        strcat(mono_search_path, root_dir);
-
-        LOG("Mono search path: %s\n", mono_search_path);
-        char *mono_search_path_n = narrow(mono_search_path);
-        mono.set_assemblies_path(mono_search_path_n);
-        setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), mono_search_path, TRUE);
-        free(mono_search_path);
-        free(override_dir_full);
-    } else {
-        setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), root_dir, TRUE);
     }
+    strcat(mono_search_path, target_path_folder);
+    strcat(mono_search_path, PATH_SEP);
+    strcat(mono_search_path, root_dir);
+
+    LOG("Mono search path: %s\n", mono_search_path);
+    char *mono_search_path_n = narrow(mono_search_path);
+    mono.set_assemblies_path(mono_search_path_n);
+    setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), mono_search_path, TRUE);
+    free(mono_search_path);
+    free(override_dir_full);
+    free(target_path_full);
+    free(target_path_folder);
+
     void *domain = mono.jit_init_version(root_domain_name, runtime_version);
-    doorstop_bootstrap(domain);
+    mono_doorstop_bootstrap(domain);
     return domain;
 }
 
-int init_il2cpp(const char *domain_name) {
-    char_t *domain_name_w = widen(domain_name);
-    LOG("Starting IL2CPP domain \"%s\"\n", domain_name_w);
-    free(domain_name_w);
-    const int orig_result = il2cpp.init(domain_name);
-
+void il2cpp_doorstop_bootstrap() {
     if (!config.clr_corlib_dir || !config.clr_runtime_coreclr_path) {
         LOG("No CoreCLR paths set, skipping loading\n");
-        return orig_result;
+        return;
     }
 
     LOG("CoreCLR runtime path: %s\n", config.clr_runtime_coreclr_path);
@@ -178,14 +186,14 @@ int init_il2cpp(const char *domain_name) {
     if (!file_exists(config.clr_runtime_coreclr_path) ||
         !folder_exists(config.clr_corlib_dir)) {
         LOG("CoreCLR startup dirs are not set up skipping invoking Doorstop\n");
-        return orig_result;
+        return;
     }
 
     void *coreclr_module = dlopen(config.clr_runtime_coreclr_path, RTLD_LAZY);
     LOG("Loaded coreclr.dll: %p\n", coreclr_module);
     if (!coreclr_module) {
         LOG("Failed to load CoreCLR runtime!\n");
-        return orig_result;
+        return;
     }
 
     load_coreclr_funcs(coreclr_module);
@@ -225,7 +233,7 @@ int init_il2cpp(const char *domain_name) {
                                     &app_paths_env_n, &host, &domain_id);
     if (result != 0) {
         LOG("Failed to initialize CoreCLR: %d\n", result);
-        return orig_result;
+        return;
     }
 
     void (*startup)() = NULL;
@@ -233,12 +241,19 @@ int init_il2cpp(const char *domain_name) {
                                      "Doorstop.Entrypoint", "Start", &startup);
     if (result != 0) {
         LOG("Failed to get entrypoint delegate: %d\n", result);
-        return orig_result;
+        return;
     }
 
     LOG("Invoking Doorstop.Entrypoint.Main()\n");
     startup();
+}
 
+int init_il2cpp(const char *domain_name) {
+    char_t *domain_name_w = widen(domain_name);
+    LOG("Starting IL2CPP domain \"%s\"\n", domain_name_w);
+    free(domain_name_w);
+    const int orig_result = il2cpp.init(domain_name);
+    il2cpp_doorstop_bootstrap();
     return orig_result;
 }
 
