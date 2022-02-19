@@ -113,18 +113,18 @@ static inline void init_cmd_args() {
         continue;
 
     for (int i = 0; i < argc; i++) {
-        PARSE_ARG(TEXT("--ud-enabled"), config.enabled, load_bool_argv);
-        PARSE_ARG(TEXT("--ud-redirect-output-log"), config.redirect_output_log,
-                  load_bool_argv);
-        PARSE_ARG(TEXT("--ud-target-assembly"), config.target_assembly,
+        PARSE_ARG(TEXT("--doorstop-enabled"), config.enabled, load_bool_argv);
+        PARSE_ARG(TEXT("--doorstop-redirect-output-log"),
+                  config.redirect_output_log, load_bool_argv);
+        PARSE_ARG(TEXT("--doorstop-target-assembly"), config.target_assembly,
                   load_path_argv);
 
-        PARSE_ARG(TEXT("--ud-mono-dll-search-path-override"),
+        PARSE_ARG(TEXT("--doorstop-mono-dll-search-path-override"),
                   config.mono_dll_search_path_override, load_path_argv);
 
-        PARSE_ARG(TEXT("--ud-clr-corlib-dir"), config.clr_corlib_dir,
+        PARSE_ARG(TEXT("--doorstop-clr-corlib-dir"), config.clr_corlib_dir,
                   load_path_argv);
-        PARSE_ARG(TEXT("--ud-clr-runtime-coreclr-path"),
+        PARSE_ARG(TEXT("--doorstop-clr-runtime-coreclr-path"),
                   config.clr_runtime_coreclr_path, load_path_argv);
     }
 

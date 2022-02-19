@@ -26,18 +26,18 @@ The configuration file sections were renamed, and options were converted to snak
 
 In addition, command-line arguments were renamed to follow the internal naming scheme:
 
-| UnityDoorstop 3.x                | Doorstop 4                           |
-| -------------------------------- | ------------------------------------ |
-| `--doorstop-enable`              | `--ud-enabled`                       |
-| `--redirect-output-log`          | `--ud-redirect-output-log`           |
-| `--doorstop-target`              | `--ud-target-assembly`               |
-| `--doorstop-dll-search-override` | `--ud-mono-dll-search-path-override` |
-| `--mono-runtime-lib`             | removed, see next section            |
-| `--mono-config-dir`              | removed, see next section            |
-| `--mono-corlib-dir`              | removed, see next section            |
-| `--mono-debug-enabled`           | removed, see next section            |
-| `--mono-debug-suspend`           | removed, see next section            |
-| `--mono-debug-address`           | removed, see next section            |
+| UnityDoorstop 3.x                | Doorstop 4                                 |
+| -------------------------------- | ------------------------------------------ |
+| `--doorstop-enable`              | `--doorstop-enabled`                       |
+| `--redirect-output-log`          | `--doorstop-redirect-output-log`           |
+| `--doorstop-target`              | `--doorstop-target-assembly`               |
+| `--doorstop-dll-search-override` | `--doorstop-mono-dll-search-path-override` |
+| `--mono-runtime-lib`             | removed, see next section                  |
+| `--mono-config-dir`              | removed, see next section                  |
+| `--mono-corlib-dir`              | removed, see next section                  |
+| `--mono-debug-enabled`           | removed, see next section                  |
+| `--mono-debug-suspend`           | removed, see next section                  |
+| `--mono-debug-address`           | removed, see next section                  |
 
 
 ## CoreCLR is now used with Il2Cpp runtime instead of mono
