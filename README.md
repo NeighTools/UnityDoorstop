@@ -13,6 +13,7 @@ Doorstop is a tool to execute managed .NET assemblies inside Unity as early as p
 * **Runs first**: Doorstop runs its code before Unity can do so
 * **Configurable**: An elementary configuration file allows you to specify your assembly to execute
 * **Multiplatform**: Supports Windows, Linux, macOS
+* **Debugger support**: Allows to debug managed assemblies in Visual Studio, Rider or dnSpy *without modifications to Mono*
 
 ## Unity runtime support
 
@@ -40,6 +41,7 @@ Current progress:
 * [x] Update Il2Cpp to use CoreCLR runtime 
 * [x] Port Unix support
 * [x] Add Unix build scripts
+* [x] Add ability to start mono debugger without special dnSpy mono DLLs
 * [ ] Add example run/configure script for Unix
 * [ ] Test that ports actually work
 * [ ] Add automated CI builds
