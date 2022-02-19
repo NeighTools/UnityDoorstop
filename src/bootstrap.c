@@ -9,7 +9,7 @@
 #include "util/util.h"
 
 void doorstop_bootstrap(void *mono_domain) {
-    if (!getenv(TEXT("DOORSTOP_INITIALIZED"))) {
+    if (getenv(TEXT("DOORSTOP_INITIALIZED"))) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!\n");
         cleanup_config();
         return;
@@ -20,12 +20,10 @@ void doorstop_bootstrap(void *mono_domain) {
 
     if (mono.domain_set_config) {
 #define CONFIG_EXT TEXT(".config")
-        char_t *app_path = NULL;
-        program_path(&app_path);
+        char_t *app_path = program_path();
         char_t *config_path =
             calloc(strlen(app_path) + 1 + STR_LEN(CONFIG_EXT), sizeof(char_t));
         strcpy(config_path, app_path);
-
         strcat(config_path, CONFIG_EXT);
         char_t *folder_path = get_folder_name(app_path);
 
@@ -33,7 +31,7 @@ void doorstop_bootstrap(void *mono_domain) {
         char *folder_path_n = narrow(folder_path);
 
         LOG("Setting config paths: base dir: %s; config path: %s\n",
-            folder_path_n, config_path_n);
+            folder_path, config_path);
 
         mono.domain_set_config(mono_domain, folder_path_n, config_path_n);
 
@@ -45,10 +43,12 @@ void doorstop_bootstrap(void *mono_domain) {
 #undef CONFIG_EXT
     }
 
-    char *assembly_dir = mono.assembly_getrootdir();
-    LOG("Assembly dir: %s\n", assembly_dir);
+    setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
 
+    char *assembly_dir = mono.assembly_getrootdir();
     char_t *norm_assembly_dir = widen(assembly_dir);
+
+    LOG("Assembly dir: %s\n", norm_assembly_dir);
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), norm_assembly_dir, TRUE);
     free(norm_assembly_dir);
 
@@ -58,7 +58,7 @@ void doorstop_bootstrap(void *mono_domain) {
     get_module_path(NULL, &app_path, NULL, 0);
     setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
 
-    LOG("Loading assembly: %s\n", dll_path);
+    LOG("Opening assembly: %s\n", config.target_assembly);
 
     void *file = fopen(config.target_assembly, "r");
     if (!file) {
@@ -71,6 +71,8 @@ void doorstop_bootstrap(void *mono_domain) {
     fread(data, size, 1, file);
     fclose(file);
 
+    LOG("Opened Assembly DLL (%d bytes); opening its main image\n", size);
+
     MonoImageOpenStatus s = MONO_IMAGE_OK;
     void *image = mono.image_open_from_data_with_name(data, size, TRUE, &s,
                                                       FALSE, dll_path);
@@ -80,8 +82,9 @@ void doorstop_bootstrap(void *mono_domain) {
             config.target_assembly, s);
         return;
     }
-
     free(dll_path);
+
+    LOG("Image opened; loading included assembly\n");
 
     s = MONO_IMAGE_OK;
     void *assembly = mono.assembly_load_from_full(image, dll_path, &s, FALSE);
@@ -92,15 +95,21 @@ void doorstop_bootstrap(void *mono_domain) {
         return;
     }
 
+    LOG("Assembly loaded; looking for Doorstop.Entrypoint:Start\n");
     void *desc = mono.method_desc_new("Doorstop.Entrypoint:Start", TRUE);
     void *method = mono.method_desc_search_in_image(desc, image);
     mono.method_desc_free(desc);
-    ASSERT_SOFT(method != NULL);
+    if (!method) {
+        LOG("Failed to find method Doorstop.Entrypoint:Start\n");
+        return;
+    }
 
     void *signature = mono.method_signature(method);
-
     unsigned int params = mono.signature_get_param_count(signature);
-    ASSERT_SOFT(params == 0);
+    if (params != 0) {
+        LOG("Method has %d parameters; expected 0\n", params);
+        return;
+    }
 
     LOG("Invoking method %p\n", method);
     void *exc = NULL;
@@ -120,7 +129,9 @@ void doorstop_bootstrap(void *mono_domain) {
 }
 
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
-    LOG("Starting mono domain \"%s\"\n", root_domain_name);
+    char_t *root_domain_name_w = widen(root_domain_name);
+    LOG("Starting mono domain \"%s\"\n", root_domain_name_w);
+    free(root_domain_name_w);
     char_t *root_dir = widen(mono.assembly_getrootdir());
     LOG("Current root: %s\n", root_dir);
     if (config.mono_dll_search_path_override) {
