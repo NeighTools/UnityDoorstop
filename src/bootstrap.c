@@ -128,11 +128,6 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     cleanup_config();
 }
 
-#define MONO_DEBUG_ARG_START                                                   \
-    TEXT("--debugger-agent=transport=dt_socket,server=y,address=")
-// TODO: For .NET 3.5 monos, need to use defer=y instead
-#define MONO_DEBUG_NO_SUSPEND TEXT(",suspend=n")
-
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
     char_t *root_domain_name_w = widen(root_domain_name);
     LOG("Starting mono domain \"%s\"\n", root_domain_name_w);
@@ -274,6 +269,11 @@ int init_il2cpp(const char *domain_name) {
     il2cpp_doorstop_bootstrap();
     return orig_result;
 }
+
+#define MONO_DEBUG_ARG_START                                                   \
+    TEXT("--debugger-agent=transport=dt_socket,server=y,address=")
+// TODO: For .NET 3.5 monos, need to use defer=y instead
+#define MONO_DEBUG_NO_SUSPEND TEXT(",suspend=n")
 
 void hook_mono_jit_parse_options(int argc, char **argv) {
     char_t *debug_options = getenv(TEXT("DNSPY_UNITY_DBG2"));
