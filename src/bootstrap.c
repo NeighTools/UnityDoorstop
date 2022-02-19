@@ -128,6 +128,11 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     cleanup_config();
 }
 
+#define MONO_DEBUG_ARG_START                                                   \
+    TEXT("--debugger-agent=transport=dt_socket,server=y,address=")
+// TODO: For .NET 3.5 monos, need to use defer=y instead
+#define MONO_DEBUG_NO_SUSPEND TEXT(",suspend=n")
+
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
     char_t *root_domain_name_w = widen(root_domain_name);
     LOG("Starting mono domain \"%s\"\n", root_domain_name_w);
@@ -171,8 +176,19 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     free(target_path_full);
     free(target_path_folder);
 
+    if (config.mono_debug_enabled) {
+        hook_mono_jit_parse_options(0, NULL);
+    }
+
     void *domain = mono.jit_init_version(root_domain_name, runtime_version);
+
+    if (config.mono_debug_init) {
+        mono.debug_init(MONO_DEBUG_FORMAT_MONO);
+        mono.debug_domain_create(domain);
+    }
+
     mono_doorstop_bootstrap(domain);
+
     return domain;
 }
 
@@ -257,6 +273,48 @@ int init_il2cpp(const char *domain_name) {
     const int orig_result = il2cpp.init(domain_name);
     il2cpp_doorstop_bootstrap();
     return orig_result;
+}
+
+void hook_mono_jit_parse_options(int argc, char **argv) {
+    char_t *debug_options = getenv(TEXT("DNSPY_UNITY_DBG2"));
+    if (debug_options) {
+        config.mono_debug_enabled = TRUE;
+    }
+
+    if (config.mono_debug_enabled) {
+        LOG("Configuring mono debug server\n");
+
+        int size = argc + 1;
+        char **new_argv = calloc(size, sizeof(char *));
+        memcpy(new_argv, argv, argc * sizeof(char *));
+
+        size_t debug_args_len =
+            STR_LEN(MONO_DEBUG_ARG_START) + strlen(config.mono_debug_address);
+        if (!config.mono_debug_suspend) {
+            debug_args_len += STR_LEN(MONO_DEBUG_NO_SUSPEND);
+        }
+
+        if (!debug_options) {
+            debug_options = calloc(debug_args_len + 1, sizeof(char_t));
+            strcat(debug_options, MONO_DEBUG_ARG_START);
+            strcat(debug_options, config.mono_debug_address);
+            if (!config.mono_debug_suspend) {
+                strcat(debug_options, MONO_DEBUG_NO_SUSPEND);
+            }
+        }
+
+        LOG("Debug options: %s\n", debug_options);
+
+        char *debug_options_n = narrow(debug_options);
+        new_argv[argc] = debug_options_n;
+        mono.jit_parse_options(size, new_argv);
+
+        free(debug_options);
+        free(debug_options_n);
+        free(new_argv);
+    } else {
+        mono.jit_parse_options(argc, argv);
+    }
 }
 
 void *hook_mono_image_open_from_data_with_name(void *data,

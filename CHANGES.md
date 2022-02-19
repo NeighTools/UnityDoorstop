@@ -35,9 +35,9 @@ In addition, command-line arguments were renamed to follow the internal naming s
 | `--mono-runtime-lib`             | removed, see next section                  |
 | `--mono-config-dir`              | removed, see next section                  |
 | `--mono-corlib-dir`              | removed, see next section                  |
-| `--mono-debug-enabled`           | removed, see next section                  |
-| `--mono-debug-suspend`           | removed, see next section                  |
-| `--mono-debug-address`           | removed, see next section                  |
+| `--mono-debug-enabled`           | `--doorstop-mono-debug-enabled`            |
+| `--mono-debug-suspend`           | `--doorstop-mono-debug-suspend`            |
+| `--mono-debug-address`           | `--doorstop-mono-debug-address`            |
 
 
 ## CoreCLR is now used with Il2Cpp runtime instead of mono

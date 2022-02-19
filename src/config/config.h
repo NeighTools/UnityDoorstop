@@ -42,6 +42,34 @@ typedef struct {
     char_t *mono_dll_search_path_override;
 
     /**
+     * @brief Whether to enable the mono debugger.
+     */
+    bool_t mono_debug_enabled;
+
+    /**
+     * @brief Whether to manually intialize the mono debugger.
+     *
+     * On debug Unity versions, Unity automatically initializes the debugger.
+     * As such, mono_debug_init=true will crash the game as mono allows to
+     * initialize the debbuger only once. This option allows to disable the
+     * debugger initialization.
+     */
+    bool_t mono_debug_init;
+
+    /**
+     * @brief Whether to enable the debugger in suspended state.
+     *
+     * If enabled, the runtime will force the game to wait until a debugger is
+     * connected.
+     */
+    bool_t mono_debug_suspend;
+
+    /**
+     * @brief Debug address to use for the mono debugger.
+     */
+    char_t *mono_debug_address;
+
+    /**
      * @brief Path to the CoreCLR runtime library.
      */
     char_t *clr_runtime_coreclr_path;

@@ -32,6 +32,10 @@ DEF_CALL(void *, image_open_from_data_with_name, void *data,
          int refonly, const char *name)
 DEF_CALL(void *, assembly_load_from_full, void *image, const char *fname,
          MonoImageOpenStatus *status, int refonly)
+
+DEF_CALL(void *, jit_parse_options, int argc, char **argv)
+DEF_CALL(void *, debug_init, MonoDebugFormat format)
+DEF_CALL(void *, debug_domain_create, void *domain)
 #else
 
 #ifndef MONO_H
@@ -43,6 +47,13 @@ typedef enum {
     MONO_IMAGE_MISSING_ASSEMBLYREF,
     MONO_IMAGE_IMAGE_INVALID
 } MonoImageOpenStatus;
+
+typedef enum {
+    MONO_DEBUG_FORMAT_NONE,
+    MONO_DEBUG_FORMAT_MONO,
+    /* Deprecated, the mdb debugger is not longer supported. */
+    MONO_DEBUG_FORMAT_DEBUGGER
+} MonoDebugFormat;
 
 #define IMPORT_PREFIX mono
 #if _WIN32

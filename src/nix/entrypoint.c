@@ -21,6 +21,9 @@ void *dlsym_hook(void *handle, const char *name) {
     REDIRECT_INIT("mono_jit_init_version", load_mono_funcs, init_mono);
     REDIRECT_INIT("mono_image_open_from_data_with_name", load_mono_funcs,
                   hook_mono_image_open_from_data_with_name);
+    REDIRECT_INIT("mono_jit_parse_options", load_mono_funcs,
+                  hook_mono_jit_parse_options);
+
 #undef REDIRECT_INIT
     return dlsym(handle, name);
 }

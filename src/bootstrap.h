@@ -12,5 +12,6 @@ void *hook_mono_image_open_from_data_with_name(void *data,
                                                int need_copy,
                                                MonoImageOpenStatus *status,
                                                int refonly, const char *name);
+void hook_mono_jit_parse_options(int argc, char **argv);
 
 #endif

@@ -37,12 +37,21 @@ char_t *get_ini_entry(const char_t *config_file, const char_t *section,
     return result;
 }
 
-void load_path_file(const char_t *path, const char_t *section,
-                    const char_t *key, const char_t *def, char_t **value) {
+bool_t load_str_file(const char_t *path, const char_t *section,
+                     const char_t *key, const char_t *def, char_t **value) {
     char_t *tmp = get_ini_entry(path, section, key, def);
     LOG("CONFIG: %s.%s = %s\n", section, key, tmp);
     if (!tmp || strlen(tmp) == 0)
+        return FALSE;
+    *value = tmp;
+    return TRUE;
+}
+
+void load_path_file(const char_t *path, const char_t *section,
+                    const char_t *key, const char_t *def, char_t **value) {
+    if (!load_str_file(path, section, key, def, value))
         return;
+    char_t *tmp = *value;
     *value = get_full_path(tmp);
     LOG("(%s.%s) %s => %s\n", section, key, tmp, *value);
     free(tmp);
@@ -66,6 +75,14 @@ static inline void init_config_file() {
     load_path_file(config_path, TEXT("UnityMono"),
                    TEXT("dll_search_path_override"), NULL,
                    &config.mono_dll_search_path_override);
+    load_bool_file(config_path, TEXT("UnityMono"), TEXT("debug_enabled"),
+                   TEXT("false"), &config.mono_debug_enabled);
+    load_bool_file(config_path, TEXT("UnityMono"), TEXT("debug_init"),
+                   TEXT("true"), &config.mono_debug_init);
+    load_bool_file(config_path, TEXT("UnityMono"), TEXT("debug_suspend"),
+                   TEXT("false"), &config.mono_debug_suspend);
+    load_str_file(config_path, TEXT("UnityMono"), TEXT("debug_address"),
+                  TEXT("127.0.0.1:10000"), &config.mono_debug_address);
 
     load_path_file(config_path, TEXT("Il2Cpp"), TEXT("coreclr_path"), NULL,
                    &config.clr_runtime_coreclr_path);
@@ -89,8 +106,8 @@ bool_t load_bool_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
     return FALSE;
 }
 
-bool_t load_path_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
-                      char_t **value) {
+bool_t load_str_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
+                     char_t **value) {
     if (STR_EQUAL(argv[*i], arg_name) && *i < argc) {
         if (*value != NULL)
             free(*value);
@@ -101,6 +118,17 @@ bool_t load_path_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
         return TRUE;
     }
     return FALSE;
+}
+
+bool_t load_path_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
+                      char_t **value) {
+    if (!load_str_argv(argv, i, argc, arg_name, value))
+        return FALSE;
+    char_t *tmp = *value;
+    *value = get_full_path(tmp);
+    LOG("(%s) %s => %s\n", arg_name, tmp, *value);
+    free(tmp);
+    return TRUE;
 }
 
 static inline void init_cmd_args() {
@@ -121,6 +149,14 @@ static inline void init_cmd_args() {
 
         PARSE_ARG(TEXT("--doorstop-mono-dll-search-path-override"),
                   config.mono_dll_search_path_override, load_path_argv);
+        PARSE_ARG(TEXT("--doorstop-mono-debug-enabled"),
+                  config.mono_debug_enabled, load_bool_argv);
+        PARSE_ARG(TEXT("--doorstop-mono-debug-init"), config.mono_debug_init,
+                  load_bool_argv);
+        PARSE_ARG(TEXT("--doorstop-mono-debug-suspend"),
+                  config.mono_debug_suspend, load_bool_argv);
+        PARSE_ARG(TEXT("--doorstop-mono-debug-address"),
+                  config.mono_debug_address, load_str_argv);
 
         PARSE_ARG(TEXT("--doorstop-clr-corlib-dir"), config.clr_corlib_dir,
                   load_path_argv);
