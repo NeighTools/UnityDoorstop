@@ -2,22 +2,25 @@
 
 # Script that downloads xmake if it's missing and builds the project
 # Parameters
-# --with-logging : enable logging
-# --arch=<arch> : comma-separated list of architectures to build for
+# -with_logging : enable logging
+# -arch=<arch> : comma-separated list of architectures to build for
 # ... : additional parameters passed to xmake
 
 # Parse parameters into variables
 WITH_LOGGING="n"
 # Bash list of architectures to build for
 ARCHS=("x86" "x64")
+if [[ "$(uname)" == "Darwin" ]]; then
+    ARCHS=("x86_64")
+fi
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --with-logging)
+        -with_logging)
             WITH_LOGGING="y"
             shift
             ;;
-        --arch=*)
+        -arch=*)
             # Split the parameter into an array, remove commas
             IFS=',' read -r -a ARCHS <<< "${key#*=}"
             shift

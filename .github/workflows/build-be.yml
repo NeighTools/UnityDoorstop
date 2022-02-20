@@ -1,0 +1,110 @@
+name: Build
+
+on:
+  push:
+    branches: [ wip-rewrite ]
+
+jobs:
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure paths
+        run: |
+          New-Item -ItemType Directory -Force -Path ./artifacts/release/x64
+          New-Item -ItemType Directory -Force -Path ./artifacts/release/x86
+          New-Item -ItemType Directory -Force -Path ./artifacts/verbose/x64
+          New-Item -ItemType Directory -Force -Path ./artifacts/verbose/x86
+      - name: Build Release
+        run: |
+          ./build.ps1
+          Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/release/x64/winhttp.dll
+          Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/release/x86/winhttp.dll
+          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x64/doorstop_config.ini
+          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x86/doorstop_config.ini
+      - name: Build Verbose
+        run: |
+          ./build.ps1 -with_logging
+          Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/verbose/x64/winhttp.dll
+          Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/verbose/x86/winhttp.dll
+          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x64/doorstop_config.ini
+          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x86/doorstop_config.ini
+      - name: Upload Release
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_WIN-RELEASE
+          path: artifacts/release
+      - name: Upload Verbose
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_WIN-VERBOSE
+          path: artifacts/verbose
+
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure paths
+        run: |
+          mkdir -p artifacts/{verbose,release}/libdoorstop
+      - name: Install dependencies
+        run: sudo apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib
+      - name: Build Release
+        run: |
+          ./build.sh
+          cp build/linux/x86/release/libdoorstop.so artifacts/release/libdoorstop/libdoorstop_x86.so
+          cp build/linux/x64/release/libdoorstop.so artifacts/release/libdoorstop/libdoorstop_x64.so
+          cp assets/nix/run.sh artifacts/release/run.sh
+      - name: Build Verbose
+        run: |
+          ./build.sh -with_logging
+          cp build/linux/x86/release/libdoorstop.so artifacts/verbose/libdoorstop/libdoorstop_x86.so
+          cp build/linux/x64/release/libdoorstop.so artifacts/verbose/libdoorstop/libdoorstop_x64.so
+          cp assets/nix/run.sh artifacts/verbose/run.sh
+      - name: Upload Release
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_LINUX-RELEASE
+          path: artifacts/release
+      - name: Upload Verbose
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_LINUX-VERBOSE
+          path: artifacts/verbose
+
+  build-macos:
+
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure paths
+        run: |
+          mkdir -p artifacts/{verbose,release}/libdoorstop
+      - name: Build Release
+        run: |
+          ./build.sh
+          cp build/macosx/x86_64/release/libdoorstop.dylib artifacts/release/libdoorstop/libdoorstop_x64.dylib
+          cp assets/nix/run.sh artifacts/release/run.sh
+      - name: Build Verbose
+        run: |
+          ./build.sh -with_logging
+          cp build/macosx/x86_64/release/libdoorstop.dylib artifacts/verbose/libdoorstop/libdoorstop_x64.dylib
+          cp assets/nix/run.sh artifacts/verbose/run.sh
+      - name: Upload Release
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_MACOS-RELEASE
+          path: artifacts/release
+      - name: Upload Verbose
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_MACOS-VERBOSE
+          path: artifacts/verbose

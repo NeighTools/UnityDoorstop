@@ -1,3 +1,4 @@
+#include "../crt.h"
 #include "config.h"
 
 Config config;

@@ -1,6 +1,7 @@
 #include "../bootstrap.h"
 #include "../config/config.h"
 #include "../crt.h"
+#include "../util/logging.h"
 #include "../util/paths.h"
 #include "../util/util.h"
 #include "./plthook/plthook.h"
@@ -81,12 +82,11 @@ __attribute__((constructor)) void doorstop_ctor() {
     */
     void *mono_handle = plthook_handle_by_name("libmono");
 
-    if (plthook_replace(hook, "mono_jit_init_version", &jit_init_hook, NULL) !=
-        0)
+    if (plthook_replace(hook, "mono_jit_init_version", &init_mono, NULL) != 0)
         printf("Failed to hook jit_init_version, ignoring it. Error: %s\n",
                plthook_error());
     else if (mono_handle)
-        doorstop_init_mono_functions(mono_handle);
+        load_mono_funcs(mono_handle);
 #endif
 
     plthook_close(hook);
