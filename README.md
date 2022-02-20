@@ -2,7 +2,12 @@
   <img height="256" width="256" src="assets/img/icon.png">
 </p>
 
-# Unity Doorstop
+<h1 align="center">Unity Doorstop</h1>
+
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/NeighTools/UnityDoorstop/Build)](https://github.com/NeighTools/UnityDoorstop/actions/workflows/build-be.yml)
+[![nightly.link artifacts](https://img.shields.io/badge/Artifacts-nightly.link-blueviolet)](https://nightly.link/NeighTools/UnityDoorstop/workflows/build-be/wip-rewrite)
+
+***
 
 Doorstop is a tool to execute managed .NET assemblies inside Unity as early as possible.
 
@@ -44,7 +49,7 @@ Current progress:
 * [x] Add ability to start mono debugger without special dnSpy mono DLLs
 * [ ] Add example run/configure script for Unix
 * [ ] Test that ports actually work
-* [ ] Add automated CI builds
+* [x] Add automated CI builds
 
 ## Building
 
