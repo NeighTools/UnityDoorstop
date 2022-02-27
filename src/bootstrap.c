@@ -171,13 +171,11 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     free(target_path_full);
     free(target_path_folder);
 
-    if (config.mono_debug_enabled) {
-        hook_mono_jit_parse_options(0, NULL);
-    }
+    hook_mono_jit_parse_options(0, NULL);
 
     void *domain = mono.jit_init_version(root_domain_name, runtime_version);
 
-    if (config.mono_debug_init) {
+    if (config.mono_debug_start_server) {
         mono.debug_init(MONO_DEBUG_FORMAT_MONO);
         mono.debug_domain_create(domain);
     }

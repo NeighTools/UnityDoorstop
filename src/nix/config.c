@@ -22,7 +22,8 @@ void load_config() {
     get_env_bool("DOORSTOP_REDIRECT_OUTPUT_LOG", &config.redirect_output_log);
     get_env_bool("DOORSTOP_IGNORE_DISABLED_ENV", &config.ignore_disabled_env);
     get_env_bool("DOORSTOP_MONO_DEBUG_ENABLED", &config.mono_debug_enabled);
-    get_env_bool("DOORSTOP_MONO_DEBUG_INIT", &config.mono_debug_init);
+    get_env_bool("DOORSTOP_MONO_DEBUG_START_SERVER",
+                 &config.mono_debug_start_server);
     get_env_bool("DOORSTOP_MONO_DEBUG_SUSPEND", &config.mono_debug_suspend);
     try_get_env("DOORSTOP_MONO_DEBUG_ADDRESS", &config.mono_debug_address);
     try_get_env("DOORSTOP_TARGET_ASSEMBLY", &config.target_assembly);

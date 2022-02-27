@@ -19,9 +19,9 @@ The configuration file sections were renamed, and options were converted to snak
 | `MonoBackend.runtimeLib`              | removed, see next section            |
 | `MonoBackend.configDir`               | removed, see next section            |
 | `MonoBackend.corlibDir`               | removed, see next section            |
-| `MonoBackend.debugEnabled`            | removed, see next section            |
-| `MonoBackend.debugSuspend`            | removed, see next section            |
-| `MonoBackend.debugAddress`            | removed, see next section            |
+| `MonoBackend.debugEnabled`            | `UnityMono.debug_enabled`            |
+| `MonoBackend.debugSuspend`            | `UnityMono.debug_suspend`            |
+| `MonoBackend.debugAddress`            | `UnityMono.debug_address`            |
 
 
 In addition, command-line arguments were renamed to follow the internal naming scheme:

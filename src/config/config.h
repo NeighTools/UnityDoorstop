@@ -47,14 +47,12 @@ typedef struct {
     bool_t mono_debug_enabled;
 
     /**
-     * @brief Whether to manually intialize the mono debugger.
+     * @brief Whether to manually intialize the mono debugger server.
      *
-     * On debug Unity versions, Unity automatically initializes the debugger.
-     * As such, mono_debug_init=true will crash the game as mono allows to
-     * initialize the debbuger only once. This option allows to disable the
-     * debugger initialization.
+     * On debug Unity versions, Unity automatically initializes the debugger
+     * server. Use this option to disable the automatic server initialization.
      */
-    bool_t mono_debug_init;
+    bool_t mono_debug_start_server;
 
     /**
      * @brief Whether to enable the debugger in suspended state.
