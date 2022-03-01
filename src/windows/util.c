@@ -84,8 +84,8 @@ PathParts split_path(char_t *path) {
     size_t len = strlen(path);
     size_t ext = len;
     size_t i;
-    for (i = len; i > 0; i--) {
-        char_t c = *(path + i);
+    for (i = len - 1; i > 0; i--) {
+        char_t c = path[i];
         if (c == TEXT('.') && ext == len)
             ext = i;
         else if (c == TEXT('\\') || c == TEXT('/'))
