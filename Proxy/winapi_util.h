@@ -55,8 +55,8 @@ inline wchar_t *get_ini_entry(const wchar_t *config_file, const wchar_t *section
 
 inline wchar_t *get_folder_name(wchar_t *str, size_t len, BOOL with_separator) {
     size_t i;
-    for (i = len; i > 0; i--) {
-        wchar_t c = *(str + i);
+    for (i = len - 1; i > 0; i--) {
+        wchar_t c = str[i];
         if (c == L'\\' || c == L'/')
             break;
     }
@@ -70,8 +70,8 @@ inline wchar_t *get_folder_name(wchar_t *str, size_t len, BOOL with_separator) {
 inline wchar_t *get_file_name(wchar_t *str, size_t len, BOOL ext) {
     size_t ext_index = len;
     size_t i;
-    for (i = len; i > 0; i--) {
-        wchar_t c = *(str + i);
+    for (i = len - 1; i > 0; i--) {
+        wchar_t c = str[i];
         if (c == L'.' && ext_index == len)
             ext_index = i;
         else if (c == L'\\' || c == L'/')

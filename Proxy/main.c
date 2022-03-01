@@ -286,7 +286,7 @@ void *hook_mono_image_open_from_data_with_name(void *data, DWORD data_len, int n
     void *result = NULL;
     if (config.mono_dll_search_path_override) {
         wchar_t *name_wide = widen(name);
-        wchar_t *name_file = get_file_name(name_wide, strlen(name), TRUE);
+        wchar_t *name_file = get_file_name(name_wide, wcslen(name_wide), TRUE);
         free(name_wide);
 
         size_t name_file_len = wcslen(name_file);
