@@ -53,3 +53,8 @@ target("doorstop")
     add_files("src/config/*.c")
     add_files("src/util/*.c")
     add_files("src/runtimes/*.c")
+
+    after_build(function(target)
+        io.writefile(path.join(target:targetdir(), ".doorstop_version"),
+            info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
+    end)
