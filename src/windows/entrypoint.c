@@ -83,7 +83,7 @@ void *WINAPI get_proc_address_detour(void *module, char *name) {
         return (void *)(target);                                               \
     }
 
-    REDIRECT_INIT("il2cpp_init", load_il2cpp_funcs, init_il2cpp, NULL);
+    REDIRECT_INIT("il2cpp_init", load_il2cpp_funcs, init_il2cpp, {});
     REDIRECT_INIT("mono_jit_init_version", load_mono_funcs, init_mono,
                   capture_mono_path(module));
     REDIRECT_INIT("mono_image_open_from_data_with_name", load_mono_funcs,

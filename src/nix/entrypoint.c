@@ -24,7 +24,7 @@ void *dlsym_hook(void *handle, const char *name) {
         return (void *)target;                                                 \
     }
 
-    REDIRECT_INIT("il2cpp_init", load_il2cpp_funcs, init_il2cpp);
+    REDIRECT_INIT("il2cpp_init", load_il2cpp_funcs, init_il2cpp, {});
     REDIRECT_INIT("mono_jit_init_version", load_mono_funcs, init_mono);
     REDIRECT_INIT("mono_image_open_from_data_with_name", load_mono_funcs,
                   hook_mono_image_open_from_data_with_name);
