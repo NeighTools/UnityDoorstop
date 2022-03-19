@@ -1,7 +1,8 @@
 
-function add_proxydef(filename)
+function add_proxydef(load_events)
+    filename = "src/windows/proxy/proxylist.txt"
 
-    on_load(function(target)
+    table.insert(load_events, function(target, import, io)
         import("util", {rootdir="src/windows/build_tools"})
 
         local tmpl_dir = path.join(path.directory(path.directory(filename)), "build_tools")

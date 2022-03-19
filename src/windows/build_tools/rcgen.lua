@@ -1,5 +1,5 @@
-function add_rc(info)
-   on_load(function(target)
+function add_rc(load_events, info)
+   table.insert(load_events, function(target, import, io)
       import("util", {rootdir="src/windows/build_tools"})
       
       local tmpl_dir = "src/windows/build_tools"
