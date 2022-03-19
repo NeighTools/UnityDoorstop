@@ -22,14 +22,18 @@ jobs:
         run: |
           ./build.ps1
           Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/release/x64/winhttp.dll
+          Copy-Item -Path ./build/windows/x64/release/.doorstop_version -Destination ./artifacts/release/x64/.doorstop_version
           Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/release/x86/winhttp.dll
+          Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/release/x86/.doorstop_version
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x86/doorstop_config.ini
       - name: Build Verbose
         run: |
           ./build.ps1 -with_logging
           Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/verbose/x64/winhttp.dll
+          Copy-Item -Path ./build/windows/x64/release/.doorstop_version -Destination ./artifacts/verbose/x64/.doorstop_version
           Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/verbose/x86/winhttp.dll
+          Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/verbose/x86/.doorstop_version
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x86/doorstop_config.ini
       - name: Upload Release
@@ -60,12 +64,14 @@ jobs:
           ./build.sh
           cp build/linux/x86/release/libdoorstop.so artifacts/release/libdoorstop/libdoorstop_x86.so
           cp build/linux/x64/release/libdoorstop.so artifacts/release/libdoorstop/libdoorstop_x64.so
+          cp build/linux/x86/release/.doorstop_version artifacts/release/libdoorstop/.doorstop_version
           cp assets/nix/run.sh artifacts/release/run.sh
       - name: Build Verbose
         run: |
           ./build.sh -with_logging
           cp build/linux/x86/release/libdoorstop.so artifacts/verbose/libdoorstop/libdoorstop_x86.so
           cp build/linux/x64/release/libdoorstop.so artifacts/verbose/libdoorstop/libdoorstop_x64.so
+          cp build/linux/x64/release/.doorstop_version artifacts/verbose/libdoorstop/.doorstop_version
           cp assets/nix/run.sh artifacts/verbose/run.sh
       - name: Upload Release
         uses: actions/upload-artifact@v2
@@ -92,11 +98,13 @@ jobs:
         run: |
           ./build.sh
           cp build/macosx/x86_64/release/libdoorstop.dylib artifacts/release/libdoorstop/libdoorstop_x64.dylib
+          cp build/macosx/x86_64/release/.doorstop_version artifacts/release/libdoorstop/.doorstop_version
           cp assets/nix/run.sh artifacts/release/run.sh
       - name: Build Verbose
         run: |
           ./build.sh -with_logging
           cp build/macosx/x86_64/release/libdoorstop.dylib artifacts/verbose/libdoorstop/libdoorstop_x64.dylib
+          cp build/macosx/x86_64/release/.doorstop_version artifacts/verbose/libdoorstop/.doorstop_version
           cp assets/nix/run.sh artifacts/verbose/run.sh
       - name: Upload Release
         uses: actions/upload-artifact@v2
