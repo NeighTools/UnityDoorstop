@@ -58,7 +58,7 @@ jobs:
         run: |
           mkdir -p artifacts/{verbose,release}/libdoorstop
       - name: Install dependencies
-        run: sudo apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib
+        run: asudo apt-get update && sudo apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib
       - name: Build Release
         run: |
           ./build.sh
