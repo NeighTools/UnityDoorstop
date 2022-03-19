@@ -6,14 +6,20 @@
 #include "../util/util.h"
 #include "./plthook/plthook.h"
 
-static bool_t initialized = FALSE;
+void capture_mono_path(void *handle) {
+    char_t *result;
+    get_module_path(handle, &result, NULL, 0);
+    setenv("DOORSTOP_RUNTIME_LIB_PATH", result, TRUE);
+}
 
+static bool_t initialized = FALSE;
 void *dlsym_hook(void *handle, const char *name) {
-#define REDIRECT_INIT(init_name, init_func, target)                            \
+#define REDIRECT_INIT(init_name, init_func, target, extra_init)                \
     if (!strcmp(name, init_name)) {                                            \
         if (!initialized) {                                                    \
-            init_func(handle);                                                 \
             initialized = TRUE;                                                \
+            init_func(handle);                                                 \
+            extra_init;                                                        \
         }                                                                      \
         return (void *)target;                                                 \
     }

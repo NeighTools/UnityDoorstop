@@ -63,25 +63,34 @@ bool_t WINAPI close_handle_hook(void *handle) {
     return CloseHandle(handle);
 }
 
+void capture_mono_path(void *handle) {
+    char_t *result;
+    get_module_path(handle, &result, NULL, 0);
+    setenv("DOORSTOP_RUNTIME_LIB_PATH", result, TRUE);
+}
+
 bool_t initialized = FALSE;
 void *WINAPI get_proc_address_detour(void *module, char *name) {
-#define REDIRECT_INIT(init_name, init_func, target)                            \
+#define REDIRECT_INIT(init_name, init_func, target, extra_init)                \
     if (lstrcmpA(name, init_name) == 0) {                                      \
         if (!initialized) {                                                    \
             initialized = TRUE;                                                \
             LOG("Got %S at %p\n", init_name, module);                          \
+            extra_init;                                                        \
             init_func(module);                                                 \
             LOG("Loaded all runtime functions\n")                              \
         }                                                                      \
         return (void *)(target);                                               \
     }
 
-    REDIRECT_INIT("il2cpp_init", load_il2cpp_funcs, init_il2cpp);
-    REDIRECT_INIT("mono_jit_init_version", load_mono_funcs, init_mono);
+    REDIRECT_INIT("il2cpp_init", load_il2cpp_funcs, init_il2cpp, {});
+    REDIRECT_INIT("mono_jit_init_version", load_mono_funcs, init_mono,
+                  capture_mono_path(module));
     REDIRECT_INIT("mono_image_open_from_data_with_name", load_mono_funcs,
-                  hook_mono_image_open_from_data_with_name);
+                  hook_mono_image_open_from_data_with_name,
+                  capture_mono_path(module));
     REDIRECT_INIT("mono_jit_parse_options", load_mono_funcs,
-                  hook_mono_jit_parse_options);
+                  hook_mono_jit_parse_options, capture_mono_path(module));
 
     return (void *)GetProcAddress(module, name);
 #undef REDIRECT_INIT

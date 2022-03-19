@@ -1,5 +1,7 @@
+includes("info.lua")
+local info = build_info(info_lua)
+
 add_rules("mode.debug", "mode.release")
-includes("proxygen.lua")
 
 option("include_logging")
     set_showmenu(true)
@@ -13,7 +15,12 @@ target("doorstop")
     add_options("include_logging")
 
     if is_os("windows") then
+        includes("src/windows/build_tools/proxygen.lua")
         add_proxydef("src/windows/proxy/proxylist.txt")
+
+        includes("src/windows/build_tools/rcgen.lua")
+        add_rc(info)
+
         add_files("src/windows/*.c")
         add_defines("UNICODE")
         add_links("shell32", "kernel32", "user32")
