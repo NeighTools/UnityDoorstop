@@ -7,7 +7,7 @@
  * ------------------------------------------------------
  *
  * Copyright 2013-2019 Kubo Takehiro <kubo@jiubao.org>
- *                2020 Geoffrey Horsington <neigh@coder.horse>
+ *                2022 Geoffrey Horsington <neigh@coder.horse>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -199,6 +199,7 @@ struct plthook {
 
 static char errmsg[512];
 static size_t page_size;
+static char is_box_emulator = -1;
 #define ALIGN_ADDR(addr) ((void *)((size_t)(addr) & ~(page_size - 1)))
 
 static int plthook_open_executable(plthook_t **plthook_out);
@@ -475,6 +476,9 @@ static int get_memory_permission(void *address) {
         }
     }
     fclose(fp);
+    if (is_box_emulator) {
+        return PROT_READ | PROT_WRITE | PROT_EXEC;
+    }
     set_errmsg("Could not find memory region containing %p", (void *)addr);
     return 0;
 unknown_perms:
@@ -574,6 +578,27 @@ static int plthook_open_real(plthook_t **plthook_out, struct link_map *lmap) {
 
     if (page_size == 0) {
         page_size = sysconf(_SC_PAGESIZE);
+    }
+
+    if (is_box_emulator == -1) {
+        // Find BOX64_PATH or BOX86_PATH in environ list
+        // Use environ list because getenv is overwritten by BOX64/BOX86
+        for (char **env = environ; *env; env++) {
+            if (strncmp(*env, "BOX64_PATH=", 11) == 0) {
+                is_box_emulator = 1;
+                break;
+            }
+            if (strncmp(*env, "BOX86_PATH=", 11) == 0) {
+                is_box_emulator = 1;
+                break;
+            }
+        }
+    }
+
+    if (is_box_emulator) {
+        // BOX64/BOX86 don't automatically resolve offsets similar to Android
+        // and uClibc
+        dyn_addr_base = (const char *)lmap->l_addr;
     }
 
 #if defined __linux__
