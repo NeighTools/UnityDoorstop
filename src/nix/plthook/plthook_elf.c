@@ -593,6 +593,9 @@ static int plthook_open_real(plthook_t **plthook_out, struct link_map *lmap) {
                 break;
             }
         }
+        if (is_box_emulator == -1) {
+            is_box_emulator = 0;
+        }
     }
 
     if (is_box_emulator) {
