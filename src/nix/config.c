@@ -3,9 +3,9 @@
 
 void get_env_bool(const char_t *name, bool_t *target) {
     char_t *value = getenv(name);
-    if (strcmp(value, "1") == 0) {
+    if (value != NULL && strcmp(value, "1") == 0) {
         *target = TRUE;
-    } else if (strcmp(value, "0") == 0) {
+    } else if (value == NULL || strcmp(value, "0") == 0) {
         *target = FALSE;
     }
 }

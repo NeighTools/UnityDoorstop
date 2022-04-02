@@ -47,12 +47,12 @@ int fclose_hook(FILE *stream) {
 
 __attribute__((constructor)) void doorstop_ctor() {
     init_logger();
-    if (strcmp(getenv("DOORSTOP_ENABLE"), "TEXT")) {
-        LOG("DOORSTOP_ENABLE is set! Skipping!\n");
+    load_config();
+
+    if (!config.enabled) {
+        LOG("Doorstop not enabled! Skipping!\n");
         return;
     }
-
-    load_config();
 
     plthook_t *hook;
 
