@@ -19,7 +19,8 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
     dladdr(module, &info);
     size_t len = strlen(info.dli_fname);
     size_t total_size = len + free_space;
-    *size = len;
+    if (size != NULL)
+        *size = len;
     *result = (char_t *)malloc(total_size);
     strcpy(*result, info.dli_fname);
     return total_size;
