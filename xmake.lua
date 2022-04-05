@@ -32,6 +32,10 @@ target("doorstop")
         add_files("src/nix/plthook/*.c")
         add_links("dl")
         --add_shflags("--no-as-needed",{force=true})
+        if is_mode("debug") then
+            set_symbols("debug")
+            set_optimize("none")
+        end
     end
 
     if is_plat("windows") then

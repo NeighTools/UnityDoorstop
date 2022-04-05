@@ -8,6 +8,7 @@
 
 # Parse parameters into variables
 WITH_LOGGING="n"
+PROFILE="release"
 # Bash list of architectures to build for
 ARCHS=("x86" "x64")
 if [[ "$(uname)" == "Darwin" ]]; then
@@ -18,6 +19,10 @@ while [[ $# -gt 0 ]]; do
     case $key in
         -with_logging)
             WITH_LOGGING="y"
+            shift
+            ;;
+        -debug)
+            PROFILE="debug"
             shift
             ;;
         -arch=*)
@@ -107,6 +112,6 @@ fi
 for arch in "${ARCHS[@]}"
 do
     echo "Building for $arch..."
-    $xmake f -a $arch --include_logging=$WITH_LOGGING
+    $xmake f -a $arch -m $PROFILE --include_logging=$WITH_LOGGING
     $xmake $@
 done
