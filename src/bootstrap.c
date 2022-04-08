@@ -18,9 +18,9 @@ void mono_doorstop_bootstrap(void *mono_domain) {
 
     mono.thread_set_main(mono.thread_current());
 
+    char_t *app_path = program_path();
     if (mono.domain_set_config) {
 #define CONFIG_EXT TEXT(".config")
-        char_t *app_path = program_path();
         char_t *config_path =
             calloc(strlen(app_path) + 1 + STR_LEN(CONFIG_EXT), sizeof(char_t));
         strcpy(config_path, app_path);
@@ -35,7 +35,6 @@ void mono_doorstop_bootstrap(void *mono_domain) {
 
         mono.domain_set_config(mono_domain, folder_path_n, config_path_n);
 
-        free(app_path);
         free(folder_path);
         free(config_path);
         free(config_path_n);
@@ -44,6 +43,7 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     }
 
     setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
+    setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
 
     char *assembly_dir = mono.assembly_getrootdir();
     char_t *norm_assembly_dir = widen(assembly_dir);
@@ -52,14 +52,7 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), norm_assembly_dir, TRUE);
     free(norm_assembly_dir);
 
-    char *dll_path = narrow(config.target_assembly);
-
-    char_t *app_path = NULL;
-    get_module_path(NULL, &app_path, NULL, 0);
-    setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
-
     LOG("Opening assembly: %s\n", config.target_assembly);
-
     void *file = fopen(config.target_assembly, "r");
     if (!file) {
         LOG("Failed to open assembly: %s\n", config.target_assembly);
@@ -73,6 +66,7 @@ void mono_doorstop_bootstrap(void *mono_domain) {
 
     LOG("Opened Assembly DLL (%d bytes); opening its main image\n", size);
 
+    char *dll_path = narrow(config.target_assembly);
     MonoImageOpenStatus s = MONO_IMAGE_OK;
     void *image = mono.image_open_from_data_with_name(data, size, TRUE, &s,
                                                       FALSE, dll_path);
@@ -132,27 +126,29 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     char_t *root_domain_name_w = widen(root_domain_name);
     LOG("Starting mono domain \"%s\"\n", root_domain_name_w);
     free(root_domain_name_w);
-    char_t *root_dir = widen(mono.assembly_getrootdir());
+    char *root_dir_n = mono.assembly_getrootdir();
+    char_t *root_dir = widen(root_dir_n);
     LOG("Current root: %s\n", root_dir);
 
     LOG("Overriding mono DLL search path\n");
 
-    size_t override_extra_len = 0;
+    size_t mono_search_path_len = strlen(root_dir) + 1;
     char_t *target_path_full = get_full_path(config.target_assembly);
     char_t *target_path_folder = get_folder_name(target_path_full);
-    override_extra_len += strlen(target_path_folder) + 1;
+    mono_search_path_len += strlen(target_path_folder) + 1;
     LOG("Adding %s to mono search path\n", target_path_folder);
 
     char_t *override_dir_full = NULL;
-    if (config.mono_dll_search_path_override) {
+    bool_t has_override = config.mono_dll_search_path_override && strlen(config.mono_dll_search_path_override);
+    if (has_override) {
         override_dir_full = get_full_path(config.mono_dll_search_path_override);
-        override_dir_full += strlen(root_dir) + 1;
+        mono_search_path_len += strlen(override_dir_full) + 1;
         LOG("Adding root path: %s\n", override_dir_full);
     }
 
     char_t *mono_search_path =
-        calloc(strlen(root_dir) + 1 + override_dir_full, sizeof(char_t));
-    if (config.mono_dll_search_path_override) {
+        calloc(mono_search_path_len + 1, sizeof(char_t));
+    if (has_override) {
         strcat(mono_search_path, override_dir_full);
         strcat(mono_search_path, PATH_SEP);
     }
@@ -165,6 +161,7 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     mono.set_assemblies_path(mono_search_path_n);
     setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), mono_search_path, TRUE);
     free(mono_search_path);
+    free(mono_search_path_n);
     if (override_dir_full) {
         free(override_dir_full);
     }
@@ -255,7 +252,7 @@ void il2cpp_doorstop_bootstrap() {
         return;
     }
 
-    LOG("Invoking Doorstop.Entrypoint.Main()\n");
+    LOG("Invoking Doorstop.Entrypoint.Start()\n");
     startup();
 }
 
