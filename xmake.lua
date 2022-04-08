@@ -30,6 +30,8 @@ target("doorstop")
     if is_os("linux") or is_os("macosx") then
         add_files("src/nix/*.c")
         add_files("src/nix/plthook/*.c")
+        add_links("dl")
+        --add_shflags("--no-as-needed",{force=true})
     end
 
     if is_plat("windows") then
