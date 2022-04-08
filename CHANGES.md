@@ -51,7 +51,7 @@ Instead, two new options are added under `Il2Cpp`:
 * `Il2Cpp.coreclr_path` - Path to `coreclr.dll` that contains the CoreCLR runtime. All other CoreCLR-related DLLs (`clrjit.dll`, `clrgc.dll`, and others) should be in the same folder as `coreclr.dll`.
 * `Il2Cpp.corlib_dir` - Path to the directory containing the managed core libraries for CoreCLR (`mscorlib`, `System`, and others)
 
-## Managed entry point is now always `static void Doorstop.Entrypoint.Main()`
+## Managed entry point is now always `static void Doorstop.Entrypoint.Start()`
 
 Instead of looking for an entry point automatically, Doorstop will now always look for the same entry point:
 
