@@ -48,6 +48,8 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     char *assembly_dir = mono.assembly_getrootdir();
     char_t *norm_assembly_dir = widen(assembly_dir);
 
+    mono.config_parse(NULL);
+
     LOG("Assembly dir: %s\n", norm_assembly_dir);
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), norm_assembly_dir, TRUE);
     free(norm_assembly_dir);
