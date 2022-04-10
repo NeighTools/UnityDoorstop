@@ -23,6 +23,7 @@ static inline void init_logger() {
 
 static inline void free_logger() { CloseHandle(log_handle); }
 
+#if !defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL
 #define LOG(message, ...)                                                      \
     {                                                                          \
         size_t len = printf(buffer, TEXT(message), ##__VA_ARGS__);             \
@@ -30,6 +31,15 @@ static inline void free_logger() { CloseHandle(log_handle); }
         WriteFile(log_handle, log_data, len, NULL, NULL);                      \
         free(log_data);                                                        \
     }
+#else
+#define LOG(message, ...)                                                      \
+    {                                                                          \
+        size_t len = printf(buffer, TEXT(message) __VA_OPT__(, ) __VA_ARGS__); \
+        char *log_data = narrow(buffer);                                       \
+        WriteFile(log_handle, log_data, len, NULL, NULL);                      \
+        free(log_data);                                                        \
+    }
+#endif
 
 #define ASSERT_F(test, message, ...)                                           \
     if (!(test)) {                                                             \
