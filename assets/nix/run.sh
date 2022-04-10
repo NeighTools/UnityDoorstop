@@ -18,31 +18,48 @@ executable_name=""
 
 # General Config Options
 
+# Enable Doorstop?
 enabled="1"
 
-target_assembly=""
+# Path to the assembly to load and execute
+# NOTE: The entrypoint must be of format `static void Doorstop.Entrypoint.Start()`
+target_assembly="Doorstop.dll"
 
+# If enabled, DOORSTOP_DISABLE env var value is ignored
+# USE THIS ONLY WHEN ASKED TO OR YOU KNOW WHAT THIS MEANS
 ignore_disable_switch="0"
 
 # Mono Options
 
-search_path_override=""
+# Overrides default Mono DLL search path
+# Sometimes it is needed to instruct Mono to seek its assemblies from a different path
+# (e.g. mscorlib is stripped in original game)
+# This option causes Mono to seek mscorlib and core libraries from a different folder before Managed
+# Original Managed folder is added as a secondary folder in the search path
+dll_search_path_override=""
 
+# If 1, Mono debugger server will be enabled
 debug_enable="0"
 
+# When debug_enabled is 1, this option specifies whether Doorstop should initialize the debugger server
+# If you experience crashes when starting the debugger on debug UnityPlayer builds, try setting this to 0
 debug_start_server="0"
 
+# When debug_enabled is 1, specifies the address to use for the debugger server
 debug_address="127.0.0.1:10000"
 
+# If 1 and debug_enabled is 1, Mono debugger server will suspend the game execution until a debugger is attached
 debug_suspend="0"
 
 # CoreCLR options (IL2CPP)
 
-runtime_path=""
+# Path to coreclr shared library WITHOUT THE EXTENSION that contains the CoreCLR runtime
+coreclr_path=""
 
-corelib_path=""
+# Path to the directory containing the managed core libraries for CoreCLR (mscorlib, System, etc.)
+corlib_dir=""
 
-
+################################################################################
 # Everything past this point is the actual script
 
 # Special case: program is launched via Steam
@@ -50,24 +67,24 @@ corelib_path=""
 if [ "$2" = "SteamLaunch" ]; then
     steam="$1 $2 $3 $4 $0 $5"
     shift 5
-    $steam $@
+    $steam "$@"
     exit
 fi
 
 # Handle first param being executable name
 if [ -x "$1" ] ; then
     executable_name="$1"
-    echo "$1"
+    echo "Target executable: $1"
     shift
 fi
 
-if [ -z "${executable_name}" -o ! -x "${executable_name}" ]; then
+if [ -z "${executable_name}" ] || [ ! -x "${executable_name}" ]; then
     echo "Please set executable_name to a valid name in a text editor or as the first command line parameter"
     exit 1
 fi
 
-# This is just copied from the BepInEx run script, it *somehow* gets the base directory
-a="/$0"; a=${a%/*}; a=${a#/}; a=${a:-.}; BASEDIR=$(cd "$a"; pwd -P)
+# Use POSIX-compatible way to get the directory of the executable
+a="/$0"; a=${a%/*}; a=${a#/}; a=${a:-.}; BASEDIR=$(cd "$a" || exit; pwd -P)
 
 arch=""
 executable_path=""
@@ -79,24 +96,23 @@ case ${os_type} in
     Linux*)
         executable_path="${executable_name}"
         # Handle relative paths
-        if [ executable_path != /* ] ; then
+        if ! echo "$executable_path" | grep "^/.*$"; then
             executable_path="${BASEDIR}/${executable_path}"
         fi
         lib_extension="so"
     ;;
     Darwin*)
-        # macOS man, what are they doing over there
         real_executable_name="${executable_name}"
 
         # Handle relative directories
-        if [ real_executable_name != /* ] ; then
+        if ! echo "$real_executable_name" | grep "^/.*$"; then
             real_executable_name="${BASEDIR}/${real_executable_name}"
         fi
 
         # If we're not even an actual executable, check .app Info for actual executable
-        if [ "${real_executable_name}" != *.app/Contents/MacOS/* ] ; then
+        if ! echo "$real_executable_name" | grep "^.*\.app/Contents/MacOS/.*"; then
             # Add .app to the end if not given
-            if [ "${real_executable_name}" != *.app ] ; then
+            if ! echo "$real_executable_name" | grep "^.*\.app$"; then
                 real_executable_name="${real_executable_name}.app"
             fi
             inner_executable_name=$(defaults read "${real_executable_name}/Contents/Info" CFBundleExecutable)
@@ -144,7 +160,7 @@ executable_path=$(resolve_executable_path "${executable_path}")
 echo "${executable_path}"
 
 # Figure out the arch of the executable with file
-file_out="$(LD_PRELOAD="" file -b ${executable_path})"
+file_out="$(LD_PRELOAD="" file -b "${executable_path}")"
 case "${file_out}" in
     *64-bit*)
         arch="x64"
@@ -174,69 +190,65 @@ doorstop_bool() {
 }
 
 # Read from command line
-executable_final="${executable_path}"
-while [ "$#" != "0" ]; do
+while :; do
     case "$1" in
         --doorstop_enabled)
             shift
-            enabled="$(doorstop_bool $1)"
+            enabled="$(doorstop_bool "$2")"
         ;;
         --doorstop_target_assembly)
             shift
-            target_assembly="$1"
+            target_assembly="$2"
         ;;
         --doorstop-mono-dll-search-path-override)
             shift
-            search_path_override="$1"
+            dll_search_path_override="$2"
         ;;
         --doorstop-mono-debug-enabled)
             shift
-            debug_enable="$(doorstop_bool $1)"
+            debug_enable="$(doorstop_bool "$2")"
         ;;
         --doorstop-mono-debug-start-server)
             shift
-            debug_start_server="$(doorstop_bool $1)"
+            debug_start_server="$(doorstop_bool "$2")"
         ;;
         --doorstop-mono-debug-suspend)
             shift
-            debug_suspend="$(doorstop_bool $1)"
+            debug_suspend="$(doorstop_bool "$2")"
         ;;
         --doorstop-mono-debug-address)
             shift
-            debug_address="$1"
+            debug_address="$2"
         ;;
         --doorstop-clr-runtime-coreclr-path)
             shift
-            runtime_path="$1"
+            coreclr_path="$2"
         ;;
         --doorstop-clr-corlib-dir)
             shift
-            corelib_path="$1"
+            corlib_dir="$2"
         ;;
         *)
-            executable_final="${executable_final} \"$1\""
+            if [ -z "$1" ]; then
+                break
+            fi
+            rest_args="$rest_args $1"
         ;;
     esac
     shift
 done
 
 # Move variables to environment
-export DOORSTOP_ENABLED="${enabled}"
-export DOORSTOP_TARGET_ASSEMBLY="${target_assembly}"
-export DOORSTOP_IGNORE_DISABLED_ENV="${ignore_disable_switch}"
-if [ -n "${search_path_override}" ] ; then
-    export DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE="${search_path_override}"
-fi
-export DOORSTOP_MONO_DEBUG_ENABLED="${debug_enable}"
-export DOORSTOP_MONO_DEBUG_START_SERVER="${debug_start_server}"
-export DOORSTOP_MONO_DEBUG_ADDRESS="${debug_address}"
-export DOORSTOP_MONO_DEBUG_SUSPEND="${debug_suspend}"
-if [ -n "${runtime_path}" ] ; then
-    export DOORSTOP_CLR_RUNTIME_CORECLR_PATH="${runtime_path}"
-fi
-if [ -n "${corelib_path}" ] ; then
-    export DOORSTOP_CLR_CORLIB_DIR="${DOORSTOP_CLR_CORLIB_DIR}"
-fi
+export DOORSTOP_ENABLED="$enabled"
+export DOORSTOP_TARGET_ASSEMBLY="$target_assembly"
+export DOORSTOP_IGNORE_DISABLED_ENV="$ignore_disable_switch"
+export DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE="$dll_search_path_override"
+export DOORSTOP_MONO_DEBUG_ENABLED="$debug_enable"
+export DOORSTOP_MONO_DEBUG_START_SERVER="$debug_start_server"
+export DOORSTOP_MONO_DEBUG_ADDRESS="$debug_address"
+export DOORSTOP_MONO_DEBUG_SUSPEND="$debug_suspend"
+export DOORSTOP_CLR_RUNTIME_CORECLR_PATH="$coreclr_path.$lib_extension"
+export DOORSTOP_CLR_CORLIB_DIR="$corlib_dir"
 
 # Final setup
 doorstop_directory="${BASEDIR}/doorstop_libs/"
@@ -247,4 +259,5 @@ export LD_PRELOAD="${doorstop_name}:${LD_PRELOAD}"
 export DYLD_LIBRARY_PATH="${doorstop_directory}:${DYLD_LIBRARY_PATH}"
 export DYLD_INSERT_LIBRARIES="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
 
-${executable_final}
+# shellcheck disable=SC2086
+exec "$executable_path" $rest_args
