@@ -141,15 +141,15 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     LOG("Adding %s to mono search path\n", target_path_folder);
 
     char_t *override_dir_full = NULL;
-    bool_t has_override = config.mono_dll_search_path_override && strlen(config.mono_dll_search_path_override);
+    bool_t has_override = config.mono_dll_search_path_override &&
+                          strlen(config.mono_dll_search_path_override);
     if (has_override) {
         override_dir_full = get_full_path(config.mono_dll_search_path_override);
         mono_search_path_len += strlen(override_dir_full) + 1;
         LOG("Adding root path: %s\n", override_dir_full);
     }
 
-    char_t *mono_search_path =
-        calloc(mono_search_path_len + 1, sizeof(char_t));
+    char_t *mono_search_path = calloc(mono_search_path_len + 1, sizeof(char_t));
     if (has_override) {
         strcat(mono_search_path, override_dir_full);
         strcat(mono_search_path, PATH_SEP);
@@ -236,6 +236,7 @@ void il2cpp_doorstop_bootstrap() {
     setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), config.clr_corlib_dir, TRUE);
     setenv(TEXT("DOORSTOP_PROCESS_PATH"), app_path, TRUE);
+    setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), app_paths_env, TRUE);
 
     void *host = NULL;
     unsigned int domain_id = 0;
