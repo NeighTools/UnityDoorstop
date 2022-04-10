@@ -45,17 +45,20 @@ corelib_path=""
 
 # Everything past this point is the actual script
 
-# Handle first param being executable name
-if [ -x "$1" ] ; then
-    executable_name="$1"
-    shift
-fi
-
 # Special case: program is launched via Steam
 # In that case rerun the script via their bootstrapper to ensure Steam overlay works
 if [ "$2" = "SteamLaunch" ]; then
-    "$1" "$2" "$3" "$4" "$0" "$5"
+    steam="$1 $2 $3 $4 $0 $5"
+    shift 5
+    $steam $@
     exit
+fi
+
+# Handle first param being executable name
+if [ -x "$1" ] ; then
+    executable_name="$1"
+    echo "$1"
+    shift
 fi
 
 if [ -z "${executable_name}" -o ! -x "${executable_name}" ]; then
@@ -74,14 +77,33 @@ lib_extension=""
 os_type="$(uname -s)"
 case ${os_type} in
     Linux*)
-        executable_path="${BASEDIR}/${executable_name}"
+        executable_path="${executable_name}"
+        # Handle relative paths
+        if [ executable_path != /* ] ; then
+            executable_path="${BASEDIR}/${executable_path}"
+        fi
         lib_extension="so"
     ;;
     Darwin*)
         # macOS man, what are they doing over there
-        executable_name=$(basename "${executable_name}" .app)
-        real_executable_name=$(defaults read "$BASEDIR/${executable_name}.app/Contents/Info" CFBundleExecutable)
-        executable_path="$BASEDIR/${executable_name}.app/Contents/MacOS/${real_executable_name}"
+        real_executable_name="${executable_name}"
+
+        # Handle relative directories
+        if [ real_executable_name != /* ] ; then
+            real_executable_name="${BASEDIR}/${real_executable_name}"
+        fi
+
+        # If we're not even an actual executable, check .app Info for actual executable
+        if [ "${real_executable_name}" != *.app/Contents/MacOS/* ] ; then
+            # Add .app to the end if not given
+            if [ "${real_executable_name}" != *.app ] ; then
+                real_executable_name="${real_executable_name}.app"
+            fi
+            inner_executable_name=$(defaults read "${real_executable_name}/Contents/Info" CFBundleExecutable)
+            executable_path="${real_executable_name}/Contents/MacOS/${inner_executable_name}"
+        else
+            executable_path="${executable_name}"
+        fi
         lib_extension="dylib"
     ;;
     *)
@@ -91,8 +113,6 @@ case ${os_type} in
         exit 1
     ;;
 esac
-
-# Helpers from BepInEx script for resolving absolute paths
 
 abs_path() {
     echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
@@ -124,7 +144,8 @@ executable_path=$(resolve_executable_path "${executable_path}")
 echo "${executable_path}"
 
 # Figure out the arch of the executable with file
-case "$(file -b ${executable_path})" in
+file_out="$(LD_PRELOAD="" file -b ${executable_path})"
+case "${file_out}" in
     *64-bit*)
         arch="x64"
     ;;
@@ -132,13 +153,15 @@ case "$(file -b ${executable_path})" in
         arch="x86"
     ;;
     *)
-        echo "Executable is not compiled for x86 or x64 (might be ARM?)"
+        echo "The executable \"${executable_path}\" is not compiled for x86 or x64 (might be ARM?)"
         echo "If you think this is a mistake (or would like to encourage support for other architectures)"
         echo "Please make an issue at https://github.com/NeighTools/UnityDoorstop"
+        echo "Got: ${file_out}"
         exit 1
     ;;
 esac
 
+# Helper to convert common boolean strings into just 0 and 1
 doorstop_bool() {
     case "$1" in
         TRUE|true|t|T|1|Y|y|yes)
@@ -151,7 +174,7 @@ doorstop_bool() {
 }
 
 # Read from command line
-executable_final=${executable_path}
+executable_final="${executable_path}"
 while [ "$#" != "0" ]; do
     case "$1" in
         --doorstop_enabled)
