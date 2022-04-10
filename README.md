@@ -166,4 +166,5 @@ All Doorstop arguments start with `--doorstop-` and always contain an argument. 
 
 ## License
 
-Doorstop 4 is licensed under LGPLv2.1. You can view the entire license [here](LICENSE).
+Doorstop 4 is licensed under LGPLv2.1. You can view the entire license [here](LICENSE).  
+You can still access the source code to the original UnityDoorstop 3 source (licensed under CC0) from [the legacy branch](https://github.com/NeighTools/UnityDoorstop/tree/legacy).
