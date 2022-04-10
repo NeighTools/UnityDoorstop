@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Configure paths
         run: |
-          mkdir -p artifacts/{verbose,release}/libdoorstop
+          mkdir -p artifacts/{verbose,release,debug}/libdoorstop
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib
       - name: Build Release
@@ -73,6 +73,13 @@ jobs:
           cp build/linux/x64/release/libdoorstop.so artifacts/verbose/libdoorstop/libdoorstop_x64.so
           cp build/linux/x64/release/.doorstop_version artifacts/verbose/libdoorstop/.doorstop_version
           cp assets/nix/run.sh artifacts/verbose/run.sh
+      - name: Build Debug
+        run: |
+          ./build.sh -with_logging -debug
+          cp build/linux/x86/debug/libdoorstop.so artifacts/debug/libdoorstop/libdoorstop_x86.so
+          cp build/linux/x64/debug/libdoorstop.so artifacts/debug/libdoorstop/libdoorstop_x64.so
+          cp build/linux/x64/debug/.doorstop_version artifacts/debug/libdoorstop/.doorstop_version
+          cp assets/nix/run.sh artifacts/debug/run.sh
       - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
@@ -83,6 +90,11 @@ jobs:
         with:
           name: Doorstop_LINUX-VERBOSE
           path: artifacts/verbose
+      - name: Upload Debug
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_LINUX-DEBUG
+          path: artifacts/debug
 
   build-macos:
 
@@ -93,7 +105,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Configure paths
         run: |
-          mkdir -p artifacts/{verbose,release}/libdoorstop
+          mkdir -p artifacts/{verbose,release,debug}/libdoorstop
       - name: Build Release
         run: |
           ./build.sh
@@ -106,6 +118,12 @@ jobs:
           cp build/macosx/x86_64/release/libdoorstop.dylib artifacts/verbose/libdoorstop/libdoorstop_x64.dylib
           cp build/macosx/x86_64/release/.doorstop_version artifacts/verbose/libdoorstop/.doorstop_version
           cp assets/nix/run.sh artifacts/verbose/run.sh
+      - name: Build Debug
+        run: |
+          ./build.sh -with_logging -debug
+          cp build/macosx/x86_64/debug/libdoorstop.dylib artifacts/debug/libdoorstop/libdoorstop_x64.dylib
+          cp build/macosx/x86_64/debug/.doorstop_version artifacts/debug/libdoorstop/.doorstop_version
+          cp assets/nix/run.sh artifacts/debug/run.sh
       - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
@@ -116,3 +134,8 @@ jobs:
         with:
           name: Doorstop_MACOS-VERBOSE
           path: artifacts/verbose
+      - name: Upload Debug
+        uses: actions/upload-artifact@v2
+        with:
+          name: Doorstop_MACOS-DEBUG
+          path: artifacts/debug
