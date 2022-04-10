@@ -37,12 +37,12 @@ jobs:
       - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_WIN-RELEASE
+          name: doorstop_win_release
           path: artifacts/release
       - name: Upload Verbose
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_WIN-VERBOSE
+          name: doorstop_win_verbose
           path: artifacts/verbose
 
   build-linux:
@@ -81,17 +81,17 @@ jobs:
       - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_LINUX-RELEASE
+          name: doorstop_linux_release
           path: artifacts/release
       - name: Upload Verbose
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_LINUX-VERBOSE
+          name: doorstop_linux_verbose
           path: artifacts/verbose
       - name: Upload Debug
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_LINUX-DEBUG
+          name: doorstop_linux_debug
           path: artifacts/debug
 
   build-macos:
@@ -125,15 +125,15 @@ jobs:
       - name: Upload Release
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_MACOS-RELEASE
+          name: doorstop_macos_release
           path: artifacts/release
       - name: Upload Verbose
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_MACOS-VERBOSE
+          name: doorstop_macos_verbose
           path: artifacts/verbose
       - name: Upload Debug
         uses: actions/upload-artifact@v2
         with:
-          name: Doorstop_MACOS-DEBUG
+          name: doorstop_macos_debug
           path: artifacts/debug
