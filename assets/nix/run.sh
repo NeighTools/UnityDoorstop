@@ -193,40 +193,40 @@ doorstop_bool() {
 while :; do
     case "$1" in
         --doorstop_enabled)
-            shift
             enabled="$(doorstop_bool "$2")"
+            shift
         ;;
         --doorstop_target_assembly)
-            shift
             target_assembly="$2"
+            shift
         ;;
         --doorstop-mono-dll-search-path-override)
-            shift
             dll_search_path_override="$2"
+            shift
         ;;
         --doorstop-mono-debug-enabled)
-            shift
             debug_enable="$(doorstop_bool "$2")"
+            shift
         ;;
         --doorstop-mono-debug-start-server)
-            shift
             debug_start_server="$(doorstop_bool "$2")"
+            shift
         ;;
         --doorstop-mono-debug-suspend)
-            shift
             debug_suspend="$(doorstop_bool "$2")"
+            shift
         ;;
         --doorstop-mono-debug-address)
-            shift
             debug_address="$2"
+            shift
         ;;
         --doorstop-clr-runtime-coreclr-path)
-            shift
             coreclr_path="$2"
+            shift
         ;;
         --doorstop-clr-corlib-dir)
-            shift
             corlib_dir="$2"
+            shift
         ;;
         *)
             if [ -z "$1" ]; then
