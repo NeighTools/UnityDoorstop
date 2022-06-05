@@ -104,6 +104,7 @@ inline void init_cmd_args() {
 
     for (int i = 0; i < argc; i++) {
         PARSE_ARG(L"--doorstop-enable", config.enabled, load_bool_argv);
+        PARSE_ARG(L"--doorstop-ignore-disable-switch", config.ignore_disabled_env, load_bool_argv);
         PARSE_ARG(L"--redirect-output-log", config.redirect_output_log, load_bool_argv);
         PARSE_ARG(L"--doorstop-target", config.target_assembly, load_path_argv);
         PARSE_ARG(L"--doorstop-dll-search-override", config.mono_dll_search_path_override, load_path_argv);
