@@ -6,6 +6,33 @@
 #include "../util/util.h"
 #include "./plthook/plthook.h"
 
+extern char *program_invocation_name;
+static void *(*real_dlsym)(void *, const char *) = NULL;
+static int (*real_fclose)(FILE*) = NULL;
+
+// Some crazy hackery here to get LD_PRELOAD hackery work with dlsym hooking
+// Taken from https://stackoverflow.com/questions/15599026/how-can-i-intercept-dlsym-calls-using-ld-preload
+extern void *_dl_sym(void *, const char *, void *);
+
+#define real_dlsym real_dlsym
+#define real_fclose real_fclose
+#define dlsym_proxy dlsym
+#define fclose_proxy fclose
+#define program_path(app_path) realpath(program_invocation_name, app_path)
+#define DYLD_INTERPOSE(_replacment, _replacee)
+#define INIT_DLSYM                                                 \
+{                                                                  \
+        if (real_dlsym == NULL)                                    \
+            real_dlsym = _dl_sym(RTLD_NEXT, "dlsym", dlsym_proxy); \
+        if (!strcmp(name, "dlsym"))                                \
+            return (void *)dlsym_proxy;                            \
+}
+#define INIT_FCLOSE                                                        \
+{                                                                          \
+        if (real_fclose == NULL)                                           \
+            real_fclose = _dl_sym(RTLD_NEXT, "fclose", fclose_proxy);                 \
+}
+
 void capture_mono_path(void *handle) {
     char_t *result;
     get_module_path(handle, &result, NULL, 0);
@@ -13,7 +40,10 @@ void capture_mono_path(void *handle) {
 }
 
 static bool_t initialized = FALSE;
-void *dlsym_hook(void *handle, const char *name) {
+void *dlsym_proxy(void *handle, const char *name) {
+    INIT_DLSYM;
+
+
 #define REDIRECT_INIT(init_name, init_func, target, extra_init)                \
     if (!strcmp(name, init_name)) {                                            \
         if (!initialized) {                                                    \
@@ -34,63 +64,20 @@ void *dlsym_hook(void *handle, const char *name) {
                   hook_mono_jit_parse_options, capture_mono_path(handle));
 
 #undef REDIRECT_INIT
-    return dlsym(handle, name);
+    return real_dlsym(handle, name);
 }
 
-int fclose_hook(FILE *stream) {
-    // Some versions of Unity wrongly close stdout, which prevents writing
-    // to console
-    if (stream == stdout)
-        return F_OK;
-    return fclose(stream);
+int fclose_proxy(FILE *stream) 
+{
+	INIT_FCLOSE;
+
+	// Some versions of Unity wrongly close stdout, which prevents writing to console
+	if (stream == stdout) 
+		return F_OK;
+	return real_fclose(stream);
 }
 
 __attribute__((constructor)) void doorstop_ctor() {
     init_logger();
     load_config();
-
-    if (!config.enabled) {
-        LOG("Doorstop not enabled! Skipping!\n");
-        return;
-    }
-
-    plthook_t *hook;
-
-    void *unity_player = plthook_handle_by_name("UnityPlayer");
-
-    // TODO: Chekc if this still works on macOS
-    if (unity_player && plthook_open_by_address(&hook, unity_player) == 0) {
-        LOG("Found UnityPlayer, hooking into it instead\n");
-    } else if (plthook_open(&hook, NULL) != 0) {
-        LOG("Failed to open current process PLT! Cannot run Doorstop! "
-            "Error: "
-            "%s\n",
-            plthook_error());
-        return;
-    }
-
-    if (plthook_replace(hook, "dlsym", &dlsym_hook, NULL) != 0)
-        printf("Failed to hook dlsym, ignoring it. Error: %s\n",
-               plthook_error());
-
-    if (plthook_replace(hook, "fclose", &fclose_hook, NULL) != 0)
-        printf("Failed to hook fclose, ignoring it. Error: %s\n",
-               plthook_error());
-
-#if defined(__APPLE__)
-    /*
-        On older Unity versions, Mono methods are resolved by the OS's
-       loader directly. Because of this, there is no dlsym, in which case we
-       need to apply a PLT hook.
-    */
-    void *mono_handle = plthook_handle_by_name("libmono");
-
-    if (plthook_replace(hook, "mono_jit_init_version", &init_mono, NULL) != 0)
-        printf("Failed to hook jit_init_version, ignoring it. Error: %s\n",
-               plthook_error());
-    else if (mono_handle)
-        load_mono_funcs(mono_handle);
-#endif
-
-    plthook_close(hook);
 }

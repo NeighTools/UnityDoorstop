@@ -260,6 +260,11 @@ void il2cpp_doorstop_bootstrap() {
 }
 
 int init_il2cpp(const char *domain_name) {
+    // Open a log file and write to it
+    FILE *log_file = fopen("doorstop.log", "w");
+    fprintf(log_file, "Doorstop log file\n");
+    fclose(log_file);
+    LOG("Init IL2CPP\n");
     char_t *domain_name_w = widen(domain_name);
     LOG("Starting IL2CPP domain \"%s\"\n", domain_name_w);
     free(domain_name_w);
