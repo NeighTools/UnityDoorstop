@@ -22,7 +22,7 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
     Dl_info info;
     dladdr(module, &info);
     size_t len = strlen(info.dli_fname);
-    size_t total_size = len + free_space;
+    size_t total_size = len + free_space + 1;
     if (size != NULL)
         *size = len;
     *result = (char_t *)malloc(total_size);
@@ -110,7 +110,7 @@ char *normalize_path(char *pwd, const char *src, char *res) {
 }
 
 char_t *get_full_path(char_t *path) {
-    char_t *full_path = (char_t *)calloc(PATH_MAX, sizeof(char_t));
+    char_t *full_path = (char_t *)calloc(MAX_PATH + 1, sizeof(char_t));
     char_t *cwd_str = getcwd(NULL, MAX_PATH);
     normalize_path(cwd_str, path, full_path);
     free(cwd_str);
@@ -122,7 +122,7 @@ char_t *get_full_path(char_t *path) {
 }
 
 char_t *get_folder_name(char_t *path) {
-    char_t *path_copy = (char_t *)malloc(MAX_PATH);
+    char_t *path_copy = (char_t *)calloc(MAX_PATH + 1, sizeof(char_t));
     strcpy(path_copy, path);
     char_t *folder = dirname(path_copy);
     char_t *result = (char_t *)malloc(strlen(folder) + 1);
@@ -132,10 +132,10 @@ char_t *get_folder_name(char_t *path) {
 }
 
 char_t *get_file_name(char_t *path, bool_t with_ext) {
-    char_t *path_copy = (char_t *)malloc(MAX_PATH);
+    char_t *path_copy = (char_t *)calloc(MAX_PATH + 1, sizeof(char_t));
     strcpy(path_copy, path);
     char_t *file = basename(path_copy);
-    char_t *result = (char_t *)malloc(strlen(file) + 1);
+    char_t *result = (char_t *)calloc(strlen(file) + 1, sizeof(char_t));
     if (!with_ext) {
         strcpy(result, file);
         char_t *ext = strrchr(file, '.');
@@ -159,14 +159,14 @@ char_t *get_working_dir() { return getcwd(NULL, 0); }
 
 char_t *program_path() {
 #if defined(__linux__)
-    char_t *path = (char_t *)malloc(MAX_PATH);
+    char_t *path = (char_t *)calloc(MAX_PATH + 1, sizeof(char_t));
     if (readlink("/proc/self/exe", path, MAX_PATH) == -1) {
         free(path);
         return NULL;
     }
     return path;
 #elif defined(__APPLE__)
-    char_t *path = (char_t *)malloc(MAX_PATH);
+    char_t *path = (char_t *)calloc(MAX_PATH + 1, sizeof(char_t));
     uint32_t size = MAX_PATH;
     if (_NSGetExecutablePath(path, &size) != 0) {
         free(path);
