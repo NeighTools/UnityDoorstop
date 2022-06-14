@@ -251,8 +251,8 @@ export DOORSTOP_CLR_RUNTIME_CORECLR_PATH="$coreclr_path.$lib_extension"
 export DOORSTOP_CLR_CORLIB_DIR="$corlib_dir"
 
 # Final setup
-doorstop_directory="${BASEDIR}/doorstop_libs/"
-doorstop_name="libdoorstop_${arch}.${lib_extension}"
+doorstop_directory="${BASEDIR}/"
+doorstop_name="libdoorstop.${lib_extension}"
 
 export LD_LIBRARY_PATH="${doorstop_directory}:${corlib_dir}:${LD_LIBRARY_PATH}"
 export LD_PRELOAD="${doorstop_name}:${LD_PRELOAD}"
