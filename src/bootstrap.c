@@ -208,8 +208,7 @@ void il2cpp_doorstop_bootstrap() {
 
     load_coreclr_funcs(coreclr_module);
 
-    char_t *app_path;
-    get_module_path(NULL, &app_path, NULL, 0);
+    char_t *app_path = program_path();
     char *app_path_n = narrow(app_path);
 
     char_t *target_dir = get_folder_name(config.target_assembly);
