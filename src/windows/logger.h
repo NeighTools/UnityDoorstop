@@ -26,7 +26,7 @@ static inline void free_logger() { CloseHandle(log_handle); }
 #if !defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL
 #define LOG(message, ...)                                                      \
     {                                                                          \
-        size_t len = printf(buffer, TEXT(message), ##__VA_ARGS__);             \
+        size_t len = printf(buffer, TEXT(message) TEXT("\n"), ##__VA_ARGS__);  \
         char *log_data = narrow(buffer);                                       \
         WriteFile(log_handle, log_data, len, NULL, NULL);                      \
         free(log_data);                                                        \
@@ -34,7 +34,7 @@ static inline void free_logger() { CloseHandle(log_handle); }
 #else
 #define LOG(message, ...)                                                      \
     {                                                                          \
-        size_t len = printf(buffer, TEXT(message) __VA_OPT__(, ) __VA_ARGS__); \
+        size_t len = printf(buffer, TEXT(message) TEXT("\n") __VA_OPT__(, ) __VA_ARGS__); \
         char *log_data = narrow(buffer);                                       \
         WriteFile(log_handle, log_data, len, NULL, NULL);                      \
         free(log_data);                                                        \
@@ -44,7 +44,7 @@ static inline void free_logger() { CloseHandle(log_handle); }
 #define ASSERT_F(test, message, ...)                                           \
     if (!(test)) {                                                             \
         char_t *buff = (char_t *)malloc(sizeof(char_t) * 1024);                \
-        printf(buff, TEXT(message), __VA_ARGS__);                              \
+        printf(buff, TEXT(message) TEXT("\n"), __VA_ARGS__);                              \
         MessageBox(NULL, buff, TEXT("Doorstop: Fatal"), MB_OK | MB_ICONERROR); \
         free(buff);                                                            \
         ExitProcess(EXIT_FAILURE);                                             \
@@ -52,7 +52,7 @@ static inline void free_logger() { CloseHandle(log_handle); }
 
 #define ASSERT(test, message)                                                  \
     if (!(test)) {                                                             \
-        MessageBox(NULL, TEXT(message), TEXT("Doorstop: Fatal"),               \
+        MessageBox(NULL, TEXT(message) TEXT("\n"), TEXT("Doorstop: Fatal"),               \
                    MB_OK | MB_ICONERROR);                                      \
         ExitProcess(EXIT_FAILURE);                                             \
     }
