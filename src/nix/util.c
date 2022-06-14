@@ -99,7 +99,7 @@ char *normalize_path(char *pwd, const char *src, char *res) {
 }
 
 char_t *get_full_path(char_t *path) {
-    char_t *full_path = (char_t *)malloc(MAX_PATH);
+    char_t *full_path = (char_t *)calloc(PATH_MAX, sizeof(char_t));
     char_t *cwd_str = getcwd(NULL, MAX_PATH);
     normalize_path(cwd_str, path, full_path);
     free(cwd_str);
