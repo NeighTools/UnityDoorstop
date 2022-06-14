@@ -45,6 +45,14 @@ int fclose_hook(FILE *stream) {
     return fclose(stream);
 }
 
+int dup2_hook(int od, int nd) {
+    // Newer versions of Unity redirect stdout to player.log, we don't want
+    // that
+    if (nd == fileno(stdout) || nd == fileno(stderr))
+        return F_OK;
+    return dup2(od, nd);
+}
+
 __attribute__((constructor)) void doorstop_ctor() {
     init_logger();
     load_config();
@@ -75,6 +83,10 @@ __attribute__((constructor)) void doorstop_ctor() {
 
     if (plthook_replace(hook, "fclose", &fclose_hook, NULL) != 0)
         printf("Failed to hook fclose, ignoring it. Error: %s\n",
+               plthook_error());
+
+    if (plthook_replace(hook, "dup2", &dup2_hook, NULL) != 0)
+        printf("Failed to hook dup2, ignoring it. Error: %s\n",
                plthook_error());
 
 #if defined(__APPLE__)
