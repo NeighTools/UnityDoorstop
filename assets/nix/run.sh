@@ -254,9 +254,9 @@ export DOORSTOP_CLR_CORLIB_DIR="$corlib_dir"
 doorstop_directory="${BASEDIR}/doorstop_libs/"
 doorstop_name="libdoorstop_${arch}.${lib_extension}"
 
-export LD_LIBRARY_PATH="${doorstop_directory}:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${doorstop_directory}:${corlib_dir}:${LD_LIBRARY_PATH}"
 export LD_PRELOAD="${doorstop_name}:${LD_PRELOAD}"
-export DYLD_LIBRARY_PATH="${doorstop_directory}:${DYLD_LIBRARY_PATH}"
+export DYLD_LIBRARY_PATH="${doorstop_directory}:${corlib_dir}:${DYLD_LIBRARY_PATH}"
 export DYLD_INSERT_LIBRARIES="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
 
 # shellcheck disable=SC2086
