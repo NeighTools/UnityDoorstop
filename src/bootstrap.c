@@ -212,15 +212,18 @@ void il2cpp_doorstop_bootstrap() {
     get_module_path(NULL, &app_path, NULL, 0);
     char *app_path_n = narrow(app_path);
 
-    char_t *target_dir = get_folder_name(config.target_assembly);
+    char_t *target_dir = get_full_path(get_folder_name(config.target_assembly));
     char *target_dir_n = narrow(target_dir);
     char_t *target_name = get_file_name(config.target_assembly, FALSE);
     char *target_name_n = narrow(target_name);
 
+    // TODO: Remove this once config loading is done correctly on linux (see nix/config.c TODO)
+    char_t* corlib_dir_full = get_full_path(config.clr_corlib_dir);
+
     char_t *app_paths_env =
-        calloc(strlen(config.clr_corlib_dir) + 1 + strlen(target_dir) + 1,
+        calloc(strlen(corlib_dir_full) + 1 + strlen(target_dir) + 1,
                sizeof(char_t));
-    strcat(app_paths_env, config.clr_corlib_dir);
+    strcat(app_paths_env, corlib_dir_full);
     strcat(app_paths_env, PATH_SEP);
     strcat(app_paths_env, target_dir);
     char *app_paths_env_n = narrow(app_paths_env);

@@ -13,8 +13,23 @@ char *narrow(const char_t *str) {
     return result;
 }
 
+// TODO: Implement get_module_path properly for linux and macos
+// Right now this hack relies on glibc-only program_invocation_name variable
+extern char *program_invocation_name;
+
 size_t get_module_path(void *module, char_t **result, size_t *size,
                        size_t free_space) {
+    printf("Inv: %s\n", program_invocation_name);
+    if (module == NULL) {
+        size_t len = strlen(program_invocation_name);
+        size_t total_size = len + free_space;
+        if (size != NULL)
+            *size = len;
+        *result = (char_t *)malloc(total_size);
+        strcpy(*result, program_invocation_name);
+        return total_size;
+    }
+
     Dl_info info;
     dladdr(module, &info);
     size_t len = strlen(info.dli_fname);

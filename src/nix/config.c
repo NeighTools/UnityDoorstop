@@ -19,6 +19,8 @@ void try_get_env(const char_t *name, const char_t *def, char_t **target) {
     }
 }
 
+// TODO: Add get_env_path that returns a full path with get_full_path (see how it's done on Windows implementation)
+
 void load_config() {
     get_env_bool("DOORSTOP_ENABLED", &config.enabled);
     get_env_bool("DOORSTOP_REDIRECT_OUTPUT_LOG", &config.redirect_output_log);
