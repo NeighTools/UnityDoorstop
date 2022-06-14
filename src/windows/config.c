@@ -12,7 +12,7 @@ void load_bool_file(const char_t *path, const char_t *section,
                     const char_t *key, const char_t *def, bool_t *value) {
     char_t enabled_string[256] = TEXT("true");
     GetPrivateProfileString(section, key, def, enabled_string, 256, path);
-    LOG("CONFIG: %s.%s = %s\n", section, key, enabled_string);
+    LOG("CONFIG: %s.%s = %s", section, key, enabled_string);
 
     if (STR_EQUAL(enabled_string, TEXT("true")))
         *value = TRUE;
@@ -40,7 +40,7 @@ char_t *get_ini_entry(const char_t *config_file, const char_t *section,
 bool_t load_str_file(const char_t *path, const char_t *section,
                      const char_t *key, const char_t *def, char_t **value) {
     char_t *tmp = get_ini_entry(path, section, key, def);
-    LOG("CONFIG: %s.%s = %s\n", section, key, tmp);
+    LOG("CONFIG: %s.%s = %s", section, key, tmp);
     if (!tmp || strlen(tmp) == 0)
         return FALSE;
     *value = tmp;
@@ -53,7 +53,7 @@ void load_path_file(const char_t *path, const char_t *section,
         return;
     char_t *tmp = *value;
     *value = get_full_path(tmp);
-    LOG("(%s.%s) %s => %s\n", section, key, tmp, *value);
+    LOG("(%s.%s) %s => %s", section, key, tmp, *value);
     free(tmp);
 }
 
@@ -100,7 +100,7 @@ bool_t load_bool_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
             *value = TRUE;
         else if (STR_EQUAL(par, TEXT("false")))
             *value = FALSE;
-        LOG("ARGV: %s = %s\n", arg_name, par);
+        LOG("ARGV: %s = %s", arg_name, par);
         return TRUE;
     }
     return FALSE;
@@ -114,7 +114,7 @@ bool_t load_str_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
         const size_t len = strlen(argv[*i + 1]) + 1;
         *value = malloc(sizeof(char_t) * len);
         strncpy(*value, argv[++*i], len);
-        LOG("ARGV: %s = %s\n", arg_name, *value);
+        LOG("ARGV: %s = %s", arg_name, *value);
         return TRUE;
     }
     return FALSE;
@@ -126,7 +126,7 @@ bool_t load_path_argv(char_t **argv, int *i, int argc, const char_t *arg_name,
         return FALSE;
     char_t *tmp = *value;
     *value = get_full_path(tmp);
-    LOG("(%s) %s => %s\n", arg_name, tmp, *value);
+    LOG("(%s) %s => %s", arg_name, tmp, *value);
     free(tmp);
     return TRUE;
 }
@@ -172,7 +172,7 @@ static inline void init_cmd_args() {
 static inline void init_env_vars() {
     char_t *disable_env = getenv(TEXT("DOORSTOP_DISABLE"));
     if (!config.ignore_disabled_env && disable_env != 0) {
-        LOG("DOORSTOP_DISABLE is set! Disabling Doorstop!\n");
+        LOG("DOORSTOP_DISABLE is set! Disabling Doorstop!");
         config.enabled = FALSE;
     }
     shutenv(disable_env);

@@ -75,7 +75,7 @@ void *WINAPI get_proc_address_detour(void *module, char *name) {
     if (lstrcmpA(name, init_name) == 0) {                                      \
         if (!initialized) {                                                    \
             initialized = TRUE;                                                \
-            LOG("Got %S at %p\n", init_name, module);                          \
+            LOG("Got %S at %p", init_name, module);                            \
             extra_init;                                                        \
             init_func(module);                                                 \
             LOG("Loaded all runtime functions\n")                              \
@@ -115,19 +115,19 @@ void redirect_output_log(DoorstopPaths const *paths) {
 
     new_cmdline_args_narrow = narrow(new_cmdline_args);
 
-    LOG("Redirected output log\n");
-    LOG("CMD line: %s\n", new_cmdline_args);
+    LOG("Redirected output log");
+    LOG("CMD line: %s", new_cmdline_args);
 }
 
 void inject(DoorstopPaths const *paths) {
 
     if (!config.enabled) {
-        LOG("Doorstop disabled!\n");
+        LOG("Doorstop disabled!");
         free_logger();
         return;
     }
 
-    LOG("Doorstop enabled!\n");
+    LOG("Doorstop enabled!");
     HMODULE target_module = GetModuleHandle(TEXT("UnityPlayer"));
     HMODULE app_module = GetModuleHandle(NULL);
 
@@ -137,7 +137,7 @@ void inject(DoorstopPaths const *paths) {
         target_module = app_module;
     }
 
-    LOG("Installing IAT hooks\n");
+    LOG("Installing IAT hooks");
     bool_t ok = TRUE;
 
 #define HOOK_SYS(mod, from, to) ok &= iat_hook(mod, "kernel32.dll", &from, &to)
@@ -156,10 +156,10 @@ void inject(DoorstopPaths const *paths) {
 #undef HOOK_SYS
 
     if (!ok) {
-        LOG("Failed to install IAT hook!\n");
+        LOG("Failed to install IAT hook!");
         free_logger();
     } else {
-        LOG("Hooks installed, marking DOORSTOP_DISALBE = TRUE\n");
+        LOG("Hooks installed, marking DOORSTOP_DISALBE = TRUE");
         setenv(TEXT("DOORSTOP_DISABLE"), TEXT("TRUE"), TRUE);
     }
 }
@@ -181,22 +181,22 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 // TODO: Some MinGW distributons don't seem to have GetFinalPathNameByHandle
 // properly defined
 #if VERBOSE && !defined(__MINGW32__)
-    LOG("Standard output handle at %p\n", stdout_handle);
+    LOG("Standard output handle at %p", stdout_handle);
     char_t handle_path[MAX_PATH] = TEXT("\0");
     GetFinalPathNameByHandle(stdout_handle, handle_path, MAX_PATH, 0);
-    LOG("Standard output handle path: %s\n", handle_path);
+    LOG("Standard output handle path: %s", handle_path);
 #endif
 
     load_proxy(paths->doorstop_filename);
-    LOG("Proxy loaded\n");
+    LOG("Proxy loaded");
 
     load_config();
-    LOG("Config loaded\n");
+    LOG("Config loaded");
 
     redirect_output_log(paths);
 
     if (!file_exists(config.target_assembly)) {
-        LOG("Could not find target assembly!\n");
+        LOG("Could not find target assembly!");
         config.enabled = FALSE;
     }
 
