@@ -30,6 +30,17 @@ size_t get_module_path(void *module, char_t **result, size_t *size,
     return total_size;
 }
 
+#if defined(__APPLE__)
+void *memrchr(const void *s, int c, size_t n) {
+    const char *p = (const char *)s + n;
+    while (--p >= (const char *)s) {
+        if (*p == c)
+            return (void *)p;
+    }
+    return NULL;
+}
+#endif
+
 // Adapted from: https://gist.github.com/Eugeny/5127791
 /**
  * @brief Normalize the path in respect to the current working directory.
