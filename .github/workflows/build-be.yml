@@ -161,14 +161,14 @@ jobs:
       - name: Create zips
         run: |
           cd artifacts
-          zip -r doorstop_win_release_${{ env.doorstop_version }}.zip doorstop_win_release
-          zip -r doorstop_win_verbose_${{ env.doorstop_version }}.zip doorstop_win_verbose
-          zip -r doorstop_linux_release_${{ env.doorstop_version }}.zip doorstop_linux_release
-          zip -r doorstop_linux_verbose_${{ env.doorstop_version }}.zip doorstop_linux_verbose
-          zip -r doorstop_linux_debug_${{ env.doorstop_version }}.zip doorstop_linux_debug
-          zip -r doorstop_macos_release_${{ env.doorstop_version }}.zip doorstop_macos_release
-          zip -r doorstop_macos_verbose_${{ env.doorstop_version }}.zip doorstop_macos_verbose
-          zip -r doorstop_macos_debug_${{ env.doorstop_version }}.zip doorstop_macos_debug
+          (cd doorstop_win_release; zip -r ../doorstop_win_release_${{ env.doorstop_version }}.zip *)
+          (cd doorstop_win_verbose; zip -r ../doorstop_win_verbose_${{ env.doorstop_version }}.zip *)
+          (cd doorstop_linux_release; zip -r ../doorstop_linux_release_${{ env.doorstop_version }}.zip *)
+          (cd doorstop_linux_verbose; zip -r ../doorstop_linux_verbose_${{ env.doorstop_version }}.zip *)
+          (cd doorstop_linux_debug; zip -r ../doorstop_linux_debug_${{ env.doorstop_version }}.zip *)
+          (cd doorstop_macos_release; zip -r ../doorstop_macos_release_${{ env.doorstop_version }}.zip *)
+          (cd doorstop_macos_verbose; zip -r ../doorstop_macos_verbose_${{ env.doorstop_version }}.zip *)
+          (cd doorstop_macos_debug; zip -r ../doorstop_macos_debug_${{ env.doorstop_version }}.zip *)
       - name: Create release
         uses: marvinpinto/action-automatic-releases@latest
         with:
