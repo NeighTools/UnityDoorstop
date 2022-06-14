@@ -58,7 +58,7 @@ __attribute__((constructor)) void doorstop_ctor() {
     load_config();
 
     if (!config.enabled) {
-        LOG("Doorstop not enabled! Skipping!\n");
+        LOG("Doorstop not enabled! Skipping!");
         return;
     }
 
@@ -68,7 +68,7 @@ __attribute__((constructor)) void doorstop_ctor() {
 
     // TODO: Chekc if this still works on macOS
     if (unity_player && plthook_open_by_address(&hook, unity_player) == 0) {
-        LOG("Found UnityPlayer, hooking into it instead\n");
+        LOG("Found UnityPlayer, hooking into it instead");
     } else if (plthook_open(&hook, NULL) != 0) {
         LOG("Failed to open current process PLT! Cannot run Doorstop! "
             "Error: "

@@ -11,12 +11,12 @@ DoorstopPaths *paths_init(void *doorstop_module, bool_t fixed_cwd) {
 
     char_t *doorstop_filename = get_file_name(doorstop_path, FALSE);
 
-    LOG("Doorstop started!\n");
-    LOG("Executable path: %s\n", app_path);
-    LOG("Application dir: %s\n", app_dir);
-    LOG("Working dir: %s\n", working_dir);
-    LOG("Doorstop library path: %s\n", doorstop_path);
-    LOG("Doorstop library name: %s\n", doorstop_filename);
+    LOG("Doorstop started!");
+    LOG("Executable path: %s", app_path);
+    LOG("Application dir: %s", app_dir);
+    LOG("Working dir: %s", working_dir);
+    LOG("Doorstop library path: %s", doorstop_path);
+    LOG("Doorstop library name: %s", doorstop_filename);
 
     if (fixed_cwd) {
         LOG("WARN: Working directory was not the same as app directory, fixed "

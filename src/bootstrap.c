@@ -10,7 +10,7 @@
 
 void mono_doorstop_bootstrap(void *mono_domain) {
     if (getenv(TEXT("DOORSTOP_INITIALIZED"))) {
-        LOG("DOORSTOP_INITIALIZED is set! Skipping!\n");
+        LOG("DOORSTOP_INITIALIZED is set! Skipping!");
         cleanup_config();
         return;
     }
@@ -50,14 +50,14 @@ void mono_doorstop_bootstrap(void *mono_domain) {
 
     mono.config_parse(NULL);
 
-    LOG("Assembly dir: %s\n", norm_assembly_dir);
+    LOG("Assembly dir: %s", norm_assembly_dir);
     setenv(TEXT("DOORSTOP_MANAGED_FOLDER_DIR"), norm_assembly_dir, TRUE);
     free(norm_assembly_dir);
 
-    LOG("Opening assembly: %s\n", config.target_assembly);
+    LOG("Opening assembly: %s", config.target_assembly);
     void *file = fopen(config.target_assembly, "r");
     if (!file) {
-        LOG("Failed to open assembly: %s\n", config.target_assembly);
+        LOG("Failed to open assembly: %s", config.target_assembly);
         return;
     }
 
@@ -66,7 +66,7 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     fread(data, size, 1, file);
     fclose(file);
 
-    LOG("Opened Assembly DLL (%d bytes); opening its main image\n", size);
+    LOG("Opened Assembly DLL (%d bytes); opening its main image", size);
 
     char *dll_path = narrow(config.target_assembly);
     MonoImageOpenStatus s = MONO_IMAGE_OK;
@@ -80,7 +80,7 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     }
     free(dll_path);
 
-    LOG("Image opened; loading included assembly\n");
+    LOG("Image opened; loading included assembly");
 
     s = MONO_IMAGE_OK;
     void *assembly = mono.assembly_load_from_full(image, dll_path, &s, FALSE);
@@ -91,34 +91,34 @@ void mono_doorstop_bootstrap(void *mono_domain) {
         return;
     }
 
-    LOG("Assembly loaded; looking for Doorstop.Entrypoint:Start\n");
+    LOG("Assembly loaded; looking for Doorstop.Entrypoint:Start");
     void *desc = mono.method_desc_new("Doorstop.Entrypoint:Start", TRUE);
     void *method = mono.method_desc_search_in_image(desc, image);
     mono.method_desc_free(desc);
     if (!method) {
-        LOG("Failed to find method Doorstop.Entrypoint:Start\n");
+        LOG("Failed to find method Doorstop.Entrypoint:Start");
         return;
     }
 
     void *signature = mono.method_signature(method);
     unsigned int params = mono.signature_get_param_count(signature);
     if (params != 0) {
-        LOG("Method has %d parameters; expected 0\n", params);
+        LOG("Method has %d parameters; expected 0", params);
         return;
     }
 
-    LOG("Invoking method %p\n", method);
+    LOG("Invoking method %p", method);
     void *exc = NULL;
     mono.runtime_invoke(method, NULL, NULL, &exc);
     if (exc != NULL) {
-        LOG("Error invoking code!\n");
+        LOG("Error invoking code!");
         if (mono.object_to_string) {
             void *str = mono.object_to_string(exc, NULL);
             char *exc_str = mono.string_to_utf8(str);
-            LOG("Error message: %s\n", exc_str);
+            LOG("Error message: %s", exc_str);
         }
     }
-    LOG("Done\n");
+    LOG("Done");
 
     free(app_path);
     cleanup_config();
@@ -126,19 +126,19 @@ void mono_doorstop_bootstrap(void *mono_domain) {
 
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
     char_t *root_domain_name_w = widen(root_domain_name);
-    LOG("Starting mono domain \"%s\"\n", root_domain_name_w);
+    LOG("Starting mono domain \"%s\"", root_domain_name_w);
     free(root_domain_name_w);
     char *root_dir_n = mono.assembly_getrootdir();
     char_t *root_dir = widen(root_dir_n);
-    LOG("Current root: %s\n", root_dir);
+    LOG("Current root: %s", root_dir);
 
-    LOG("Overriding mono DLL search path\n");
+    LOG("Overriding mono DLL search path");
 
     size_t mono_search_path_len = strlen(root_dir) + 1;
     char_t *target_path_full = get_full_path(config.target_assembly);
     char_t *target_path_folder = get_folder_name(target_path_full);
     mono_search_path_len += strlen(target_path_folder) + 1;
-    LOG("Adding %s to mono search path\n", target_path_folder);
+    LOG("Adding %s to mono search path", target_path_folder);
 
     char_t *override_dir_full = NULL;
     bool_t has_override = config.mono_dll_search_path_override &&
@@ -146,7 +146,7 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     if (has_override) {
         override_dir_full = get_full_path(config.mono_dll_search_path_override);
         mono_search_path_len += strlen(override_dir_full) + 1;
-        LOG("Adding root path: %s\n", override_dir_full);
+        LOG("Adding root path: %s", override_dir_full);
     }
 
     char_t *mono_search_path = calloc(mono_search_path_len + 1, sizeof(char_t));
@@ -158,7 +158,7 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     strcat(mono_search_path, PATH_SEP);
     strcat(mono_search_path, root_dir);
 
-    LOG("Mono search path: %s\n", mono_search_path);
+    LOG("Mono search path: %s", mono_search_path);
     char *mono_search_path_n = narrow(mono_search_path);
     mono.set_assemblies_path(mono_search_path_n);
     setenv(TEXT("DOORSTOP_DLL_SEARCH_DIRS"), mono_search_path, TRUE);
@@ -186,23 +186,23 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
 
 void il2cpp_doorstop_bootstrap() {
     if (!config.clr_corlib_dir || !config.clr_runtime_coreclr_path) {
-        LOG("No CoreCLR paths set, skipping loading\n");
+        LOG("No CoreCLR paths set, skipping loading");
         return;
     }
 
-    LOG("CoreCLR runtime path: %s\n", config.clr_runtime_coreclr_path);
-    LOG("CoreCLR corlib dir: %s\n", config.clr_corlib_dir);
+    LOG("CoreCLR runtime path: %s", config.clr_runtime_coreclr_path);
+    LOG("CoreCLR corlib dir: %s", config.clr_corlib_dir);
 
     if (!file_exists(config.clr_runtime_coreclr_path) ||
         !folder_exists(config.clr_corlib_dir)) {
-        LOG("CoreCLR startup dirs are not set up skipping invoking Doorstop\n");
+        LOG("CoreCLR startup dirs are not set up skipping invoking Doorstop");
         return;
     }
 
     void *coreclr_module = dlopen(config.clr_runtime_coreclr_path, RTLD_LAZY);
-    LOG("Loaded coreclr.dll: %p\n", coreclr_module);
+    LOG("Loaded coreclr.dll: %p", coreclr_module);
     if (!coreclr_module) {
-        LOG("Failed to load CoreCLR runtime!\n");
+        LOG("Failed to load CoreCLR runtime!");
         return;
     }
 
@@ -224,10 +224,10 @@ void il2cpp_doorstop_bootstrap() {
     strcat(app_paths_env, target_dir);
     char *app_paths_env_n = narrow(app_paths_env);
 
-    LOG("App path: %s\n", app_path);
-    LOG("Target dir: %s\n", target_dir);
-    LOG("Target name: %s\n", target_name);
-    LOG("APP_PATHS: %s\n", app_paths_env);
+    LOG("App path: %s", app_path);
+    LOG("Target dir: %s", target_dir);
+    LOG("Target name: %s", target_name);
+    LOG("APP_PATHS: %s", app_paths_env);
 
     char *props = "APP_PATHS";
 
@@ -242,7 +242,7 @@ void il2cpp_doorstop_bootstrap() {
     int result = coreclr.initialize(app_path_n, "Doorstop Domain", 1, &props,
                                     &app_paths_env_n, &host, &domain_id);
     if (result != 0) {
-        LOG("Failed to initialize CoreCLR: %d\n", result);
+        LOG("Failed to initialize CoreCLR: 0x%08x", result);
         return;
     }
 
@@ -250,17 +250,17 @@ void il2cpp_doorstop_bootstrap() {
     result = coreclr.create_delegate(host, domain_id, target_name_n,
                                      "Doorstop.Entrypoint", "Start", &startup);
     if (result != 0) {
-        LOG("Failed to get entrypoint delegate: %d\n", result);
+        LOG("Failed to get entrypoint delegate: 0x%08x", result);
         return;
     }
 
-    LOG("Invoking Doorstop.Entrypoint.Start()\n");
+    LOG("Invoking Doorstop.Entrypoint.Start()");
     startup();
 }
 
 int init_il2cpp(const char *domain_name) {
     char_t *domain_name_w = widen(domain_name);
-    LOG("Starting IL2CPP domain \"%s\"\n", domain_name_w);
+    LOG("Starting IL2CPP domain \"%s\"", domain_name_w);
     free(domain_name_w);
     const int orig_result = il2cpp.init(domain_name);
     il2cpp_doorstop_bootstrap();
@@ -279,7 +279,7 @@ void hook_mono_jit_parse_options(int argc, char **argv) {
     }
 
     if (config.mono_debug_enabled) {
-        LOG("Configuring mono debug server\n");
+        LOG("Configuring mono debug server");
 
         int size = argc + 1;
         char **new_argv = calloc(size, sizeof(char *));
@@ -300,7 +300,7 @@ void hook_mono_jit_parse_options(int argc, char **argv) {
             }
         }
 
-        LOG("Debug options: %s\n", debug_options);
+        LOG("Debug options: %s", debug_options);
 
         char *debug_options_n = narrow(debug_options);
         new_argv[argc] = debug_options_n;
