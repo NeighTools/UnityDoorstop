@@ -176,7 +176,7 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
     init_logger();
     DoorstopPaths *paths = paths_init(hInstDll, fixed_cwd);
 
-    GetStdHandle(STD_OUTPUT_HANDLE);
+    stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 // TODO: Some MinGW distributons don't seem to have GetFinalPathNameByHandle
 // properly defined
