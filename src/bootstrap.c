@@ -78,13 +78,12 @@ void mono_doorstop_bootstrap(void *mono_domain) {
             config.target_assembly, s);
         return;
     }
-    free(dll_path);
 
     LOG("Image opened; loading included assembly");
 
     s = MONO_IMAGE_OK;
     void *assembly = mono.assembly_load_from_full(image, dll_path, &s, FALSE);
-
+    free(dll_path);
     if (s != MONO_IMAGE_OK) {
         LOG("Failed to load assembly: %s. Got result: %d\n",
             config.target_assembly, s);
