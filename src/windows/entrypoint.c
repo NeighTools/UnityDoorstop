@@ -66,7 +66,7 @@ bool_t WINAPI close_handle_hook(void *handle) {
 void capture_mono_path(void *handle) {
     char_t *result;
     get_module_path(handle, &result, NULL, 0);
-    setenv("DOORSTOP_RUNTIME_LIB_PATH", result, TRUE);
+    setenv(TEXT("DOORSTOP_MONO_LIB_PATH"), result, TRUE);
 }
 
 bool_t initialized = FALSE;

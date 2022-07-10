@@ -102,7 +102,7 @@ Doorstop sets some environment variables useful for code execution:
 | `DOORSTOP_PROCESS_PATH`       | Path to the application executable where the injected assembly is run.                                                           |
 | `DOORSTOP_MANAGED_FOLDER_DIR` | *UnityMono*: Path to the game's `Managed` folder. *Il2Cpp*: Path to CoreCLR's base class library folder.                         |
 | `DOORSTOP_DLL_SEARCH_DIRS`    | Paths where the runtime searchs assemblies from by default, separated by OS-specific separator (`;` on windows and `:` on *nix). |
-| `DOORSTOP_RUNTIME_LIB_PATH`   | *Only on UnityMono*: Full path to the mono runtime library.                                                                      |
+| `DOORSTOP_MONO_LIB_PATH`      | *Only on UnityMono*: Full path to the mono runtime library.                                                                      |
 
 ### Debugging
 
