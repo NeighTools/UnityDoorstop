@@ -24,17 +24,23 @@ void *dlsym_hook(void *handle, const char *name) {
         return (void *)target;                                                 \
     }
 
+    // Resolve dnsym always so that it can be passed to capture_mono_path.
+    // On Unix, we use dladdr which allows to use arbitrary symbols for
+    // resolving their location.
+    // However, using handle seems to cause issues on some distros, so we pass
+    // the resolved symbol instead.
+    void *res = dlsym(handle, name);
     REDIRECT_INIT("il2cpp_init", load_il2cpp_funcs, init_il2cpp, {});
     REDIRECT_INIT("mono_jit_init_version", load_mono_funcs, init_mono,
-                  capture_mono_path(handle));
+                  capture_mono_path(res));
     REDIRECT_INIT("mono_image_open_from_data_with_name", load_mono_funcs,
                   hook_mono_image_open_from_data_with_name,
-                  capture_mono_path(handle));
+                  capture_mono_path(res));
     REDIRECT_INIT("mono_jit_parse_options", load_mono_funcs,
-                  hook_mono_jit_parse_options, capture_mono_path(handle));
+                  hook_mono_jit_parse_options, capture_mono_path(res));
 
 #undef REDIRECT_INIT
-    return dlsym(handle, name);
+    return res;
 }
 
 int fclose_hook(FILE *stream) {
