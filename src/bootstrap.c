@@ -8,6 +8,8 @@
 #include "util/paths.h"
 #include "util/util.h"
 
+bool_t mono_debug_init_called = FALSE;
+
 void mono_doorstop_bootstrap(void *mono_domain) {
     if (getenv(TEXT("DOORSTOP_INITIALIZED"))) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!");
@@ -171,7 +173,13 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
 
     void *domain = mono.jit_init_version(root_domain_name, runtime_version);
 
-    if (config.mono_debug_enabled && config.mono_debug_start_server) {
+    bool_t debugger_already_enabled = mono_debug_init_called;
+    if (mono.debug_enabled) {
+        debugger_already_enabled |= mono.debug_enabled();
+    }
+
+    if (config.mono_debug_enabled && !debugger_already_enabled) {
+        LOG("Detected mono debugger is not initialized; initialized it");
         mono.debug_init(MONO_DEBUG_FORMAT_MONO);
         mono.debug_domain_create(domain);
     }
@@ -350,4 +358,9 @@ void *hook_mono_image_open_from_data_with_name(void *data,
                                                      status, refonly, name);
     }
     return result;
+}
+
+void hook_mono_debug_init(MonoDebugFormat format) {
+    mono_debug_init_called = TRUE;
+    mono.debug_init(format);
 }

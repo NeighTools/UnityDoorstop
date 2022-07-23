@@ -47,14 +47,6 @@ typedef struct {
     bool_t mono_debug_enabled;
 
     /**
-     * @brief Whether to manually intialize the mono debugger server.
-     *
-     * On debug Unity versions, Unity automatically initializes the debugger
-     * server. Use this option to disable the automatic server initialization.
-     */
-    bool_t mono_debug_start_server;
-
-    /**
      * @brief Whether to enable the debugger in suspended state.
      *
      * If enabled, the runtime will force the game to wait until a debugger is

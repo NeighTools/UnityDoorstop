@@ -38,6 +38,8 @@ void *dlsym_hook(void *handle, const char *name) {
                   capture_mono_path(res));
     REDIRECT_INIT("mono_jit_parse_options", load_mono_funcs,
                   hook_mono_jit_parse_options, capture_mono_path(res));
+    REDIRECT_INIT("mono_debug_init", load_mono_funcs, hook_mono_debug_init,
+                  capture_mono_path(res));
 
 #undef REDIRECT_INIT
     return res;

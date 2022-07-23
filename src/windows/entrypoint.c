@@ -91,6 +91,8 @@ void *WINAPI get_proc_address_detour(void *module, char *name) {
                   capture_mono_path(module));
     REDIRECT_INIT("mono_jit_parse_options", load_mono_funcs,
                   hook_mono_jit_parse_options, capture_mono_path(module));
+    REDIRECT_INIT("mono_debug_init", load_mono_funcs, hook_mono_debug_init,
+                  capture_mono_path(module));
 
     return (void *)GetProcAddress(module, name);
 #undef REDIRECT_INIT

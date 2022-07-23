@@ -77,8 +77,6 @@ static inline void init_config_file() {
                    &config.mono_dll_search_path_override);
     load_bool_file(config_path, TEXT("UnityMono"), TEXT("debug_enabled"),
                    TEXT("false"), &config.mono_debug_enabled);
-    load_bool_file(config_path, TEXT("UnityMono"), TEXT("debug_start_server"),
-                   TEXT("true"), &config.mono_debug_start_server);
     load_bool_file(config_path, TEXT("UnityMono"), TEXT("debug_suspend"),
                    TEXT("false"), &config.mono_debug_suspend);
     load_str_file(config_path, TEXT("UnityMono"), TEXT("debug_address"),
@@ -151,8 +149,6 @@ static inline void init_cmd_args() {
                   config.mono_dll_search_path_override, load_path_argv);
         PARSE_ARG(TEXT("--doorstop-mono-debug-enabled"),
                   config.mono_debug_enabled, load_bool_argv);
-        PARSE_ARG(TEXT("--doorstop-mono-debug-start-server"),
-                  config.mono_debug_start_server, load_bool_argv);
         PARSE_ARG(TEXT("--doorstop-mono-debug-suspend"),
                   config.mono_debug_suspend, load_bool_argv);
         PARSE_ARG(TEXT("--doorstop-mono-debug-address"),

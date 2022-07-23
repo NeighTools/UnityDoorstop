@@ -157,7 +157,6 @@ All Doorstop arguments start with `--doorstop-` and always contain an argument. 
 | `--doorstop-target-assembly string`               | Path to the assembly to load and execute.                                                            |
 | `--doorstop-mono-dll-search-path-override string` | Overrides default Mono DLL search path                                                               |
 | `--doorstop-mono-debug-enabled bool`              | If true, Mono debugger server will be enabled                                                        |
-| `--doorstop-mono-debug-start-server bool`         | Whether Doorstop should initialize the debugger server automatically                                 |
 | `--doorstop-mono-debug-suspend bool`              | Whether to suspend the game execution until the debugger is attached.                                |
 | `--doorstop-mono-debug-address string`            | The address to use for the Mono debugger server.                                                     |
 | `--doorstop-clr-corlib-dir string`                | Path to coreclr library that contains the CoreCLR runtime                                            |

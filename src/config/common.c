@@ -24,7 +24,6 @@ void init_config_defaults() {
     config.ignore_disabled_env = FALSE;
     config.redirect_output_log = FALSE;
     config.mono_debug_enabled = FALSE;
-    config.mono_debug_start_server = TRUE;
     config.mono_debug_suspend = FALSE;
     config.mono_debug_address = NULL;
     config.target_assembly = NULL;

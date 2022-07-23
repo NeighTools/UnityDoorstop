@@ -36,6 +36,7 @@ DEF_CALL(void *, assembly_load_from_full, void *image, const char *fname,
 DEF_CALL(void *, jit_parse_options, int argc, char **argv)
 DEF_CALL(void *, debug_init, MonoDebugFormat format)
 DEF_CALL(void *, debug_domain_create, void *domain)
+DEF_CALL(int, debug_enabled)
 #else
 
 #ifndef MONO_H

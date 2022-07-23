@@ -13,5 +13,6 @@ void *hook_mono_image_open_from_data_with_name(void *data,
                                                MonoImageOpenStatus *status,
                                                int refonly, const char *name);
 void hook_mono_jit_parse_options(int argc, char **argv);
+void hook_mono_debug_init(MonoDebugFormat format);
 
 #endif
