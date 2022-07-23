@@ -204,10 +204,6 @@ while :; do
             debug_enable="$(doorstop_bool "$2")"
             shift
         ;;
-        --doorstop-mono-debug-start-server)
-            debug_start_server="$(doorstop_bool "$2")"
-            shift
-        ;;
         --doorstop-mono-debug-suspend)
             debug_suspend="$(doorstop_bool "$2")"
             shift
