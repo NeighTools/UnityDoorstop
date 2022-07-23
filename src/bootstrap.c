@@ -11,7 +11,6 @@
 void mono_doorstop_bootstrap(void *mono_domain) {
     if (getenv(TEXT("DOORSTOP_INITIALIZED"))) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!");
-        cleanup_config();
         return;
     }
     setenv(TEXT("DOORSTOP_INITIALIZED"), TEXT("TRUE"), TRUE);
@@ -120,7 +119,6 @@ void mono_doorstop_bootstrap(void *mono_domain) {
     LOG("Done");
 
     free(app_path);
-    cleanup_config();
 }
 
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
