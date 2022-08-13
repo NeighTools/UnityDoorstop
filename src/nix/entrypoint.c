@@ -74,8 +74,7 @@ __attribute__((constructor)) void doorstop_ctor() {
 
     void *unity_player = plthook_handle_by_name("UnityPlayer");
 
-    // TODO: Chekc if this still works on macOS
-    if (unity_player && plthook_open_by_address(&hook, unity_player) == 0) {
+    if (unity_player && plthook_open_by_handle(&hook, unity_player) == 0) {
         LOG("Found UnityPlayer, hooking into it instead");
     } else if (plthook_open(&hook, NULL) != 0) {
         LOG("Failed to open current process PLT! Cannot run Doorstop! "
