@@ -34,24 +34,6 @@ Depending on the runtime the game uses, Doorstop tries to run your assembly as f
   * Your assembly is run in a runtime that is isolated from Il2Cpp
   * You can access Il2Cpp runtime by interacting with its native `il2cpp_` API
 
-## WIP
-
-This project is a rewrite of the original Unity Doorstop.
-The goal of the rewrite is to clean up the code base and merge the Unix version into the main build.
-
-Current progress:
-
-* [x] Restructure to allow multiple platform support
-* [x] Port Windows support
-* [x] Port mono support
-* [x] Update Il2Cpp to use CoreCLR runtime 
-* [x] Port Unix support
-* [x] Add Unix build scripts
-* [x] Add ability to start mono debugger without special dnSpy mono DLLs
-* [x] Add example run/configure script for Unix
-* [ ] Test that ports actually work
-* [x] Add automated CI builds
-
 ## Building
 
 Doorstop uses [xmake](https://xmake.io/) to build the project. To build, run `build.bat`, `build.ps1` or `build.sh`.
