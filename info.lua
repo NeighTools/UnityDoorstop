@@ -7,7 +7,7 @@ function build_info()
             major = 4,
             minor = 0,
             patch = 0,
-            release = "-rc.7",
+            release = "",
         },
     }
 end
