@@ -114,8 +114,13 @@ void mono_doorstop_bootstrap(void *mono_domain) {
         LOG("Error invoking code!");
         if (mono.object_to_string) {
             void *str = mono.object_to_string(exc, NULL);
+#ifdef UNICODE
+            char_t *exc_str = mono.string_chars(str);
+            LOG("Error message: %s", exc_str);
+#else
             char *exc_str = mono.string_to_utf8(str);
             LOG("Error message: %s", exc_str);
+#endif
         }
     }
     LOG("Done");
