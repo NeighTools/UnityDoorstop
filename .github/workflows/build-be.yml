@@ -162,7 +162,7 @@ jobs:
         run: |
           mkdir dist
           cd artifacts
-          zip -r ../dist/doorstop_all_in_one_${{ env.doorstop_version }}.zip *
+          zip -r ../dist/doorstop_all_${{ env.doorstop_version }}.zip *
           for dir in *
           do
             (cd ${dir}; zip -r ../../dist/${dir}_${{ env.doorstop_version }}.zip *)
