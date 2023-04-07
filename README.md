@@ -4,7 +4,7 @@
 
 <h1 align="center">Unity Doorstop</h1>
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/NeighTools/UnityDoorstop/Build)](https://github.com/NeighTools/UnityDoorstop/actions/workflows/build-be.yml)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/NeighTools/UnityDoorstop/build-be.yml?branch=master)](https://github.com/NeighTools/UnityDoorstop/actions/workflows/build-be.yml)
 [![nightly.link artifacts](https://img.shields.io/badge/Artifacts-nightly.link-blueviolet)](https://nightly.link/NeighTools/UnityDoorstop/workflows/build-be/master)
 
 ***
