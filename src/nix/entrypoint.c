@@ -6,6 +6,12 @@
 #include "../util/util.h"
 #include "./plthook/plthook.h"
 
+#if defined(__APPLE__)
+#define PLTHOOK_OPEN_BY_HANDLE_OR_ADDRESS plthook_open_by_handle
+#else
+#define PLTHOOK_OPEN_BY_HANDLE_OR_ADDRESS plthook_open_by_address
+#endif
+
 void capture_mono_path(void *handle) {
     char_t *result;
     get_module_path(handle, &result, NULL, 0);
@@ -74,7 +80,7 @@ __attribute__((constructor)) void doorstop_ctor() {
 
     void *unity_player = plthook_handle_by_name("UnityPlayer");
 
-    if (unity_player && plthook_open_by_handle(&hook, unity_player) == 0) {
+    if (unity_player && PLTHOOK_OPEN_BY_HANDLE_OR_ADDRESS(&hook, unity_player) == 0) {
         LOG("Found UnityPlayer, hooking into it instead");
     } else if (plthook_open(&hook, NULL) != 0) {
         LOG("Failed to open current process PLT! Cannot run Doorstop! "
