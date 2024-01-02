@@ -104,7 +104,7 @@ void redirect_output_log(DoorstopPaths const *paths) {
         return;
 
     char_t *cmd = GetCommandLine();
-    size_t app_dir_len = strlen(paths->doorstop_filename);
+    size_t app_dir_len = strlen(paths->app_dir);
     size_t cmd_len = strlen(cmd);
     size_t new_cmd_len = cmd_len + LOG_FILE_CMD_START_LEN + app_dir_len +
                          LOG_FILE_CMD_END_LEN + LOG_FILE_CMD_EXTRA;
