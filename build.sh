@@ -105,7 +105,7 @@ while [[ $# > 0 ]]; do
     esac
 done
 
-XMAKE_VERSION="2.6.1"
+XMAKE_VERSION="2.8.9"
 
 # Get current dir
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -229,12 +229,10 @@ if [[ ! -d "$XMAKE_DIR" ]] || [[ ! -x "$xmake" ]]; then
     fi
 
     log-8601-local "Downloading and building xmake, this might take a while..."
-    if commands_exist xz; then
-        pack=xz
-    elif command_exist gzip; then
+    if commands_exist gzip; then
         pack=gz
     else
-        msg-error "No decompression binary found, please install xz or gzip to continue"
+        msg-error "No decompression binary found, please install gzip to continue"
     fi
 
     log-8601-local "Downloading xmake runner..."
