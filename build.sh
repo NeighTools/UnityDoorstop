@@ -105,7 +105,7 @@ while [[ $# > 0 ]]; do
     esac
 done
 
-XMAKE_VERSION="2.6.1"
+XMAKE_VERSION="2.8.9"
 
 # Get current dir
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -229,27 +229,18 @@ if [[ ! -d "$XMAKE_DIR" ]] || [[ ! -x "$xmake" ]]; then
     fi
 
     log-8601-local "Downloading and building xmake, this might take a while..."
-    if commands_exist xz; then
-        pack=xz
-    elif command_exist gzip; then
+    if commands_exist gzip; then
         pack=gz
     else
-        msg-error "No decompression binary found, please install xz or gzip to continue"
+        msg-error "No decompression binary found, please install gzip to continue"
     fi
 
     log-8601-local "Downloading xmake runner..."
     curl -fSL "https://github.com/xmake-io/xmake/releases/download/v$XMAKE_VERSION/xmake-v$XMAKE_VERSION.$pack.run" > "$TOOLS_DIR/xmake.run"
     log-8601-local "Downloading xmake maybe..."
     sh "$TOOLS_DIR/xmake.run" --noexec --target "$XMAKE_BUILD_DIR"
-    log-8601-local "Building xmake..."
-    if (cd "$XMAKE_BUILD_DIR" && $make build); then
-        msg-success "Build successful"
-    else
-        msg-error "Failed to build xmake"
-        exit 1
-    fi
-    log-8601-local "Installing xmake..."
-    if (cd "$XMAKE_BUILD_DIR" && DESTDIR="$TOOLS_DIR" PREFIX="xmake" $make install); then
+    log-8601-local "Buinding and installing xmake..."
+    if (cd "$XMAKE_BUILD_DIR" && ./configure && DESTDIR="$TOOLS_DIR" PREFIX="xmake" $make install); then
         msg-success "xmake installed successfully"
     else
         msg-error "Failed to install xmake"
