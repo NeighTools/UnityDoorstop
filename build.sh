@@ -239,14 +239,7 @@ if [[ ! -d "$XMAKE_DIR" ]] || [[ ! -x "$xmake" ]]; then
     curl -fSL "https://github.com/xmake-io/xmake/releases/download/v$XMAKE_VERSION/xmake-v$XMAKE_VERSION.$pack.run" > "$TOOLS_DIR/xmake.run"
     log-8601-local "Downloading xmake maybe..."
     sh "$TOOLS_DIR/xmake.run" --noexec --target "$XMAKE_BUILD_DIR"
-    log-8601-local "Building xmake..."
-    if (cd "$XMAKE_BUILD_DIR" && $make build); then
-        msg-success "Build successful"
-    else
-        msg-error "Failed to build xmake"
-        exit 1
-    fi
-    log-8601-local "Installing xmake..."
+    log-8601-local "Buinding and installing xmake..."
     if (cd "$XMAKE_BUILD_DIR" && ./configure && DESTDIR="$TOOLS_DIR" PREFIX="xmake" $make install); then
         msg-success "xmake installed successfully"
     else
