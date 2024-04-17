@@ -231,7 +231,7 @@ if [[ ! -d "$XMAKE_DIR" ]] || [[ ! -x "$xmake" ]]; then
     log-8601-local "Downloading and building xmake, this might take a while..."
     if commands_exist xz; then
         pack=xz
-    elif command_exist gzip; then
+    elif commands_exist gzip; then
         pack=gz
     else
         msg-error "No decompression binary found, please install xz or gzip to continue"
