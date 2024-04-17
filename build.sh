@@ -247,7 +247,7 @@ if [[ ! -d "$XMAKE_DIR" ]] || [[ ! -x "$xmake" ]]; then
         exit 1
     fi
     log-8601-local "Installing xmake..."
-    if (cd "$XMAKE_BUILD_DIR" && DESTDIR="$TOOLS_DIR" PREFIX="xmake" $make install); then
+    if (cd "$XMAKE_BUILD_DIR" && ./configure && DESTDIR="$TOOLS_DIR" PREFIX="xmake" $make install); then
         msg-success "xmake installed successfully"
     else
         msg-error "Failed to install xmake"
