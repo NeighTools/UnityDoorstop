@@ -134,10 +134,6 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     LOG("Overriding mono DLL search path");
 
     size_t mono_search_path_len = strlen(root_dir) + 1;
-    char_t *target_path_full = get_full_path(config.target_assembly);
-    char_t *target_path_folder = get_folder_name(target_path_full);
-    mono_search_path_len += strlen(target_path_folder) + 1;
-    LOG("Adding %s to mono search path", target_path_folder);
 
     char_t *override_dir_full = NULL;
     bool_t has_override = config.mono_dll_search_path_override &&
@@ -153,8 +149,6 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
         strcat(mono_search_path, override_dir_full);
         strcat(mono_search_path, PATH_SEP);
     }
-    strcat(mono_search_path, target_path_folder);
-    strcat(mono_search_path, PATH_SEP);
     strcat(mono_search_path, root_dir);
 
     LOG("Mono search path: %s", mono_search_path);
@@ -166,8 +160,6 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     if (override_dir_full) {
         free(override_dir_full);
     }
-    free(target_path_full);
-    free(target_path_folder);
 
     hook_mono_jit_parse_options(0, NULL);
 
