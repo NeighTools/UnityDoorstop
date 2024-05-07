@@ -136,16 +136,60 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     size_t mono_search_path_len = strlen(root_dir) + 1;
 
     char_t *override_dir_full = NULL;
-    bool_t has_override = config.mono_dll_search_path_override &&
-                          strlen(config.mono_dll_search_path_override);
+    char_t *config_path_value = config.mono_dll_search_path_override;
+    bool_t has_override = config_path_value && strlen(config_path_value);
     if (has_override) {
-        override_dir_full = get_full_path(config.mono_dll_search_path_override);
+        size_t path_start = 0;
+        override_dir_full = calloc(MAX_PATH, sizeof(char_t));
+        memset(override_dir_full, 0, MAX_PATH * sizeof(char_t));
+
+        bool_t found_path = FALSE;
+        for (size_t i = 0; i <= strlen(config_path_value); i++) {
+            char_t current_char = config_path_value[i];
+            if (current_char == *PATH_SEP || current_char == 0) {
+                if (i <= path_start) {
+                    path_start++;
+                    continue;
+                }
+
+                size_t path_len = i - path_start;
+                char_t *path = calloc(path_len + 1, sizeof(char_t));
+                strncpy(path, config_path_value + path_start, path_len);
+                path[path_len] = 0;
+
+                char_t *full_path = get_full_path(path);
+
+                if (strlen(override_dir_full) + strlen(full_path) + 2 >
+                    MAX_PATH) {
+                    LOG("Ignoring this root path because its absolute version "
+                        "is too long: %s",
+                        full_path);
+                    free(path);
+                    free(full_path);
+                    path_start = i + 1;
+                    continue;
+                }
+
+                if (found_path) {
+                    strcat(override_dir_full, PATH_SEP);
+                }
+
+                strcat(override_dir_full, full_path);
+                LOG("Adding root path: %s", full_path);
+
+                free(path);
+                free(full_path);
+
+                found_path = TRUE;
+                path_start = i + 1;
+            }
+        }
+
         mono_search_path_len += strlen(override_dir_full) + 1;
-        LOG("Adding root path: %s", override_dir_full);
     }
 
     char_t *mono_search_path = calloc(mono_search_path_len + 1, sizeof(char_t));
-    if (has_override) {
+    if (override_dir_full && strlen(override_dir_full)) {
         strcat(mono_search_path, override_dir_full);
         strcat(mono_search_path, PATH_SEP);
     }

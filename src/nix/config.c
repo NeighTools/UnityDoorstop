@@ -37,8 +37,8 @@ void load_config() {
     try_get_env("DOORSTOP_MONO_DEBUG_ADDRESS", TEXT("127.0.0.1:10000"),
                 &config.mono_debug_address);
     get_env_path("DOORSTOP_TARGET_ASSEMBLY", &config.target_assembly);
-    get_env_path("DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE",
-                 &config.mono_dll_search_path_override);
+    try_get_env("DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE", TEXT(""),
+                &config.mono_dll_search_path_override);
     get_env_path("DOORSTOP_CLR_RUNTIME_CORECLR_PATH",
                  &config.clr_runtime_coreclr_path);
     get_env_path("DOORSTOP_CLR_CORLIB_DIR", &config.clr_corlib_dir);

@@ -74,11 +74,3 @@ The change was made for two reasons:
 
 * Doorstop does not need to pass any arguments anymore. Instead, Doorstop passes all the information via environment variables.
 * CoreCLR does not support easy method searching using wildcards yet.
-
-## *Possibly* breaking: `target_assembly` directory is now always added to mono search path
-
-In UnityDoorstop 3.x, the tool only loaded the `target_assembly` and left any other assembly resolving to the target assembly code.
-**Starting Doorstop 4, `target_assembly`'s parent directory is set to mono DLL search path.**
-
-This means that any additional assemblies that are placed into the same directory as `target_assembly` will receive priority during assembly resolving.
-Note that this option for now only affects UnityMono as there is no similar search path priority available via current CoreCLR C hosting API.
