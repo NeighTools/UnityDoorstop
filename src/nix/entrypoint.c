@@ -60,6 +60,7 @@ int fclose_hook(FILE *stream) {
 }
 
 char_t *default_boot_config_path = NULL;
+#if !defined(__APPLE__)
 FILE *fopen64_hook(char *filename, char *mode) {
     char *actual_file_name = filename;
 
@@ -70,6 +71,7 @@ FILE *fopen64_hook(char *filename, char *mode) {
 
     return fopen64(actual_file_name, mode);
 }
+#endif
 
 FILE *fopen_hook(char *filename, char *mode) {
     char *actual_file_name = filename;
@@ -128,9 +130,11 @@ __attribute__((constructor)) void doorstop_ctor() {
                    get_file_name(program_path(), FALSE));
             strcat(default_boot_config_path, TEXT("_Data/boot.config"));
 
+#if !defined(__APPLE__)
             if (plthook_replace(hook, "fopen64", &fopen64_hook, NULL) != 0)
                 printf("Failed to hook fopen64, ignoring it. Error: %s\n",
                        plthook_error());
+#endif
             if (plthook_replace(hook, "fopen", &fopen_hook, NULL) != 0)
                 printf("Failed to hook fopen, ignoring it. Error: %s\n",
                        plthook_error());
