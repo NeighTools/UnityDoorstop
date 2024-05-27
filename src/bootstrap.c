@@ -267,14 +267,14 @@ void il2cpp_doorstop_bootstrap() {
     strcat(app_paths_env, config.clr_corlib_dir);
     strcat(app_paths_env, PATH_SEP);
     strcat(app_paths_env, target_dir);
-    char *app_paths_env_n = narrow(app_paths_env);
+    const char *app_paths_env_n = narrow(app_paths_env);
 
     LOG("App path: %s", app_path);
     LOG("Target dir: %s", target_dir);
     LOG("Target name: %s", target_name);
     LOG("APP_PATHS: %s", app_paths_env);
 
-    char *props = "APP_PATHS";
+    const char *props = "APP_PATHS";
 
     setenv(TEXT("DOORSTOP_INITIALIZED"), TEXT("TRUE"), TRUE);
     setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);
@@ -293,7 +293,8 @@ void il2cpp_doorstop_bootstrap() {
 
     void (*startup)() = NULL;
     result = coreclr.create_delegate(host, domain_id, target_name_n,
-                                     "Doorstop.Entrypoint", "Start", &startup);
+                                     "Doorstop.Entrypoint", "Start",
+                                     (void **)&startup);
     if (result != 0) {
         LOG("Failed to get entrypoint delegate: 0x%08x", result);
         return;

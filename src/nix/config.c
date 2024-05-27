@@ -10,7 +10,7 @@ void get_env_bool(const char_t *name, bool_t *target) {
     }
 }
 
-void try_get_env(const char_t *name, const char_t *def, char_t **target) {
+void try_get_env(const char_t *name, char_t *def, char_t **target) {
     char_t *value = getenv(name);
     if (value != NULL && strlen(value) > 0) {
         *target = strdup(value);
