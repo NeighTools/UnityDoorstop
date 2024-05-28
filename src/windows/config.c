@@ -72,7 +72,7 @@ static inline void init_config_file() {
     load_path_file(config_path, TEXT("General"), TEXT("target_assembly"),
                    DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
     load_path_file(config_path, TEXT("General"), TEXT("boot_config_override"),
-                   TEXT(""), &config.boot_config_override);
+                   NULL, &config.boot_config_override);
 
     load_str_file(config_path, TEXT("UnityMono"),
                   TEXT("dll_search_path_override"), TEXT(""),
