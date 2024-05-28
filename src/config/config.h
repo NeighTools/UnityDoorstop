@@ -36,6 +36,12 @@ typedef struct {
     char_t *target_assembly;
 
     /**
+     * @brief Path to a custom boot.config file to use. If enabled, this file
+     * takes precedence over the default one in the Data folder.
+     */
+    char_t *boot_config_override;
+
+    /**
      * @brief Path to use as the main DLL search path. If enabled, this folder
      * takes precedence over the default Managed folder.
      */

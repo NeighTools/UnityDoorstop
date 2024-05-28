@@ -41,6 +41,8 @@ bool_t fix_cwd() {
 #define LOG_FILE_CMD_END L"\\output_log.txt\""
 #define LOG_FILE_CMD_END_LEN STR_LEN(LOG_FILE_CMD_END)
 
+char_t *default_boot_config_path = NULL;
+
 char_t *new_cmdline_args = NULL;
 char *new_cmdline_args_narrow = NULL;
 
@@ -61,6 +63,70 @@ bool_t WINAPI close_handle_hook(void *handle) {
     if (stdout_handle && handle == stdout_handle)
         return TRUE;
     return CloseHandle(handle);
+}
+
+HANDLE WINAPI create_file_hook(LPCWSTR lpFileName, DWORD dwDesiredAccess,
+                               DWORD dwShareMode,
+                               LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+                               DWORD dwCreationDisposition,
+                               DWORD dwFlagsAndAttributes,
+                               HANDLE hTemplateFile) {
+    LPCWSTR actual_file_name = lpFileName;
+
+    char_t *normalised_path = calloc(strlen(lpFileName) + 1, sizeof(char_t));
+    memset(normalised_path, 0, (strlen(lpFileName) + 1) * sizeof(char_t));
+    strcpy(normalised_path, lpFileName);
+    for (size_t i = 0; i < strlen(normalised_path); i++) {
+        if (normalised_path[i] == L'/') {
+            normalised_path[i] = L'\\';
+        }
+    }
+
+    if (strcmpi(normalised_path, default_boot_config_path) == 0) {
+        actual_file_name = config.boot_config_override;
+        LOG("Overriding boot.config to %s", actual_file_name);
+    }
+
+    free(normalised_path);
+
+    return CreateFileW(actual_file_name, dwDesiredAccess, dwShareMode,
+                       lpSecurityAttributes, dwCreationDisposition,
+                       dwFlagsAndAttributes, hTemplateFile);
+}
+
+HANDLE WINAPI create_file_hook_narrow(
+    void *lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
+    LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
+    DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
+    void *actual_file_name = lpFileName;
+
+    char_t *widened_filename = widen(lpFileName);
+    char_t *normalised_path =
+        calloc(strlen(widened_filename) + 1, sizeof(char_t));
+    memset(normalised_path, 0, (strlen(widened_filename) + 1) * sizeof(char_t));
+    strcpy(normalised_path, widened_filename);
+    free(widened_filename);
+
+    for (size_t i = 0; i < strlen(normalised_path); i++) {
+        if (normalised_path[i] == L'/') {
+            normalised_path[i] = L'\\';
+        }
+    }
+
+    if (strcmpi(normalised_path, default_boot_config_path) == 0) {
+        char *narrowed_boot_config_override =
+            narrow(config.boot_config_override);
+        memcpy(actual_file_name, narrowed_boot_config_override,
+               strlen(config.boot_config_override));
+        free(narrowed_boot_config_override);
+        LOG("Overriding boot.config to %s", actual_file_name);
+    }
+
+    free(normalised_path);
+
+    return CreateFileA(actual_file_name, dwDesiredAccess, dwShareMode,
+                       lpSecurityAttributes, dwCreationDisposition,
+                       dwFlagsAndAttributes, hTemplateFile);
 }
 
 void capture_mono_path(void *handle) {
@@ -146,6 +212,25 @@ void inject(DoorstopPaths const *paths) {
 
     HOOK_SYS(target_module, GetProcAddress, get_proc_address_detour);
     HOOK_SYS(target_module, CloseHandle, close_handle_hook);
+    if (config.boot_config_override) {
+        if (file_exists(config.boot_config_override)) {
+            default_boot_config_path = calloc(MAX_PATH, sizeof(char_t));
+            memset(default_boot_config_path, 0, MAX_PATH * sizeof(char_t));
+            strcat(default_boot_config_path, get_working_dir());
+            strcat(default_boot_config_path, TEXT("\\"));
+            strcat(default_boot_config_path,
+                   get_file_name(program_path(), FALSE));
+            strcat(default_boot_config_path, TEXT("_Data\\boot.config"));
+
+            HOOK_SYS(target_module, CreateFileW, create_file_hook);
+            HOOK_SYS(target_module, CreateFileA, create_file_hook_narrow);
+        } else {
+            LOG("The boot.config file won't be overriden because the provided "
+                "one does not exist: %s",
+                config.boot_config_override);
+        }
+    }
+
     HOOK_SYS(app_module, GetCommandLineW, get_command_line_hook);
     HOOK_SYS(app_module, GetCommandLineA, get_command_line_hook_narrow);
 

@@ -25,6 +25,9 @@ enabled="1"
 # NOTE: The entrypoint must be of format `static void Doorstop.Entrypoint.Start()`
 target_assembly="Doorstop.dll"
 
+# Overrides the default boot.config file path
+boot_config_override=
+
 # If enabled, DOORSTOP_DISABLE env var value is ignored
 # USE THIS ONLY WHEN ASKED TO OR YOU KNOW WHAT THIS MEANS
 ignore_disable_switch="0"
@@ -197,6 +200,10 @@ while :; do
             target_assembly="$2"
             shift
         ;;
+        --doorstop-boot-config-override)
+            boot_config_override="$2"
+            shift
+        ;;
         --doorstop-mono-dll-search-path-override)
             dll_search_path_override="$2"
             shift
@@ -234,6 +241,7 @@ done
 # Move variables to environment
 export DOORSTOP_ENABLED="$enabled"
 export DOORSTOP_TARGET_ASSEMBLY="$target_assembly"
+export DOORSTOP_BOOT_CONFIG_OVERRIDE="$boot_config_override"
 export DOORSTOP_IGNORE_DISABLED_ENV="$ignore_disable_switch"
 export DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE="$dll_search_path_override"
 export DOORSTOP_MONO_DEBUG_ENABLED="$debug_enable"

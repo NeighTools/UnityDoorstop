@@ -133,10 +133,11 @@ All Doorstop arguments start with `--doorstop-` and always contain an argument. 
 * `string` = any sequence of characters and numbers. Wrap into `"`s if the string contains spaces
 
 | Argument                                          | Description                                                                                          |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------- |------------------------------------------------------------------------------------------------------|
 | `--doorstop-enabled bool`                         | Enable or disable Doorstop.                                                                          |
 | `--doorstop-redirect-output-log bool`             | *Only on Windows*: If `true` Unity's output log is redirected to `<current folder>\output_log.txt`   |
 | `--doorstop-target-assembly string`               | Path to the assembly to load and execute.                                                            |
+| `--doorstop-boot-config-override string`          | Overrides the boot.config file path.                                                                 |
 | `--doorstop-mono-dll-search-path-override string` | Overrides default Mono DLL search path                                                               |
 | `--doorstop-mono-debug-enabled bool`              | If true, Mono debugger server will be enabled                                                        |
 | `--doorstop-mono-debug-suspend bool`              | Whether to suspend the game execution until the debugger is attached.                                |
