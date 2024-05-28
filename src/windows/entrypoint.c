@@ -223,7 +223,7 @@ void inject(DoorstopPaths const *paths) {
             strcat(default_boot_config_path, TEXT("_Data\\boot.config"));
 
             HOOK_SYS(target_module, CreateFileW, create_file_hook);
-            HOOK_SYS(target_module, CreateFileW, create_file_hook_narrow);
+            HOOK_SYS(target_module, CreateFileA, create_file_hook_narrow);
         } else {
             LOG("The boot.config file won't be overriden because the provided "
                 "one does not exist: %s",
