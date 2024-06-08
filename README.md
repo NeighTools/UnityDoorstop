@@ -89,11 +89,8 @@ Doorstop sets some environment variables useful for code execution:
 ### Debugging
 
 Doorstop 4 supports debugging the assemblies in the runtime.
-At the moment, debugging is somewhat limited depending on the runtime.
 
 #### Debugging in UnityMono
-
-At the moment, debugging is supported in Unity 2017+ games.
 
 To enable debugging, set `debug_enabled` to `true` and optionally change the debug server address via `debug_address` (see [configuration options](#doorstop-configuration)).  
 After launching the game, you may connect to the debugger using the server address (default is `127.0.0.1:10000`).  
