@@ -9,6 +9,7 @@
 #include "util/util.h"
 
 bool_t mono_debug_init_called = FALSE;
+bool_t mono_is_net35 = FALSE;
 
 void mono_doorstop_bootstrap(void *mono_domain) {
     if (getenv(TEXT("DOORSTOP_INITIALIZED"))) {
@@ -129,8 +130,15 @@ void mono_doorstop_bootstrap(void *mono_domain) {
 
 void *init_mono(const char *root_domain_name, const char *runtime_version) {
     char_t *root_domain_name_w = widen(root_domain_name);
+    char_t *runtime_version_w = widen(runtime_version);
     LOG("Starting mono domain \"%s\"", root_domain_name_w);
+    LOG("Runtime version: %s", runtime_version_w);
+    if (strlen(runtime_version_w) > 2 &&
+        (runtime_version_w[1] == L'2' || runtime_version_w[1] == L'1')) {
+        mono_is_net35 = TRUE;
+    }
     free(root_domain_name_w);
+    free(runtime_version_w);
     char *root_dir_n = mono.assembly_getrootdir();
     char_t *root_dir = widen(root_dir_n);
     LOG("Current root: %s", root_dir);
@@ -211,17 +219,31 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
 
     hook_mono_jit_parse_options(0, NULL);
 
-    void *domain = mono.jit_init_version(root_domain_name, runtime_version);
-
     bool_t debugger_already_enabled = mono_debug_init_called;
     if (mono.debug_enabled) {
         debugger_already_enabled |= mono.debug_enabled();
     }
 
-    if (config.mono_debug_enabled && !debugger_already_enabled) {
-        LOG("Detected mono debugger is not initialized; initialized it");
-        mono.debug_init(MONO_DEBUG_FORMAT_MONO);
-        mono.debug_domain_create(domain);
+    void *domain = NULL;
+    if (mono_is_net35) {
+        if (config.mono_debug_enabled && !debugger_already_enabled) {
+            LOG("Detected mono debugger is not initialized; initialized it");
+            mono.debug_init(MONO_DEBUG_FORMAT_MONO);
+        }
+
+        domain = mono.jit_init_version(root_domain_name, runtime_version);
+
+        if (config.mono_debug_enabled && !debugger_already_enabled) {
+            mono.debug_domain_create(domain);
+        }
+    } else {
+        domain = mono.jit_init_version(root_domain_name, runtime_version);
+
+        if (config.mono_debug_enabled && !debugger_already_enabled) {
+            LOG("Detected mono debugger is not initialized; initialized it");
+            mono.debug_init(MONO_DEBUG_FORMAT_MONO);
+            mono.debug_domain_create(domain);
+        }
     }
 
     mono_doorstop_bootstrap(domain);
@@ -315,8 +337,8 @@ int init_il2cpp(const char *domain_name) {
 
 #define MONO_DEBUG_ARG_START                                                   \
     TEXT("--debugger-agent=transport=dt_socket,server=y,address=")
-// TODO: For .NET 3.5 monos, need to use defer=y instead
 #define MONO_DEBUG_NO_SUSPEND TEXT(",suspend=n")
+#define MONO_DEBUG_NO_SUSPEND_NET35 TEXT(",suspend=n,defer=y")
 
 void hook_mono_jit_parse_options(int argc, char **argv) {
     char_t *debug_options = getenv(TEXT("DNSPY_UNITY_DBG2"));
@@ -334,7 +356,11 @@ void hook_mono_jit_parse_options(int argc, char **argv) {
         size_t debug_args_len =
             STR_LEN(MONO_DEBUG_ARG_START) + strlen(config.mono_debug_address);
         if (!config.mono_debug_suspend) {
-            debug_args_len += STR_LEN(MONO_DEBUG_NO_SUSPEND);
+            if (mono_is_net35) {
+                debug_args_len += STR_LEN(MONO_DEBUG_NO_SUSPEND_NET35);
+            } else {
+                debug_args_len += STR_LEN(MONO_DEBUG_NO_SUSPEND);
+            }
         }
 
         if (!debug_options) {
@@ -342,7 +368,11 @@ void hook_mono_jit_parse_options(int argc, char **argv) {
             strcat(debug_options, MONO_DEBUG_ARG_START);
             strcat(debug_options, config.mono_debug_address);
             if (!config.mono_debug_suspend) {
-                strcat(debug_options, MONO_DEBUG_NO_SUSPEND);
+                if (mono_is_net35) {
+                    strcat(debug_options, MONO_DEBUG_NO_SUSPEND_NET35);
+                } else {
+                    strcat(debug_options, MONO_DEBUG_NO_SUSPEND);
+                }
             }
         }
 
