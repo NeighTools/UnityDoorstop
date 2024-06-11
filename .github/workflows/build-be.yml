@@ -106,25 +106,25 @@ jobs:
         uses: actions/checkout@v2
       - name: Configure paths
         run: |
-          mkdir -p artifacts/{verbose,release,debug}/x64
+          mkdir -p artifacts/{verbose,release,debug}/universal
       - name: Build Release
         run: |
           ./build.sh
-          cp build/macosx/x86_64/release/libdoorstop.dylib artifacts/release/x64/libdoorstop.dylib
-          cp build/macosx/x86_64/release/.doorstop_version artifacts/release/x64/.doorstop_version
-          cp assets/nix/run.sh artifacts/release/x64/run.sh
+          cp build/macosx/universal/release/libdoorstop.dylib artifacts/release/universal/libdoorstop.dylib
+          cp build/macosx/universal/release/.doorstop_version artifacts/release/universal/.doorstop_version
+          cp assets/nix/run.sh artifacts/release/universal/run.sh
       - name: Build Verbose
         run: |
           ./build.sh -with_logging
-          cp build/macosx/x86_64/release/libdoorstop.dylib artifacts/verbose/x64/libdoorstop.dylib
-          cp build/macosx/x86_64/release/.doorstop_version artifacts/verbose/x64/.doorstop_version
-          cp assets/nix/run.sh artifacts/verbose/x64/run.sh
+          cp build/macosx/universal/release/libdoorstop.dylib artifacts/verbose/universal/libdoorstop.dylib
+          cp build/macosx/universal/release/.doorstop_version artifacts/verbose/universal/.doorstop_version
+          cp assets/nix/run.sh artifacts/verbose/universal/run.sh
       - name: Build Debug
         run: |
           ./build.sh -with_logging -debug
-          cp build/macosx/x86_64/debug/libdoorstop.dylib artifacts/debug/x64/libdoorstop.dylib
-          cp build/macosx/x86_64/debug/.doorstop_version artifacts/debug/x64/.doorstop_version
-          cp assets/nix/run.sh artifacts/debug/x64/run.sh
+          cp build/macosx/universal/debug/libdoorstop.dylib artifacts/debug/universal/libdoorstop.dylib
+          cp build/macosx/universal/debug/.doorstop_version artifacts/debug/universal/.doorstop_version
+          cp assets/nix/run.sh artifacts/debug/universal/run.sh
       - name: Upload Release
         uses: actions/upload-artifact@v2
         with:

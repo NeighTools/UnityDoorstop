@@ -8,7 +8,6 @@ option("include_logging")
     set_description("Include verbose logging on run")
     add_defines("VERBOSE")
 
-
 target("doorstop")
     set_kind("shared")
     set_optimize("smallest")
@@ -31,7 +30,6 @@ target("doorstop")
         add_files("src/nix/*.c")
         add_files("src/nix/plthook/*.c")
         add_links("dl")
-        --add_shflags("--no-as-needed",{force=true})
         if is_mode("debug") then
             set_symbols("debug")
             set_optimize("none")
@@ -71,3 +69,47 @@ target("doorstop")
         io.writefile(path.join(target:targetdir(), ".doorstop_version"),
             info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
     end)
+
+    if is_os("macosx") then
+        -- Build x86_64 binary
+        target("doorstop_x86_64")
+            set_kind("shared")
+            set_arch("x86_64")
+            set_optimize("smallest")
+            add_files("src/*.c")
+            add_files("src/config/*.c")
+            add_files("src/util/*.c")
+            add_files("src/runtimes/*.c")
+            add_files("src/nix/*.c")
+            add_files("src/nix/plthook/*.c")
+            add_links("dl")
+            if is_mode("debug") then
+                set_symbols("debug")
+                set_optimize("none")
+            end
+
+        -- Build arm64 binary
+        target("doorstop_arm64")
+            set_kind("shared")
+            set_arch("arm64")
+            set_optimize("smallest")
+            add_files("src/*.c")
+            add_files("src/config/*.c")
+            add_files("src/util/*.c")
+            add_files("src/runtimes/*.c")
+            add_files("src/nix/*.c")
+            add_files("src/nix/plthook/*.c")
+            add_links("dl")
+            if is_mode("debug") then
+                set_symbols("debug")
+                set_optimize("none")
+            end
+
+        -- Combine the binaries into a Universal Binary
+        after_build(function (target)
+            local build_mode = is_mode("debug") and "debug" or "release"
+            local targetdir = target:targetdir()
+            os.mkdir(path.join(targetdir, "..", "..", "universal", build_mode))
+            os.execv("lipo", {"-create", "-output", path.join(targetdir, "..", "..", "universal", build_mode, "libdoorstop.dylib"), path.join(targetdir, "..", "..", "x86_64", build_mode, "libdoorstop_x86_64.dylib"), path.join(targetdir, "libdoorstop_arm64.dylib")})
+        end)
+    end
