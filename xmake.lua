@@ -73,6 +73,7 @@ target("doorstop")
     if is_os("macosx") then
         -- Build x86_64 binary
         target("doorstop_x86_64")
+            add_options("include_logging")
             set_kind("shared")
             set_arch("x86_64")
             set_optimize("smallest")
@@ -90,6 +91,7 @@ target("doorstop")
 
         -- Build arm64 binary
         target("doorstop_arm64")
+            add_options("include_logging")
             set_kind("shared")
             set_arch("arm64")
             set_optimize("smallest")
@@ -107,6 +109,7 @@ target("doorstop")
 
         -- Combine the binaries into a Universal Binary
         after_build(function (target)
+            os.execv("sleep", {"5"}) -- Give time for both builds to finish (workaround)
             local build_mode = is_mode("debug") and "debug" or "release"
             local targetdir = target:targetdir()
             os.mkdir(path.join(targetdir, "..", "..", "universal", build_mode))
