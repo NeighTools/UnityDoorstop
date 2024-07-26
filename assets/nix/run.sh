@@ -192,11 +192,19 @@ doorstop_bool() {
 # Read from command line
 while :; do
     case "$1" in
-        --doorstop_enabled)
+        --doorstop_enabled) # For backwards compatibility. Renamed to --doorstop-enabled
             enabled="$(doorstop_bool "$2")"
             shift
         ;;
-        --doorstop_target_assembly)
+        --doorstop_target_assembly) # For backwards compatibility. Renamed to --doorstop-target-assembly
+            target_assembly="$2"
+            shift
+        ;;
+        --doorstop-enabled)
+            enabled="$(doorstop_bool "$2")"
+            shift
+        ;;
+        --doorstop-target-assembly)
             target_assembly="$2"
             shift
         ;;
