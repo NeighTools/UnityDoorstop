@@ -51,7 +51,7 @@ target("doorstop")
 
         if is_arch("i386") then
             add_shflags("-e _DllEntry", "-Wl,--enable-stdcall-fixup", {force=true})
-        elseif is_arch("x86_64") then
+        elseif is_arch("x64", "x86_64") then
             add_shflags("-e DllEntry", {force=true})
         end
     end
