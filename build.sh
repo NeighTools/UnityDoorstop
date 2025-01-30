@@ -239,7 +239,7 @@ if [[ ! -d "$XMAKE_DIR" ]] || [[ ! -x "$xmake" ]]; then
     curl -fSL "https://github.com/xmake-io/xmake/releases/download/v$XMAKE_VERSION/xmake-v$XMAKE_VERSION.$pack.run" > "$TOOLS_DIR/xmake.run"
     log-8601-local "Downloading xmake maybe..."
     sh "$TOOLS_DIR/xmake.run" --noexec --target "$XMAKE_BUILD_DIR"
-    log-8601-local "Buinding and installing xmake..."
+    log-8601-local "Building and installing xmake..."
     if (cd "$XMAKE_BUILD_DIR" && ./configure && DESTDIR="$TOOLS_DIR" PREFIX="xmake" $make install); then
         msg-success "xmake installed successfully"
     else
@@ -248,10 +248,16 @@ if [[ ! -d "$XMAKE_DIR" ]] || [[ ! -x "$xmake" ]]; then
     fi
 fi
 
-# Build projects for each arch
-for arch in "${ARCHS[@]}"
-do
-    log-8601-local "Building for $arch..."
-    "$xmake" f -a $arch -m $PROFILE --include_logging=$WITH_LOGGING
-    "$xmake" "$@"
-done
+if [[ "$(uname)" == "Darwin" ]]; then
+  log-8601-local "Building for macOS universal binary..."
+  "$xmake" f -m $PROFILE --include_logging=$WITH_LOGGING
+  "$xmake" "$@"
+else
+  # Build projects for each arch
+  for arch in "${ARCHS[@]}"
+  do
+      log-8601-local "Building for $arch..."
+      "$xmake" f -a $arch -m $PROFILE --include_logging=$WITH_LOGGING
+      "$xmake" "$@"
+  done
+fi
