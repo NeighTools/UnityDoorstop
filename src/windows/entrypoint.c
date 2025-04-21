@@ -138,6 +138,7 @@ void capture_mono_path(void *handle) {
 bool_t initialized = FALSE;
 void *WINAPI get_proc_address_detour(void *module, char *name) {
 #define REDIRECT_INIT(init_name, init_func, target, extra_init)                \
+    // If the lpProcName pointer contains an ordinal rather than a string, high-word value of the pointer is zero (see PR #66)
     if (HIWORD(name) && lstrcmpA(name, init_name) == 0) {                      \
         if (!initialized) {                                                    \
             initialized = TRUE;                                                \
