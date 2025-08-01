@@ -63,12 +63,38 @@ corlib_dir=""
 
 # Special case: program is launched via Steam
 # In that case rerun the script via their bootstrapper to ensure Steam overlay works
-if [ "$2" = "SteamLaunch" ]; then
-    steam="$1 $2 $3 $4 $0 $5"
-    shift 5
-    $steam "$@"
-    exit
-fi
+steam_arg_helper() {
+    if [ "$executable_name" != "" ] && [ "$1" != "${1%"$executable_name"}" ]; then
+        return 0
+    elif [ "$executable_name" = "" ] && [ "$1" != "${1%.x86_64}" ]; then
+        return 0
+    elif [ "$executable_name" = "" ] && [ "$1" != "${1%.x86}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+for a in "$@"; do
+    if [ "$a" = "SteamLaunch" ]; then
+        rotated=0; max=$#
+        while [ $rotated -lt $max ]; do
+            if steam_arg_helper "$1"; then
+                to_rotate=$(($# - rotated))
+                set -- "$@" "$0"
+                while [ $((to_rotate-=1)) -ge 0 ]; do
+                    set -- "$@" "$1"
+                    shift
+                done
+                exec "$@"
+            else
+                set -- "$@" "$1"
+                shift
+                rotated=$((rotated+1))
+            fi
+        done
+        exit 1
+    fi
+done
 
 # Handle first param being executable name
 if [ -x "$1" ] ; then
