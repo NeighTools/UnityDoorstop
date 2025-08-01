@@ -1,14 +1,12 @@
 #!/bin/sh
 # Doorstop start script
-# 
+#
 # Run the script to start the game with Doorstop enabled
 #
 # There are two ways to use this script
 #
 # 1. Via CLI: Run ./run.sh <path to game> [doorstop arguments] [game arguments]
 # 2. Via config: edit the options below and run ./run.sh without any arguments
-
-# 0 is false, 1 is true
 
 # LINUX: name of Unity executable
 # MACOS: name of the .app directory
@@ -19,6 +17,7 @@ executable_name=""
 # General Config Options
 
 # Enable Doorstop?
+# 0 is false, 1 is true
 enabled="1"
 
 # Path to the assembly to load and execute
@@ -135,7 +134,7 @@ abs_path() {
 }
 
 _readlink() {
-    # relative links with readlink (without -f) do not preserve the path info 
+    # relative links with readlink (without -f) do not preserve the path info
     ab_path="$(abs_path "$1")"
     link="$(readlink "${ab_path}")"
     case $link in
@@ -145,11 +144,10 @@ _readlink() {
     echo "$link"
 }
 
-
 resolve_executable_path () {
     e_path="$(abs_path "$1")"
-    
-    while [ -L "${e_path}" ]; do 
+
+    while [ -L "${e_path}" ]; do
         e_path=$(_readlink "${e_path}");
     done
     echo "${e_path}"
