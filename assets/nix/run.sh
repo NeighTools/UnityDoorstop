@@ -189,60 +189,70 @@ doorstop_bool() {
 }
 
 # Read from command line
-while :; do
+i=0; max=$#
+while [ $i -lt $max ]; do
     case "$1" in
         --doorstop_enabled) # For backwards compatibility. Renamed to --doorstop-enabled
             enabled="$(doorstop_bool "$2")"
             shift
+            i=$((i+1))
         ;;
         --doorstop_target_assembly) # For backwards compatibility. Renamed to --doorstop-target-assembly
             target_assembly="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-enabled)
             enabled="$(doorstop_bool "$2")"
             shift
+            i=$((i+1))
         ;;
         --doorstop-target-assembly)
             target_assembly="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-boot-config-override)
             boot_config_override="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-dll-search-path-override)
             dll_search_path_override="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-debug-enabled)
             debug_enable="$(doorstop_bool "$2")"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-debug-suspend)
             debug_suspend="$(doorstop_bool "$2")"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-debug-address)
             debug_address="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-clr-runtime-coreclr-path)
             coreclr_path="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-clr-corlib-dir)
             corlib_dir="$2"
             shift
+            i=$((i+1))
         ;;
         *)
-            if [ -z "$1" ]; then
-                break
-            fi
-            rest_args="$rest_args $1"
+            set -- "$@" "$1"
         ;;
     esac
     shift
+    i=$((i+1))
 done
 
 # Move variables to environment
@@ -275,5 +285,4 @@ else
     export DYLD_INSERT_LIBRARIES="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
 fi
 
-# shellcheck disable=SC2086
-exec "$executable_path" $rest_args
+exec "$executable_path" "$@"
