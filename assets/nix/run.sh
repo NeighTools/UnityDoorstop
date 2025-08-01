@@ -88,24 +88,23 @@ arch=""
 executable_path=""
 lib_extension=""
 
+abs_path() {
+    # Resolve relative path to absolute from BASEDIR
+    if [ "$1" = "${1#/}" ]; then
+        set -- "${BASEDIR}/${1}"
+    fi
+    echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+}
+
 # Set executable path and the extension to use for the libdoorstop shared object
 os_type="$(uname -s)"
 case ${os_type} in
     Linux*)
-        executable_path="${executable_name}"
-        # Handle relative paths
-        if [ "$executable_path" = "${executable_path#/}" ]; then
-            executable_path="${BASEDIR}/${executable_path}"
-        fi
+        executable_path="$(abs_path "$executable_name")"
         lib_extension="so"
     ;;
     Darwin*)
-        real_executable_name="${executable_name}"
-
-        # Handle relative directories
-        if [ "$real_executable_name" = "${real_executable_name#/}" ]; then
-            real_executable_name="${BASEDIR}/${real_executable_name}"
-        fi
+        real_executable_name="$(abs_path "$executable_name")"
 
         # If we're not even an actual executable, check .app Info for actual executable
         case $real_executable_name in
@@ -130,10 +129,6 @@ case ${os_type} in
         exit 1
     ;;
 esac
-
-abs_path() {
-    echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-}
 
 _readlink() {
     # relative links with readlink (without -f) do not preserve the path info
@@ -254,6 +249,8 @@ while [ $i -lt $max ]; do
     shift
     i=$((i+1))
 done
+
+target_assembly="$(abs_path "$target_assembly")"
 
 # Move variables to environment
 export DOORSTOP_ENABLED="$enabled"
