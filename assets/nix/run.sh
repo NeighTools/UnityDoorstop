@@ -73,7 +73,6 @@ fi
 # Handle first param being executable name
 if [ -x "$1" ] ; then
     executable_name="$1"
-    echo "Target executable: $1"
     shift
 fi
 
@@ -95,7 +94,7 @@ case ${os_type} in
     Linux*)
         executable_path="${executable_name}"
         # Handle relative paths
-        if ! echo "$executable_path" | grep "^/.*$"; then
+        if [ "$executable_path" = "${executable_path#/}" ]; then
             executable_path="${BASEDIR}/${executable_path}"
         fi
         lib_extension="so"
@@ -104,21 +103,24 @@ case ${os_type} in
         real_executable_name="${executable_name}"
 
         # Handle relative directories
-        if ! echo "$real_executable_name" | grep "^/.*$"; then
+        if [ "$real_executable_name" = "${real_executable_name#/}" ]; then
             real_executable_name="${BASEDIR}/${real_executable_name}"
         fi
 
         # If we're not even an actual executable, check .app Info for actual executable
-        if ! echo "$real_executable_name" | grep "^.*\.app/Contents/MacOS/.*"; then
-            # Add .app to the end if not given
-            if ! echo "$real_executable_name" | grep "^.*\.app$"; then
-                real_executable_name="${real_executable_name}.app"
-            fi
-            inner_executable_name=$(defaults read "${real_executable_name}/Contents/Info" CFBundleExecutable)
-            executable_path="${real_executable_name}/Contents/MacOS/${inner_executable_name}"
-        else
-            executable_path="${executable_name}"
-        fi
+        case $real_executable_name in
+            *.app/Contents/MacOS/*)
+                executable_path="${executable_name}"
+            ;;
+            *)
+                # Add .app to the end if not given
+                if [ "$real_executable_name" = "${real_executable_name%.app}" ]; then
+                    real_executable_name="${real_executable_name}.app"
+                fi
+                inner_executable_name=$(defaults read "${real_executable_name}/Contents/Info" CFBundleExecutable)
+                executable_path="${real_executable_name}/Contents/MacOS/${inner_executable_name}"
+            ;;
+        esac
         lib_extension="dylib"
     ;;
     *)
@@ -153,9 +155,8 @@ resolve_executable_path () {
     echo "${e_path}"
 }
 
-# Get absolute path of executable and show to user
+# Get absolute path of executable
 executable_path=$(resolve_executable_path "${executable_path}")
-echo "${executable_path}"
 
 # Figure out the arch of the executable with file
 file_out="$(LD_PRELOAD="" file -b "${executable_path}")"
