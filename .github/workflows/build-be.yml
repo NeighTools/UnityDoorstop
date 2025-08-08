@@ -48,15 +48,19 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
+      env:
+        XMAKE_ROOT: y
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Configure paths
         run: |
-          mkdir -p artifacts/{verbose,release,debug}/{x86,x64}
+          bash -c "mkdir -p artifacts/{verbose,release,debug}/{x86,x64}"
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib
+        run: apt-get update && apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib clang curl
       - name: Build Release
         run: |
           ./build.sh
