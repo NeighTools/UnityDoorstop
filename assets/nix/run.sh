@@ -92,6 +92,7 @@ for a in "$@"; do
                 rotated=$((rotated+1))
             fi
         done
+        echo 1>&2 "Please set executable_name to a valid name in a text editor"
         exit 1
     fi
 done
@@ -103,7 +104,7 @@ if [ -x "$1" ] ; then
 fi
 
 if [ -z "${executable_name}" ] || [ ! -x "${executable_name}" ]; then
-    echo "Please set executable_name to a valid name in a text editor or as the first command line parameter"
+    echo 1>&2 "Please set executable_name to a valid name in a text editor or as the first command line parameter"
     exit 1
 fi
 
@@ -150,8 +151,8 @@ case ${os_type} in
     ;;
     *)
         # alright whos running games on freebsd
-        echo "Unknown operating system ($(uname -s))"
-        echo "Make an issue at https://github.com/NeighTools/UnityDoorstop"
+        echo 1>&2 "Unknown operating system ($(uname -s))"
+        echo 1>&2 "Make an issue at https://github.com/NeighTools/UnityDoorstop"
         exit 1
     ;;
 esac
@@ -189,10 +190,10 @@ case "${file_out}" in
         arch="x86"
     ;;
     *)
-        echo "The executable \"${executable_path}\" is not compiled for x86 or x64 (might be ARM?)"
-        echo "If you think this is a mistake (or would like to encourage support for other architectures)"
-        echo "Please make an issue at https://github.com/NeighTools/UnityDoorstop"
-        echo "Got: ${file_out}"
+        echo 1>&2 "The executable \"${executable_path}\" is not compiled for x86 or x64 (might be ARM?)"
+        echo 1>&2 "If you think this is a mistake (or would like to encourage support for other architectures)"
+        echo 1>&2 "Please make an issue at https://github.com/NeighTools/UnityDoorstop"
+        echo 1>&2 "Got: ${file_out}"
         exit 1
     ;;
 esac
