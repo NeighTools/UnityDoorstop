@@ -6,7 +6,7 @@ function build_info()
         version = {
             major = 4,
             minor = 4,
-            patch = 0,
+            patch = 1,
             release = "",
         },
     }
