@@ -29,9 +29,13 @@ target("doorstop")
 
     if is_os("linux") or is_os("macosx") then
         add_files("src/nix/*.c")
-        add_files("src/nix/plthook/*.c")
+        -- Add platform-specific plthook files
+        if is_os("linux") then
+            add_files("src/nix/plthook/plthook_elf.c")
+        elseif is_os("macosx") then
+            add_files("src/nix/plthook/plthook_osx.c")
+        end
         add_links("dl")
-        --add_shflags("--no-as-needed",{force=true})
         if is_mode("debug") then
             set_symbols("debug")
             set_optimize("none")
@@ -71,3 +75,73 @@ target("doorstop")
         io.writefile(path.join(target:targetdir(), ".doorstop_version"),
             info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
     end)
+
+    if is_os("macosx") then
+        -- Build x86_64 binary
+        target("doorstop_x86_64")
+            add_options("include_logging")
+            set_kind("shared")
+            set_arch("x86_64")
+            set_optimize("smallest")
+            add_files("src/*.c")
+            add_files("src/config/*.c")
+            add_files("src/util/*.c")
+            add_files("src/runtimes/*.c")
+            add_files("src/nix/*.c")
+            add_files("src/nix/plthook/plthook_osx.c")  -- macOS-specific
+            add_links("dl")
+            if is_mode("debug") then
+                set_symbols("debug")
+                set_optimize("none")
+            end
+            
+            after_build(function(target)
+                io.writefile(path.join(target:targetdir(), ".doorstop_version"),
+                    info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
+            end)
+
+        -- Build arm64 binary
+        target("doorstop_arm64")
+            add_options("include_logging")
+            set_kind("shared")
+            set_arch("arm64")
+            set_optimize("smallest")
+            add_files("src/*.c")
+            add_files("src/config/*.c")
+            add_files("src/util/*.c")
+            add_files("src/runtimes/*.c")
+            add_files("src/nix/*.c")
+            add_files("src/nix/plthook/plthook_osx.c")  -- macOS-specific
+            add_links("dl")
+            if is_mode("debug") then
+                set_symbols("debug")
+                set_optimize("none")
+            end
+
+            
+            after_build(function(target)
+                local build_mode = is_mode("debug") and "debug" or "release"
+                local targetdir = target:targetdir()
+                
+                -- Write version file for this target
+                io.writefile(path.join(targetdir, ".doorstop_version"),
+                    info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
+                
+                -- Give time for both builds to finish (workaround)
+                os.execv("sleep", {"5"})
+                
+                -- Create universal binary directory
+                local universal_dir = path.join(targetdir, "..", "..", "universal", build_mode)
+                os.mkdir(universal_dir)
+                
+                -- Combine the binaries into a Universal Binary
+                os.execv("lipo", {"-create", "-output", 
+                    path.join(universal_dir, "libdoorstop.dylib"), 
+                    path.join(targetdir, "..", "..", "x86_64", build_mode, "libdoorstop_x86_64.dylib"), 
+                    path.join(targetdir, "libdoorstop_arm64.dylib")})
+                
+                -- Copy version file to universal directory
+                os.cp(path.join(targetdir, ".doorstop_version"), 
+                      path.join(universal_dir, ".doorstop_version"))
+            end)
+    end
