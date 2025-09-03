@@ -8,7 +8,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Configure paths
         run: |
           New-Item -ItemType Directory -Force -Path ./artifacts/release/x64
@@ -34,27 +34,33 @@ jobs:
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x86/doorstop_config.ini
       - name: Upload Release
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_win_release
           path: artifacts/release
+          include-hidden-files: true
       - name: Upload Verbose
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_win_verbose
           path: artifacts/verbose
+          include-hidden-files: true
 
   build-linux:
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04
+      env:
+        XMAKE_ROOT: y
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Configure paths
         run: |
-          mkdir -p artifacts/{verbose,release,debug}/{x86,x64}
+          bash -c "mkdir -p artifacts/{verbose,release,debug}/{x86,x64}"
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib
+        run: apt-get update && apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib clang curl
       - name: Build Release
         run: |
           ./build.sh
@@ -83,27 +89,30 @@ jobs:
           cp assets/nix/run.sh artifacts/debug/x86/run.sh
           cp assets/nix/run.sh artifacts/debug/x64/run.sh
       - name: Upload Release
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_linux_release
           path: artifacts/release
+          include-hidden-files: true
       - name: Upload Verbose
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_linux_verbose
           path: artifacts/verbose
+          include-hidden-files: true
       - name: Upload Debug
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_linux_debug
           path: artifacts/debug
+          include-hidden-files: true
 
   build-macos:
     runs-on: macos-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Configure paths
         run: |
           mkdir -p artifacts/{verbose,release,debug}/universal
@@ -126,20 +135,23 @@ jobs:
           cp build/macosx/universal/debug/.doorstop_version artifacts/debug/universal/.doorstop_version
           cp assets/nix/run.sh artifacts/debug/universal/run.sh
       - name: Upload Release
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_macos_release
           path: artifacts/release
+          include-hidden-files: true
       - name: Upload Verbose
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_macos_verbose
           path: artifacts/verbose
+          include-hidden-files: true
       - name: Upload Debug
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: doorstop_macos_debug
           path: artifacts/debug
+          include-hidden-files: true
 
   collect:
     runs-on: ubuntu-latest
@@ -151,7 +163,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3.0.0
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Grab version

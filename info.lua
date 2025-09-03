@@ -5,8 +5,8 @@ function build_info()
         organization = "NeighTools",
         version = {
             major = 4,
-            minor = 3,
-            patch = 0,
+            minor = 4,
+            patch = 1,
             release = "",
         },
     }

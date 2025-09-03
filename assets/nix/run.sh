@@ -1,14 +1,12 @@
 #!/bin/sh
 # Doorstop start script
-# 
+#
 # Run the script to start the game with Doorstop enabled
 #
 # There are two ways to use this script
 #
 # 1. Via CLI: Run ./run.sh <path to game> [doorstop arguments] [game arguments]
 # 2. Via config: edit the options below and run ./run.sh without any arguments
-
-# 0 is false, 1 is true
 
 # LINUX: name of Unity executable
 # MACOS: name of the .app directory
@@ -19,6 +17,7 @@ executable_name=""
 # General Config Options
 
 # Enable Doorstop?
+# 0 is false, 1 is true
 enabled="1"
 
 # Path to the assembly to load and execute
@@ -64,22 +63,48 @@ corlib_dir=""
 
 # Special case: program is launched via Steam
 # In that case rerun the script via their bootstrapper to ensure Steam overlay works
-if [ "$2" = "SteamLaunch" ]; then
-    steam="$1 $2 $3 $4 $0 $5"
-    shift 5
-    $steam "$@"
-    exit
-fi
+steam_arg_helper() {
+    if [ "$executable_name" != "" ] && [ "$1" != "${1%"$executable_name"}" ]; then
+        return 0
+    elif [ "$executable_name" = "" ] && [ "$1" != "${1%.x86_64}" ]; then
+        return 0
+    elif [ "$executable_name" = "" ] && [ "$1" != "${1%.x86}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+for a in "$@"; do
+    if [ "$a" = "SteamLaunch" ]; then
+        rotated=0; max=$#
+        while [ $rotated -lt $max ]; do
+            if steam_arg_helper "$1"; then
+                to_rotate=$(($# - rotated))
+                set -- "$@" "$0"
+                while [ $((to_rotate-=1)) -ge 0 ]; do
+                    set -- "$@" "$1"
+                    shift
+                done
+                exec "$@"
+            else
+                set -- "$@" "$1"
+                shift
+                rotated=$((rotated+1))
+            fi
+        done
+        echo "Please set executable_name to a valid name in a text editor" 1>&2
+        exit 1
+    fi
+done
 
 # Handle first param being executable name
 if [ -x "$1" ] ; then
     executable_name="$1"
-    echo "Target executable: $1"
     shift
 fi
 
 if [ -z "${executable_name}" ] || [ ! -x "${executable_name}" ]; then
-    echo "Please set executable_name to a valid name in a text editor or as the first command line parameter"
+    echo "Please set executable_name to a valid name in a text editor or as the first command line parameter" 1>&2
     exit 1
 fi
 
@@ -90,52 +115,50 @@ arch=""
 executable_path=""
 lib_extension=""
 
+abs_path() {
+    # Resolve relative path to absolute from BASEDIR
+    if [ "$1" = "${1#/}" ]; then
+        set -- "${BASEDIR}/${1}"
+    fi
+    echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+}
+
 # Set executable path and the extension to use for the libdoorstop shared object
 os_type="$(uname -s)"
 case ${os_type} in
     Linux*)
-        executable_path="${executable_name}"
-        # Handle relative paths
-        if ! echo "$executable_path" | grep "^/.*$"; then
-            executable_path="${BASEDIR}/${executable_path}"
-        fi
+        executable_path="$(abs_path "$executable_name")"
         lib_extension="so"
     ;;
     Darwin*)
-        real_executable_name="${executable_name}"
-
-        # Handle relative directories
-        if ! echo "$real_executable_name" | grep "^/.*$"; then
-            real_executable_name="${BASEDIR}/${real_executable_name}"
-        fi
+        real_executable_name="$(abs_path "$executable_name")"
 
         # If we're not even an actual executable, check .app Info for actual executable
-        if ! echo "$real_executable_name" | grep "^.*\.app/Contents/MacOS/.*"; then
-            # Add .app to the end if not given
-            if ! echo "$real_executable_name" | grep "^.*\.app$"; then
-                real_executable_name="${real_executable_name}.app"
-            fi
-            inner_executable_name=$(defaults read "${real_executable_name}/Contents/Info" CFBundleExecutable)
-            executable_path="${real_executable_name}/Contents/MacOS/${inner_executable_name}"
-        else
-            executable_path="${executable_name}"
-        fi
+        case $real_executable_name in
+            *.app/Contents/MacOS/*)
+                executable_path="${executable_name}"
+            ;;
+            *)
+                # Add .app to the end if not given
+                if [ "$real_executable_name" = "${real_executable_name%.app}" ]; then
+                    real_executable_name="${real_executable_name}.app"
+                fi
+                inner_executable_name=$(defaults read "${real_executable_name}/Contents/Info" CFBundleExecutable)
+                executable_path="${real_executable_name}/Contents/MacOS/${inner_executable_name}"
+            ;;
+        esac
         lib_extension="dylib"
     ;;
     *)
         # alright whos running games on freebsd
-        echo "Unknown operating system ($(uname -s))"
-        echo "Make an issue at https://github.com/NeighTools/UnityDoorstop"
+        echo "Unknown operating system ($(uname -s))" 1>&2
+        echo "Make an issue at https://github.com/NeighTools/UnityDoorstop" 1>&2
         exit 1
     ;;
 esac
 
-abs_path() {
-    echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
-}
-
 _readlink() {
-    # relative links with readlink (without -f) do not preserve the path info 
+    # relative links with readlink (without -f) do not preserve the path info
     ab_path="$(abs_path "$1")"
     link="$(readlink "${ab_path}")"
     case $link in
@@ -145,19 +168,17 @@ _readlink() {
     echo "$link"
 }
 
-
 resolve_executable_path () {
     e_path="$(abs_path "$1")"
-    
-    while [ -L "${e_path}" ]; do 
+
+    while [ -L "${e_path}" ]; do
         e_path=$(_readlink "${e_path}");
     done
     echo "${e_path}"
 }
 
-# Get absolute path of executable and show to user
+# Get absolute path of executable
 executable_path=$(resolve_executable_path "${executable_path}")
-echo "${executable_path}"
 
 # Figure out the arch of the executable with file
 file_out="$(LD_PRELOAD="" file -b "${executable_path}")"
@@ -169,10 +190,10 @@ case "${file_out}" in
         arch="x86"
     ;;
     *)
-        echo "The executable \"${executable_path}\" is not compiled for x86 or x64 (might be ARM?)"
-        echo "If you think this is a mistake (or would like to encourage support for other architectures)"
-        echo "Please make an issue at https://github.com/NeighTools/UnityDoorstop"
-        echo "Got: ${file_out}"
+        echo "The executable \"${executable_path}\" is not compiled for x86 or x64 (might be ARM?)" 1>&2
+        echo "If you think this is a mistake (or would like to encourage support for other architectures)" 1>&2
+        echo "Please make an issue at https://github.com/NeighTools/UnityDoorstop" 1>&2
+        echo "Got: ${file_out}" 1>&2
         exit 1
     ;;
 esac
@@ -190,53 +211,73 @@ doorstop_bool() {
 }
 
 # Read from command line
-while :; do
+i=0; max=$#
+while [ $i -lt $max ]; do
     case "$1" in
-        --doorstop_enabled)
+        --doorstop_enabled) # For backwards compatibility. Renamed to --doorstop-enabled
             enabled="$(doorstop_bool "$2")"
             shift
+            i=$((i+1))
         ;;
-        --doorstop_target_assembly)
+        --doorstop_target_assembly) # For backwards compatibility. Renamed to --doorstop-target-assembly
             target_assembly="$2"
             shift
+            i=$((i+1))
+        ;;
+        --doorstop-enabled)
+            enabled="$(doorstop_bool "$2")"
+            shift
+            i=$((i+1))
+        ;;
+        --doorstop-target-assembly)
+            target_assembly="$2"
+            shift
+            i=$((i+1))
         ;;
         --doorstop-boot-config-override)
             boot_config_override="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-dll-search-path-override)
             dll_search_path_override="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-debug-enabled)
             debug_enable="$(doorstop_bool "$2")"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-debug-suspend)
             debug_suspend="$(doorstop_bool "$2")"
             shift
+            i=$((i+1))
         ;;
         --doorstop-mono-debug-address)
             debug_address="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-clr-runtime-coreclr-path)
             coreclr_path="$2"
             shift
+            i=$((i+1))
         ;;
         --doorstop-clr-corlib-dir)
             corlib_dir="$2"
             shift
+            i=$((i+1))
         ;;
         *)
-            if [ -z "$1" ]; then
-                break
-            fi
-            rest_args="$rest_args $1"
+            set -- "$@" "$1"
         ;;
     esac
     shift
+    i=$((i+1))
 done
+
+target_assembly="$(abs_path "$target_assembly")"
 
 # Move variables to environment
 export DOORSTOP_ENABLED="$enabled"
@@ -268,5 +309,4 @@ else
     export DYLD_INSERT_LIBRARIES="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
 fi
 
-# shellcheck disable=SC2086
-exec "$executable_path" $rest_args
+exec "$executable_path" "$@"

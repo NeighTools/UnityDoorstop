@@ -225,26 +225,11 @@ void *init_mono(const char *root_domain_name, const char *runtime_version) {
     }
 
     void *domain = NULL;
-    if (mono_is_net35) {
-        if (config.mono_debug_enabled && !debugger_already_enabled) {
-            LOG("Detected mono debugger is not initialized; initialized it");
-            mono.debug_init(MONO_DEBUG_FORMAT_MONO);
-        }
-
-        domain = mono.jit_init_version(root_domain_name, runtime_version);
-
-        if (config.mono_debug_enabled && !debugger_already_enabled) {
-            mono.debug_domain_create(domain);
-        }
-    } else {
-        domain = mono.jit_init_version(root_domain_name, runtime_version);
-
-        if (config.mono_debug_enabled && !debugger_already_enabled) {
-            LOG("Detected mono debugger is not initialized; initialized it");
-            mono.debug_init(MONO_DEBUG_FORMAT_MONO);
-            mono.debug_domain_create(domain);
-        }
+    if (config.mono_debug_enabled && !debugger_already_enabled) {
+        LOG("Detected mono debugger is not initialized; initialized it");
+        mono.debug_init(MONO_DEBUG_FORMAT_MONO);
     }
+    domain = mono.jit_init_version(root_domain_name, runtime_version);
 
     mono_doorstop_bootstrap(domain);
 
