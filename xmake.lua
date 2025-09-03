@@ -8,6 +8,7 @@ option("include_logging")
     set_description("Include verbose logging on run")
     add_defines("VERBOSE")
 
+
 target("doorstop")
     set_kind("shared")
     set_optimize("smallest")
