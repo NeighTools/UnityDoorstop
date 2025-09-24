@@ -324,7 +324,7 @@ if [ -n "${is_apple_silicon}" ]; then
     # the executable is universal, supporting both x86_64 and arm64, MacOs will still run it as x86_64
     # if the parent process is running as x86.
     # arch also strips the DYLD_INSERT_LIBRARIES env var so we have to pass that in manually
-    arch -e DYLD_INSERT_LIBRARIES="${DYLD_INSERT_LIBRARIES}" "$executable_path" "$@"
+    exec arch -e DYLD_INSERT_LIBRARIES="${DYLD_INSERT_LIBRARIES}" "$executable_path" "$@"
 else
     exec "$executable_path" "$@"
 fi
