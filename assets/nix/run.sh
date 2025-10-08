@@ -103,11 +103,6 @@ if [ -x "$1" ] ; then
     shift
 fi
 
-if [ -z "${executable_name}" ] || [ ! -x "${executable_name}" ]; then
-    echo "Please set executable_name to a valid name in a text editor or as the first command line parameter" 1>&2
-    exit 1
-fi
-
 # Use POSIX-compatible way to get the directory of the executable
 a="/$0"; a=${a%/*}; a=${a#/}; a=${a:-.}; BASEDIR=$(cd "$a" || exit; pwd -P)
 
@@ -123,16 +118,21 @@ abs_path() {
     echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 }
 
+real_executable_name="$(abs_path "$executable_name")"
+
+if [ -z "${executable_name}" ] || [ ! -x "${real_executable_name}" ]; then
+    echo "Please set executable_name to a valid name in a text editor or as the first command line parameter" 1>&2
+    exit 1
+fi
+
 # Set executable path and the extension to use for the libdoorstop shared object
 os_type="$(uname -s)"
 case ${os_type} in
     Linux*)
-        executable_path="$(abs_path "$executable_name")"
+        executable_path="$real_executable_name"
         lib_extension="so"
     ;;
     Darwin*)
-        real_executable_name="$(abs_path "$executable_name")"
-
         # If we're not even an actual executable, check .app Info for actual executable
         case $real_executable_name in
             *.app/Contents/MacOS/*)
