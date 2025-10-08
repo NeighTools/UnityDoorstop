@@ -37,6 +37,7 @@ void load_config() {
     get_env_bool("DOORSTOP_MONO_DEBUG_SUSPEND", &config.mono_debug_suspend);
     try_get_env("DOORSTOP_MONO_DEBUG_ADDRESS", TEXT("127.0.0.1:10000"),
                 &config.mono_debug_address);
+    get_env_path("DOORSTOP_TARGET_NATIVE_ASSEMBLY", &config.target_native_library);
     get_env_path("DOORSTOP_TARGET_ASSEMBLY", &config.target_assembly);
     get_env_path("DOORSTOP_BOOT_CONFIG_OVERRIDE", &config.boot_config_override);
     try_get_env("DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE", TEXT(""),
@@ -52,6 +53,7 @@ void load_config() {
     LOG("DOORSTOP_MONO_DEBUG_ENABLED: %d", config.mono_debug_enabled);
     LOG("DOORSTOP_MONO_DEBUG_SUSPEND: %d", config.mono_debug_suspend);
     LOG("DOORSTOP_MONO_DEBUG_ADDRESS: %s", config.mono_debug_address);
+    LOG("DOORSTOP_TARGET_NATIVE_ASSEMBLY: %s", config.target_native_library);
     LOG("DOORSTOP_TARGET_ASSEMBLY: %s", config.target_assembly);
     LOG("DOORSTOP_BOOT_CONFIG_OVERRIDE: %s", config.boot_config_override);
     LOG("DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE: %s",

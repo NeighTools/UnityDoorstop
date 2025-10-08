@@ -36,6 +36,11 @@ typedef struct {
     char_t *target_assembly;
 
     /**
+     * @brief Path to a unmanaged assembly to invoke.
+     */
+    char_t *target_native_library;
+
+    /**
      * @brief Path to a custom boot.config file to use. If enabled, this file
      * takes precedence over the default one in the Data folder.
      */

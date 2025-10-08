@@ -284,6 +284,12 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     redirect_output_log(paths);
 
+    if (!file_exists(config.target_native_library) &&
+        config.target_native_library != NULL) {
+        LOG("Could not find target native library!");
+        config.enabled = FALSE;
+    }
+
     if (!file_exists(config.target_assembly)) {
         LOG("Could not find target assembly!");
         config.enabled = FALSE;

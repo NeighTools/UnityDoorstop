@@ -24,6 +24,11 @@ enabled="1"
 # NOTE: The entrypoint must be of format `static void Doorstop.Entrypoint.Start()`
 target_assembly="Doorstop.dll"
 
+# Path to the unmanaged assembly to load and execute. its works like a ASI loader
+# It will try to call PluginMain, Start, or DllMain in that order if they exist
+# NOTE: This is optional, if not set, no native library will be loaded
+target_native_library=
+
 # Overrides the default boot.config file path
 boot_config_override=
 

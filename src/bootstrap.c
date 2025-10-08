@@ -1,4 +1,4 @@
-#include "bootstrap.h"
+﻿#include "bootstrap.h"
 #include "config/config.h"
 #include "crt.h"
 #include "runtimes/coreclr.h"
@@ -42,6 +42,45 @@ void mono_doorstop_bootstrap(void *mono_domain) {
         free(config_path_n);
         free(folder_path_n);
 #undef CONFIG_EXT
+    }
+
+    setenv(TEXT("DOORSTOP_INVOKE_NATIVE_DLL_PATH"), config.target_native_library, TRUE);
+
+    if (config.target_native_library && config.target_native_library[0] != '\0') {
+        LOG("Native plug‑in configured: %s", config.target_native_library);
+        void *native_handle = dlopen(config.target_native_library, 0);
+        if (!native_handle) {
+            LOG("Failed to load native library: %s",
+                config.target_native_library);
+        } else {
+            typedef void (*plugin_main_t)(void);
+            plugin_main_t pluginMain =
+                (plugin_main_t)dlsym(native_handle, "PluginMain");
+            if (!pluginMain) {
+                pluginMain = (plugin_main_t)dlsym(native_handle, "Start");
+            }
+#ifdef _WIN32
+            if (!pluginMain) {
+                // As a last resort on Windows, manually invoke DllMain with
+                // DLL_PROCESS_ATTACH.
+                typedef BOOL(WINAPI * DllMain_t)(HMODULE, DWORD, LPVOID);
+                DllMain_t dllMain = (DllMain_t)dlsym(native_handle, "DllMain");
+                if (dllMain) {
+                    HMODULE mod = (HMODULE)native_handle;
+                    LOG("Calling DllMain for %s", config.target_native_library);
+                    dllMain(mod, DLL_PROCESS_ATTACH, NULL);
+                }
+            }
+#endif
+            if (pluginMain) {
+                LOG("Calling native entrypoint for %s",
+                    config.target_native_library);
+                pluginMain();
+            } else {
+                LOG("No PluginMain/Start/DllMain found in %s",
+                    config.target_native_library);
+            }
+        }
     }
 
     setenv(TEXT("DOORSTOP_INVOKE_DLL_PATH"), config.target_assembly, TRUE);

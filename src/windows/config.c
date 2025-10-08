@@ -69,6 +69,8 @@ static inline void init_config_file() {
                    TEXT("false"), &config.ignore_disabled_env);
     load_bool_file(config_path, TEXT("General"), TEXT("redirect_output_log"),
                    TEXT("false"), &config.redirect_output_log);
+    load_path_file(config_path, TEXT("General"), TEXT("target_native_library"),
+                   NULL, &config.target_native_library);
     load_path_file(config_path, TEXT("General"), TEXT("target_assembly"),
                    DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
     load_path_file(config_path, TEXT("General"), TEXT("boot_config_override"),
