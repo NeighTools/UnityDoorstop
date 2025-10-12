@@ -2,17 +2,17 @@
 #define LOGGER_NIX_H
 #if VERBOSE
 
-#define LOG(message, ...) printf("[Doorstop] " message "\n", ##__VA_ARGS__)
+#define LOG(message, ...) fprintf(stderr, "[Doorstop] " message "\n", ##__VA_ARGS__)
 
 #define ASSERT_F(test, message, ...)                                           \
     if (!(test)) {                                                             \
-        printf("[Doorstop][Fatal] " message "\n", ##__VA_ARGS__);              \
+        fprintf(stderr, "[Doorstop][Fatal] " message "\n", ##__VA_ARGS__);     \
         exit(1);                                                               \
     }
 
 #define ASSERT(test, message)                                                  \
     if (!(test)) {                                                             \
-        printf("[Doorstop][Fatal] " message "\n");                             \
+        fprintf(stderr, "[Doorstop][Fatal] " message "\n");                    \
         exit(1);                                                               \
     }
 
