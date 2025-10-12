@@ -287,6 +287,7 @@ target_assembly="$(abs_path "$target_assembly")"
 # Move variables to environment
 export DOORSTOP_ENABLED="$enabled"
 export DOORSTOP_TARGET_ASSEMBLY="$target_assembly"
+export DOORSTOP_TARGET_NATIVE_ASSEMBLY="$target_native_library"
 export DOORSTOP_BOOT_CONFIG_OVERRIDE="$boot_config_override"
 export DOORSTOP_IGNORE_DISABLED_ENV="$ignore_disable_switch"
 export DOORSTOP_MONO_DLL_SEARCH_PATH_OVERRIDE="$dll_search_path_override"
