@@ -123,7 +123,7 @@ abs_path() {
     echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 }
 
-# Set executable path and the extension to use for the libdoorstop shared object
+# Set executable path and the extension to use for the libdoorstop shared object as well as check whether we're running on Apple Silicon
 os_type="$(uname -s)"
 case ${os_type} in
     Linux*)
@@ -148,6 +148,14 @@ case ${os_type} in
             ;;
         esac
         lib_extension="dylib"
+
+        # CPUs for Apple Silicon are in the format "Apple M.."
+        cpu_type="$(sysctl -n machdep.cpu.brand_string)"
+        case "${cpu_type}" in
+            Apple*)
+                is_apple_silicon=1
+            ;;
+        esac
     ;;
     *)
         # alright whos running games on freebsd
@@ -309,4 +317,14 @@ else
     export DYLD_INSERT_LIBRARIES="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
 fi
 
-exec "$executable_path" "$@"
+if [ -n "${is_apple_silicon}" ]; then
+    export ARCHPREFERENCE="arm64,x86_64"
+
+    # We need to use arch for Apple Silicon to allow the executable to be run natively as otherwise if
+    # the executable is universal, supporting both x86_64 and arm64, MacOs will still run it as x86_64
+    # if the parent process is running as x86.
+    # arch also strips the DYLD_INSERT_LIBRARIES env var so we have to pass that in manually
+    exec arch -e DYLD_INSERT_LIBRARIES="${DYLD_INSERT_LIBRARIES}" "$executable_path" "$@"
+else
+    exec "$executable_path" "$@"
+fi
