@@ -60,6 +60,7 @@ corlib_dir=""
 
 ################################################################################
 # Everything past this point is the actual script
+set -e
 
 # Special case: program is launched via Steam
 # In that case rerun the script via their bootstrapper to ensure Steam overlay works
