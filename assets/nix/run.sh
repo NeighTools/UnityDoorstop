@@ -198,6 +198,11 @@ case "${file_out}" in
         echo "More info: https://docs.bepinex.dev/articles/advanced/steam_interop.html#protonwine" 1>&2
         exit 1
     ;;
+    *shell\ script*)
+        # Fallback for games that launch a shell script from Steam
+        # default to x64, change as needed
+        arch="x64"
+    ;;
     *64-bit*)
         arch="x64"
     ;;
