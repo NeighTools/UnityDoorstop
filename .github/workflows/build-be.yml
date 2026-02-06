@@ -24,6 +24,7 @@ jobs:
           Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/release/x86/.doorstop_version
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x86/doorstop_config.ini
+          Copy-Item -Path ./LICENSE -Destination ./artifacts/release/LICENSE
       - name: Build Verbose
         run: |
           ./build.ps1 -with_logging
@@ -33,6 +34,7 @@ jobs:
           Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/verbose/x86/.doorstop_version
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x86/doorstop_config.ini
+          Copy-Item -Path ./LICENSE -Destination ./artifacts/verbose/LICENSE
       - name: Upload Release
         uses: actions/upload-artifact@v4
         with:
@@ -70,6 +72,7 @@ jobs:
           cp build/linux/x64/release/.doorstop_version artifacts/release/x64/.doorstop_version
           cp assets/nix/run.sh artifacts/release/x86/run.sh
           cp assets/nix/run.sh artifacts/release/x64/run.sh
+          cp LICENSE artifacts/release/LICENSE
       - name: Build Verbose
         run: |
           ./build.sh -with_logging
@@ -79,6 +82,7 @@ jobs:
           cp build/linux/x86/release/.doorstop_version artifacts/verbose/x64/.doorstop_version
           cp assets/nix/run.sh artifacts/verbose/x86/run.sh
           cp assets/nix/run.sh artifacts/verbose/x64/run.sh
+          cp LICENSE artifacts/verbose/LICENSE
       - name: Build Debug
         run: |
           ./build.sh -with_logging -debug
@@ -88,6 +92,7 @@ jobs:
           cp build/linux/x64/debug/.doorstop_version artifacts/debug/x64/.doorstop_version
           cp assets/nix/run.sh artifacts/debug/x86/run.sh
           cp assets/nix/run.sh artifacts/debug/x64/run.sh
+          cp LICENSE artifacts/debug/LICENSE
       - name: Upload Release
         uses: actions/upload-artifact@v4
         with:
@@ -122,18 +127,21 @@ jobs:
           cp build/macosx/universal/release/libdoorstop.dylib artifacts/release/universal/libdoorstop.dylib
           cp build/macosx/universal/release/.doorstop_version artifacts/release/universal/.doorstop_version
           cp assets/nix/run.sh artifacts/release/universal/run.sh
+          cp LICENSE artifacts/release/LICENSE
       - name: Build Verbose
         run: |
           ./build.sh -with_logging
           cp build/macosx/universal/release/libdoorstop.dylib artifacts/verbose/universal/libdoorstop.dylib
           cp build/macosx/universal/release/.doorstop_version artifacts/verbose/universal/.doorstop_version
           cp assets/nix/run.sh artifacts/verbose/universal/run.sh
+          cp LICENSE artifacts/verbose/LICENSE
       - name: Build Debug
         run: |
           ./build.sh -with_logging -debug
           cp build/macosx/universal/debug/libdoorstop.dylib artifacts/debug/universal/libdoorstop.dylib
           cp build/macosx/universal/debug/.doorstop_version artifacts/debug/universal/.doorstop_version
           cp assets/nix/run.sh artifacts/debug/universal/run.sh
+          cp LICENSE artifacts/debug/LICENSE
       - name: Upload Release
         uses: actions/upload-artifact@v4
         with:
