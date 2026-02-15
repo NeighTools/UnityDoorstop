@@ -19,8 +19,10 @@ jobs:
         run: |
           ./build.ps1
           Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/release/x64/winhttp.dll
+          Copy-Item -Path ./build/windows/x64/release/doorstop.pdb -Destination ./artifacts/release/x64/winhttp.pdb
           Copy-Item -Path ./build/windows/x64/release/.doorstop_version -Destination ./artifacts/release/x64/.doorstop_version
           Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/release/x86/winhttp.dll
+          Copy-Item -Path ./build/windows/x86/release/doorstop.pdb -Destination ./artifacts/release/x86/winhttp.pdb
           Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/release/x86/.doorstop_version
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x86/doorstop_config.ini
@@ -29,8 +31,10 @@ jobs:
         run: |
           ./build.ps1 -with_logging
           Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/verbose/x64/winhttp.dll
+          Copy-Item -Path ./build/windows/x64/release/doorstop.pdb -Destination ./artifacts/verbose/x64/winhttp.pdb
           Copy-Item -Path ./build/windows/x64/release/.doorstop_version -Destination ./artifacts/verbose/x64/.doorstop_version
           Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/verbose/x86/winhttp.dll
+          Copy-Item -Path ./build/windows/x86/release/doorstop.pdb -Destination ./artifacts/verbose/x86/winhttp.pdb
           Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/verbose/x86/.doorstop_version
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x86/doorstop_config.ini
