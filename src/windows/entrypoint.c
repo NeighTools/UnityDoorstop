@@ -284,8 +284,8 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     redirect_output_log(paths);
 
-    if (!file_exists(config.target_assembly)) {
-        LOG("Could not find target assembly!");
+    if (config.num_assemblies == 0) {
+        LOG("No target assemblies found — Doorstop disabled.");
         config.enabled = FALSE;
     }
 

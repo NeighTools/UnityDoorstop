@@ -1,5 +1,17 @@
 #include "wincrt.h"
 
+/* MSVC inserts a call to __chkstk for large stack frames (>= 4096 bytes).
+ * Since we link with -nodefaultlib, we must supply our own stub.
+ * The intrinsic probes stack pages so the OS can grow the stack;
+ * in our DLL context the stack is already large, so a no-op stub is safe. */
+#if defined(_M_X64) || defined(__x86_64__)
+#pragma comment(linker, "/EXPORT:__chkstk")
+void __chkstk(void) {}
+#elif defined(_M_IX86) || defined(__i386__)
+#pragma comment(linker, "/EXPORT:_chkstk")
+void _chkstk(void) {}
+#endif
+
 static HANDLE h_heap;
 
 void init_crt() { h_heap = GetProcessHeap(); }

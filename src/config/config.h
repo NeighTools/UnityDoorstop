@@ -31,9 +31,25 @@ typedef struct {
     bool_t ignore_disabled_env;
 
     /**
-     * @brief Path to a managed assembly to invoke.
+     * @brief Array of paths to managed assemblies to invoke.
+     *
+     * Populated by parse_target_assembly_string() from a semicolon-delimited
+     * target_assembly value in doorstop_config.ini. Supports plain file paths
+     * and directory paths (all .dll files in the directory are added).
      */
-    char_t *target_assembly;
+    char_t **target_assemblies;
+
+    /**
+     * @brief Number of assemblies in target_assemblies.
+     */
+    size_t num_assemblies;
+
+    /**
+     * @brief Index of the assembly currently being bootstrapped.
+     *
+     * Used by bootstrap.c to communicate which assembly is being loaded.
+     */
+    size_t assembly_index;
 
     /**
      * @brief Path to a custom boot.config file to use. If enabled, this file
@@ -92,4 +108,15 @@ extern void init_config_defaults();
  * @brief Clean up configuration.
  */
 extern void cleanup_config();
+
+/**
+ * @brief Parse the target_assembly config string into config.target_assemblies.
+ *
+ * Supports semicolon-separated paths. Each entry may be:
+ *   - A .dll file path (absolute or relative to CWD)
+ *   - A directory path — all *.dll files in that directory are added
+ *
+ * Populates config.target_assemblies and config.num_assemblies.
+ */
+void parse_target_assembly_string(char_t *target_assembly);
 #endif

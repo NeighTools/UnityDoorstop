@@ -4,7 +4,9 @@
 #include "../util/util.h"
 
 #define CONFIG_NAME TEXT("doorstop_config.ini")
+#define DEFAULT_PATH_SEPARATOR TEXT(";")
 #define DEFAULT_TARGET_ASSEMBLY TEXT("Doorstop.dll")
+#define MAX_ASSEMBLIES 256
 #define EXE_EXTENSION_LENGTH 4
 #define STR_EQUAL(str1, str2) (lstrcmpi(str1, str2) == 0)
 
@@ -57,6 +59,132 @@ void load_path_file(const char_t *path, const char_t *section,
     free(tmp);
 }
 
+/**
+ * Parse a semicolon-delimited target_assembly string into
+ * config.target_assemblies[].
+ *
+ * Each token may be:
+ *   - A .dll file path (absolute or relative to CWD)
+ *   - A directory path — all *.dll files inside are added
+ *
+ * No spaces around semicolons are allowed (trim if needed).
+ */
+void parse_target_assembly_string(char_t *target_assembly) {
+    LOG("Parsing target_assembly string for multiple paths / directories.");
+    config.num_assemblies = 0;
+    config.target_assemblies =
+        (char_t **)malloc(sizeof(char_t *) * MAX_ASSEMBLIES);
+
+    /* Build an absolute-path base from the current working directory so we can
+     * resolve relative paths. */
+    DWORD len_cwd = GetCurrentDirectory(0, NULL);
+    if (len_cwd == 0) {
+        LOG("WARNING: Unable to retrieve current directory. Cannot parse "
+            "target assembly/ies.");
+        return;
+    }
+    char_t full_path[MAX_PATH];
+    GetCurrentDirectory(len_cwd, full_path);
+    /* Append trailing backslash so we can strcpy the relative part directly. */
+    full_path[len_cwd - 1] = '\\';
+    full_path[len_cwd] = '\0';
+
+    char_t *current_token = target_assembly;
+    size_t start_index = 0;
+    char_t saved_char;
+
+    for (size_t src_index = 0;; src_index++) {
+        if (target_assembly[src_index] == ';' ||
+            target_assembly[src_index] == '\0') {
+
+            saved_char = target_assembly[src_index];
+            target_assembly[src_index] = '\0'; /* null-terminate token */
+
+            /* Only process tokens with at least 3 chars (e.g. "a.b") */
+            if (src_index - start_index > 2) {
+                char_t *entry = current_token;
+
+                /* If the path is relative (no drive letter), prepend CWD. */
+                if (entry[1] != ':') {
+                    strcpy(&full_path[len_cwd], entry);
+                    entry = full_path;
+                }
+
+                if (folder_exists(entry)) {
+                    /* Directory: add all *.dll files inside it. */
+                    LOG("--> searching directory: '%s'", entry);
+                    size_t entry_len = strlen(entry) + 1; /* includes NUL */
+
+                    char_t search_pattern[MAX_PATH];
+                    strcpy(search_pattern, entry);
+                    strcat(search_pattern, TEXT("\\*.dll"));
+
+                    WIN32_FIND_DATA find_data;
+                    HANDLE h_find =
+                        FindFirstFile(search_pattern, &find_data);
+                    while (h_find != INVALID_HANDLE_VALUE) {
+                        if (config.num_assemblies >= MAX_ASSEMBLIES) {
+                            LOG("WARNING: Maximum assembly count (%d) reached.",
+                                MAX_ASSEMBLIES);
+                            break;
+                        }
+                        config.target_assemblies[config.num_assemblies] =
+                            (char_t *)malloc(sizeof(char_t) * MAX_PATH);
+                        strcpy(config.target_assemblies[config.num_assemblies],
+                               entry);
+                        /* entry already ends without backslash; re-add it */
+                        config.target_assemblies[config.num_assemblies]
+                            [entry_len - 1] = '\\';
+                        config.target_assemblies[config.num_assemblies]
+                            [entry_len] = '\0';
+                        strcat(
+                            config.target_assemblies[config.num_assemblies],
+                            find_data.cFileName);
+                        LOG("   .. found assembly: '%s'",
+                            config.target_assemblies[config.num_assemblies]);
+                        config.num_assemblies++;
+
+                        if (FindNextFile(h_find, &find_data) == 0)
+                            break;
+                    }
+                    if (h_find != INVALID_HANDLE_VALUE)
+                        FindClose(h_find);
+
+                } else if (file_exists(entry)) {
+                    /* Plain file path. */
+                    if (config.num_assemblies >= MAX_ASSEMBLIES) {
+                        LOG("WARNING: Maximum assembly count (%d) reached.",
+                            MAX_ASSEMBLIES);
+                    } else {
+                        config.target_assemblies[config.num_assemblies] =
+                            (char_t *)malloc(sizeof(char_t) * MAX_PATH);
+                        strcpy(
+                            config.target_assemblies[config.num_assemblies],
+                            entry);
+                        LOG("--> added assembly: '%s'",
+                            config.target_assemblies[config.num_assemblies]);
+                        config.num_assemblies++;
+                    }
+                } else {
+                    LOG("Assembly / directory '%s' not found. Make sure there "
+                        "are no spaces around semicolons in target_assembly.",
+                        entry);
+                }
+            }
+
+            if (saved_char == '\0')
+                break;
+
+            /* Advance past the semicolon. */
+            current_token =
+                &target_assembly[(start_index = src_index + 1)];
+            full_path[len_cwd] = '\0'; /* reset relative-path suffix */
+        }
+    }
+
+    LOG("Parsed %d assembly path(s).", (int)config.num_assemblies);
+}
+
 static inline void init_config_file() {
     if (!file_exists(CONFIG_NAME))
         return;
@@ -69,8 +197,14 @@ static inline void init_config_file() {
                    TEXT("false"), &config.ignore_disabled_env);
     load_bool_file(config_path, TEXT("General"), TEXT("redirect_output_log"),
                    TEXT("false"), &config.redirect_output_log);
-    load_path_file(config_path, TEXT("General"), TEXT("target_assembly"),
-                   DEFAULT_TARGET_ASSEMBLY, &config.target_assembly);
+
+    char_t *target_assembly = NULL;
+    if (load_str_file(config_path, TEXT("General"), TEXT("target_assembly"),
+                      DEFAULT_TARGET_ASSEMBLY, &target_assembly)) {
+        parse_target_assembly_string(target_assembly);
+        free(target_assembly);
+    }
+
     load_path_file(config_path, TEXT("General"), TEXT("boot_config_override"),
                    NULL, &config.boot_config_override);
 
@@ -140,12 +274,20 @@ static inline void init_cmd_args() {
     if (parser(argv, &i, argc, name, &(dest)))                                 \
         continue;
 
+    char_t *target_assembly = NULL;
     for (int i = 0; i < argc; i++) {
         PARSE_ARG(TEXT("--doorstop-enabled"), config.enabled, load_bool_argv);
         PARSE_ARG(TEXT("--doorstop-redirect-output-log"),
                   config.redirect_output_log, load_bool_argv);
-        PARSE_ARG(TEXT("--doorstop-target-assembly"), config.target_assembly,
-                  load_path_argv);
+        if (load_str_argv(argv, &i, argc,
+                          TEXT("--doorstop-target-assembly"),
+                          &target_assembly)) {
+            /* Re-parse the whole assembly list whenever the arg is supplied. */
+            parse_target_assembly_string(target_assembly);
+            free(target_assembly);
+            target_assembly = NULL;
+            continue;
+        }
         PARSE_ARG(TEXT("--doorstop-boot-config-override"),
                   config.boot_config_override, load_path_argv);
 
