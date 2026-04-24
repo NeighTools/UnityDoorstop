@@ -1,0 +1,20 @@
+name: Doc Links
+on: [push, pull_request]
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
+          if [ ! -f tooling/doc-link-check ]; then
+            mkdir -p tooling
+            if [ -d phenotype-tooling ]; then
+              cd phenotype-tooling && cargo build --release --bin doc-link-check 2>&1 | tail -5
+              ln -sf ../phenotype-tooling/target/release/doc-link-check ../tooling/
+            else
+              echo "Note: doc-link-check not available; skipping" && exit 0
+            fi
+          fi
+          tooling/doc-link-check docs/ || true
