@@ -8,7 +8,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Configure paths
         run: |
           New-Item -ItemType Directory -Force -Path ./artifacts/release/x64
@@ -36,13 +36,13 @@ jobs:
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x86/doorstop_config.ini
           Copy-Item -Path ./LICENSE -Destination ./artifacts/verbose/LICENSE
       - name: Upload Release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_win_release
           path: artifacts/release
           include-hidden-files: true
       - name: Upload Verbose
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_win_verbose
           path: artifacts/verbose
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Configure paths
         run: |
           bash -c "mkdir -p artifacts/{verbose,release,debug}/{x86,x64}"
@@ -94,19 +94,19 @@ jobs:
           cp assets/nix/run.sh artifacts/debug/x64/run.sh
           cp LICENSE artifacts/debug/LICENSE
       - name: Upload Release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_linux_release
           path: artifacts/release
           include-hidden-files: true
       - name: Upload Verbose
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_linux_verbose
           path: artifacts/verbose
           include-hidden-files: true
       - name: Upload Debug
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_linux_debug
           path: artifacts/debug
@@ -117,7 +117,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: Configure paths
         run: |
           mkdir -p artifacts/{verbose,release,debug}/universal
@@ -143,19 +143,19 @@ jobs:
           cp assets/nix/run.sh artifacts/debug/universal/run.sh
           cp LICENSE artifacts/debug/LICENSE
       - name: Upload Release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_macos_release
           path: artifacts/release
           include-hidden-files: true
       - name: Upload Verbose
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_macos_verbose
           path: artifacts/verbose
           include-hidden-files: true
       - name: Upload Debug
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: doorstop_macos_debug
           path: artifacts/debug
@@ -171,7 +171,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           path: artifacts
       - name: Grab version
