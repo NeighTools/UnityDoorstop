@@ -43,6 +43,7 @@ target("doorstop")
     end
 
     if is_plat("windows") then
+        set_symbols("debug")
         add_cxflags("-GS-", "-Ob2", "-MT", "-GL-", "-FS")
         add_shflags("-nodefaultlib",
                     "-entry:DllEntry",
