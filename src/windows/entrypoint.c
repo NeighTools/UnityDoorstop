@@ -99,6 +99,7 @@ HANDLE WINAPI create_file_hook_narrow(
     LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
     DWORD dwFlagsAndAttributes, HANDLE hTemplateFile) {
     void *actual_file_name = lpFileName;
+    char *narrowed_boot_config_override = NULL;
 
     char_t *widened_filename = widen(lpFileName);
     char_t *normalised_path =
@@ -114,19 +115,24 @@ HANDLE WINAPI create_file_hook_narrow(
     }
 
     if (strcmpi(normalised_path, default_boot_config_path) == 0) {
-        char *narrowed_boot_config_override =
-            narrow(config.boot_config_override);
-        memcpy(actual_file_name, narrowed_boot_config_override,
-               strlen(config.boot_config_override));
-        free(narrowed_boot_config_override);
+        // Point at our own override buffer (mirrors create_file_hook). The old
+        // memcpy wrote the override into the caller's lpFileName buffer, which
+        // overflows it whenever the override path is longer than the original.
+        narrowed_boot_config_override = narrow(config.boot_config_override);
+        actual_file_name = narrowed_boot_config_override;
         LOG("Overriding boot.config to %s", actual_file_name);
     }
 
     free(normalised_path);
 
-    return CreateFileA(actual_file_name, dwDesiredAccess, dwShareMode,
-                       lpSecurityAttributes, dwCreationDisposition,
-                       dwFlagsAndAttributes, hTemplateFile);
+    HANDLE result = CreateFileA(actual_file_name, dwDesiredAccess, dwShareMode,
+                                lpSecurityAttributes, dwCreationDisposition,
+                                dwFlagsAndAttributes, hTemplateFile);
+
+    if (narrowed_boot_config_override)
+        free(narrowed_boot_config_override);
+
+    return result;
 }
 
 void capture_mono_path(void *handle) {
