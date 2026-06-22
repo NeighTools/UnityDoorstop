@@ -80,3 +80,8 @@ WinHttpWebSocketSend
 WinHttpWebSocketShutdown
 WinHttpWriteData
 WinHttpWriteProxySettings
+CreateDXGIFactory
+CreateDXGIFactory1
+CreateDXGIFactory2
+DXGIDeclareAdapterRemovalSupport
+DXGIGetDebugInterface1
