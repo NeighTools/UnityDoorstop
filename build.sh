@@ -10,6 +10,8 @@
 # Bomb out if anything goes wrong
 set -e
 
+# shellcheck disable=SC2034
+if true; then
 CBLACK="\033[0;30m"
 CRED="\033[0;31m"
 CGREEN="\033[0;32m"
@@ -29,29 +31,30 @@ PPINK="\001\033[0;35m\002"
 PCYAN="\001\033[0;36m\002"
 PWHITE="\001\033[0;37m\002"
 PDEFAULT="\001\033[0m\002"
+fi
 
 function echo-err { echo "$@" 1>&2; }
 
-function ask { echo -ne "${CYELLOW} $1: ${CDEFAULT}"; read ASK; export ASK; }
-function ask-default { echo -ne "${CYELLOW} $1 [$2]: ${CDEFAULT}"; read ASK; export ASK=${ASK:-$2}; }
-function ask-yes { echo -ne "${CYELLOW} $1 [Y/n]: ${CDEFAULT}"; read ASK; ASK="$(echo $ASK | tr '[:upper:]' '[:lower:]' | head -c 1)"; export ASK=${ASK:-y}; }
-function ask-no { echo -ne "${CYELLOW} $1 [y/N]: ${CDEFAULT}"; read ASK; ASK="$(echo $ASK | tr '[:upper:]' '[:lower:]' | head -c 1)"; export ASK=${ASK:-n}; }
-function ask-enter { echo -e "${CYELLOW} $1: [Press enter to continue]${CDEFAULT}" ; read; }
-function ask-password { echo -ne "${CYELLOW} $1: ${CDEFAULT}" ; read -s ASK; echo; }
+function ask { echo -ne "${CYELLOW} $1: ${CDEFAULT}"; read -r ASK; export ASK; }
+function ask-default { echo -ne "${CYELLOW} $1 [$2]: ${CDEFAULT}"; read -r ASK; export ASK=${ASK:-$2}; }
+function ask-yes { echo -ne "${CYELLOW} $1 [Y/n]: ${CDEFAULT}"; read -r ASK; ASK="$(echo "$ASK" | tr '[:upper:]' '[:lower:]' | head -c 1)"; export ASK=${ASK:-y}; }
+function ask-no { echo -ne "${CYELLOW} $1 [y/N]: ${CDEFAULT}"; read -r ASK; ASK="$(echo "$ASK" | tr '[:upper:]' '[:lower:]' | head -c 1)"; export ASK=${ASK:-n}; }
+function ask-enter { echo -e "${CYELLOW} $1: [Press enter to continue]${CDEFAULT}" ; read -r; }
+function ask-password { echo -ne "${CYELLOW} $1: ${CDEFAULT}" ; read -rs ASK; echo; }
 
-function msg-error { echo -e "${CRED}${@}${CDEFAULT}"; }
-function msg-info { echo -e "${CCYAN}${@}${CDEFAULT}"; }
-function msg-success { echo -e "${CGREEN}${@}${CDEFAULT}"; }
-function msg-dry { echo -e "${CPINK}${@}${CDEFAULT}"; }
+function msg-error { echo -e "${CRED}${*}${CDEFAULT}"; }
+function msg-info { echo -e "${CCYAN}${*}${CDEFAULT}"; }
+function msg-success { echo -e "${CGREEN}${*}${CDEFAULT}"; }
+function msg-dry { echo -e "${CPINK}${*}${CDEFAULT}"; }
 
-function date-today { echo $(date +%F); }
-function date-second { echo $(date +%F_%H-%M-%S); }
+function date-today { date +%F; }
+function date-second { date +%F_%H-%M-%S; }
 function date-8601 { date -u +%Y-%m-%dT%H:%M:%S%z; }
 function date-8601-local { date +%Y-%m-%dT%H:%M:%S%z; }
-function log-8601 { msg-info "[ $(date-8601) ] $@"; }
-function log-8601-local { msg-info "[ $(date-8601-local) ] $@"; }
-function log-err-8601 { echo-err "[ $(date-8601) ] $@"; }
-function log-err-8601-local { echo-err "[ $(date-8601-local) ] $@"; }
+function log-8601 { msg-info "[ $(date-8601) ] $*"; }
+function log-8601-local { msg-info "[ $(date-8601-local) ] $*"; }
+function log-err-8601 { echo-err "[ $(date-8601) ] $*"; }
+function log-err-8601-local { echo-err "[ $(date-8601-local) ] $*"; }
 
 commands_exist () {
   while [[ "$1" != "" ]]; do
@@ -65,14 +68,15 @@ commands_exist () {
 
 help () {
   echo "
-    ./build.sh [-with_logging] [-arch=<arch>] [--help|-h] [...]
+    ./build.sh [-with_logging] [-debug] [-arch=<arch>] [--help|-h] [...]
     Script that downloads xmake if it's missing and builds the project
       Parameters
         -with_logging : enable logging
+        -debug : enable debug
         -arch=<arch> : comma-separated list of architectures to build for
         -h, --help: show this help message
         ... : additional parameters passed to xmake
-  "
+  " 1>&2
 }
 
 # Parse parameters into variables
@@ -83,7 +87,7 @@ ARCHS=("x86" "x64")
 if [[ "$(uname)" == "Darwin" ]]; then
     ARCHS=("x86_64")
 fi
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
         -with_logging)
@@ -98,6 +102,10 @@ while [[ $# > 0 ]]; do
             # Split the parameter into an array, remove commas
             IFS=',' read -r -a ARCHS <<< "${key#*=}"
             shift
+            ;;
+        -h|--help)
+            help
+            exit 0
             ;;
         *)
             break
@@ -124,10 +132,10 @@ fi
 # get make
 if commands_exist gmake; then
     if gmake --version >/dev/null 2>&1; then
-        make=gmake
+        make="gmake"
     fi
 elif commands_exist make; then
-    make=make
+    make="make"
 else
     msg-error "No make command found, install gmake or make to continue"
     exit 1
@@ -257,7 +265,7 @@ else
   for arch in "${ARCHS[@]}"
   do
       log-8601-local "Building for $arch..."
-      "$xmake" f -a $arch -m $PROFILE --include_logging=$WITH_LOGGING
+      "$xmake" f -a "$arch" -m $PROFILE --include_logging=$WITH_LOGGING
       "$xmake" "$@"
   done
 fi
