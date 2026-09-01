@@ -113,7 +113,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-XMAKE_VERSION="2.8.9"
+XMAKE_VERSION="3.1.1"
 
 # Get current dir
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
