@@ -8,6 +8,11 @@ option("include_logging")
     set_description("Include verbose logging on run")
     add_defines("VERBOSE")
 
+option("plthook_debug")
+    set_showmenu(true)
+    set_description("Dump Mach-O bind opcodes from plthook (very noisy)")
+    add_defines("PLTHOOK_DEBUG")
+
 
 target("doorstop")
     set_kind("shared")
@@ -80,6 +85,7 @@ target("doorstop")
         -- Build x86_64 binary
         target("doorstop_x86_64")
             add_options("include_logging")
+            add_options("plthook_debug")
             set_kind("shared")
             set_arch("x86_64")
             set_optimize("smallest")
@@ -103,6 +109,7 @@ target("doorstop")
         -- Build arm64 binary
         target("doorstop_arm64")
             add_options("include_logging")
+            add_options("plthook_debug")
             set_kind("shared")
             set_arch("arm64")
             set_optimize("smallest")
