@@ -985,6 +985,7 @@ int plthook_replace(plthook_t *plthook, const char *funcname, void *funcaddr, vo
     const char *name;
     void **addr;
     int rv;
+    int matches = 0;
 
     if (plthook == NULL) {
         set_errmsg("invalid argument: The first argument is null.");
@@ -1015,7 +1016,12 @@ int plthook_replace(plthook_t *plthook, const char *funcname, void *funcaddr, vo
         }
         continue;
 matched:
-        if (oldfunc) {
+        /* A symbol can appear as more than one PLT/lazy-bind entry (observed
+           on arm64 builds where the classic-bind fallback produces duplicate
+           stub slots). Patch every matching entry instead of stopping at the
+           first, since the real call site may resolve through a later one. */
+        matches++;
+        if (oldfunc && matches == 1) {
             *oldfunc = *addr;
         }
         if (plthook->readonly_segment) {
@@ -1030,6 +1036,8 @@ matched:
         } else {
             *addr = funcaddr;
         }
+    }
+    if (matches > 0) {
         return 0;
     }
     if (rv == EOF) {
