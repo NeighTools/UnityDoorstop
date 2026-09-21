@@ -9,44 +9,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Configure paths
-        run: |
-          New-Item -ItemType Directory -Force -Path ./artifacts/release/x64
-          New-Item -ItemType Directory -Force -Path ./artifacts/release/x86
-          New-Item -ItemType Directory -Force -Path ./artifacts/debug/x64
-          New-Item -ItemType Directory -Force -Path ./artifacts/debug/x86
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: 3.1.1
       - name: Build Release
         run: |
-          ./build.ps1
-          Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/release/x64/winhttp.dll
-          Copy-Item -Path ./build/windows/x64/release/.doorstop_version -Destination ./artifacts/release/x64/.doorstop_version
-          Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/release/x86/winhttp.dll
-          Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/release/x86/.doorstop_version
-          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x64/doorstop_config.ini
-          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x86/doorstop_config.ini
-          Copy-Item -Path ./LICENSE -Destination ./artifacts/release/LICENSE
+          xmake pack
       - name: Build Debug
         run: |
-          ./build.ps1 -with_logging
-          Copy-Item -Path ./build/windows/x64/debug/doorstop.dll -Destination ./artifacts/debug/x64/winhttp.dll
-          Copy-Item -Path ./build/windows/x64/debug/.doorstop_version -Destination ./artifacts/debug/x64/.doorstop_version
-          Copy-Item -Path ./build/windows/x86/debug/doorstop.dll -Destination ./artifacts/debug/x86/winhttp.dll
-          Copy-Item -Path ./build/windows/x86/debug/.doorstop_version -Destination ./artifacts/debug/x86/.doorstop_version
-          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/debug/x64/doorstop_config.ini
-          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/debug/x86/doorstop_config.ini
-          Copy-Item -Path ./LICENSE -Destination ./artifacts/debug/LICENSE
+          xmake f -m debug
+          xmake pack
       - name: Upload Release
         uses: actions/upload-artifact@v7
         with:
-          name: doorstop_win_release
-          path: artifacts/release
-          include-hidden-files: true
-      - name: Upload Verbose
+          path: build/xpack/doorstop/doorstop_windows_release.zip
+          archive: false
+      - name: Upload Debug
         uses: actions/upload-artifact@v7
         with:
-          name: doorstop_win_debug
-          path: artifacts/debug
-          include-hidden-files: true
+          path: build/xpack/doorstop/doorstop_windows_debug.zip
+          archive: false
 
   build-linux:
     runs-on: ubuntu-latest
@@ -58,43 +41,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Configure paths
-        run: |
-          bash -c "mkdir -p artifacts/{release,debug}/{x86,x64}"
       - name: Install dependencies
-        run: apt-get update && apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib clang curl
+        run: apt-get update && apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib clang curl zip
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: 3.1.1
       - name: Build Release
         run: |
-          ./build.sh
-          cp build/linux/x86/release/libdoorstop.so artifacts/release/x86/libdoorstop.so
-          cp build/linux/x64/release/libdoorstop.so artifacts/release/x64/libdoorstop.so
-          cp build/linux/x86/release/.doorstop_version artifacts/release/x86/.doorstop_version
-          cp build/linux/x64/release/.doorstop_version artifacts/release/x64/.doorstop_version
-          cp assets/nix/run.sh artifacts/release/x86/run.sh
-          cp assets/nix/run.sh artifacts/release/x64/run.sh
-          cp LICENSE artifacts/release/LICENSE
+          xmake pack
       - name: Build Debug
         run: |
-          ./build.sh -debug
-          cp build/linux/x86/debug/libdoorstop.so artifacts/debug/x86/libdoorstop.so
-          cp build/linux/x64/debug/libdoorstop.so artifacts/debug/x64/libdoorstop.so
-          cp build/linux/x86/debug/.doorstop_version artifacts/debug/x86/.doorstop_version
-          cp build/linux/x64/debug/.doorstop_version artifacts/debug/x64/.doorstop_version
-          cp assets/nix/run.sh artifacts/debug/x86/run.sh
-          cp assets/nix/run.sh artifacts/debug/x64/run.sh
-          cp LICENSE artifacts/debug/LICENSE
+          xmake f -m debug
+          xmake pack
       - name: Upload Release
         uses: actions/upload-artifact@v7
         with:
-          name: doorstop_linux_release
-          path: artifacts/release
-          include-hidden-files: true
+          path: build/xpack/doorstop/doorstop_linux_release.zip
+          archive: false
       - name: Upload Debug
         uses: actions/upload-artifact@v7
         with:
-          name: doorstop_linux_debug
-          path: artifacts/debug
-          include-hidden-files: true
+          path: build/xpack/doorstop/doorstop_linux_debug.zip
+          archive: false
 
   build-macos:
     runs-on: macos-latest
@@ -102,35 +71,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Configure paths
-        run: |
-          mkdir -p artifacts/{release,debug}/universal
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: 3.1.1
       - name: Build Release
         run: |
-          ./build.sh
-          cp build/macosx/universal/release/libdoorstop.dylib artifacts/release/universal/libdoorstop.dylib
-          cp build/macosx/universal/release/.doorstop_version artifacts/release/universal/.doorstop_version
-          cp assets/nix/run.sh artifacts/release/universal/run.sh
-          cp LICENSE artifacts/release/LICENSE
+          xmake pack
       - name: Build Debug
         run: |
-          ./build.sh -with_logging -debug
-          cp build/macosx/universal/debug/libdoorstop.dylib artifacts/debug/universal/libdoorstop.dylib
-          cp build/macosx/universal/debug/.doorstop_version artifacts/debug/universal/.doorstop_version
-          cp assets/nix/run.sh artifacts/debug/universal/run.sh
-          cp LICENSE artifacts/debug/LICENSE
+          xmake f -m debug
+          xmake pack
       - name: Upload Release
         uses: actions/upload-artifact@v7
         with:
-          name: doorstop_macos_release
-          path: artifacts/release
-          include-hidden-files: true
+          path: build/xpack/doorstop/doorstop_macosx_release.zip
+          archive: false
       - name: Upload Debug
         uses: actions/upload-artifact@v7
         with:
-          name: doorstop_macos_debug
-          path: artifacts/debug
-          include-hidden-files: true
+          path: build/xpack/doorstop/doorstop_macosx_debug.zip
+          archive: false
 
   collect:
     runs-on: ubuntu-latest
@@ -147,6 +108,9 @@ jobs:
           path: artifacts
       - name: Grab version
         run: |
+          for k in artifacts/*.zip; do mv "${k}" "${k%.zip}"; done
+          for k in artifacts/doorstop_windows_*; do mv "${k}" "artifacts/doorstop_win_${k##*_}"; done
+          for k in artifacts/doorstop_macosx_*; do mv "${k}" "artifacts/doorstop_macos_${k##*_}"; done
           VERSION=$(cat artifacts/doorstop_win_release/x86/.doorstop_version)
           echo "doorstop_version=$VERSION" >> $GITHUB_ENV
       - name: Create zips
