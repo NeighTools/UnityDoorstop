@@ -13,8 +13,8 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path ./artifacts/release/x64
           New-Item -ItemType Directory -Force -Path ./artifacts/release/x86
-          New-Item -ItemType Directory -Force -Path ./artifacts/verbose/x64
-          New-Item -ItemType Directory -Force -Path ./artifacts/verbose/x86
+          New-Item -ItemType Directory -Force -Path ./artifacts/debug/x64
+          New-Item -ItemType Directory -Force -Path ./artifacts/debug/x86
       - name: Build Release
         run: |
           ./build.ps1
@@ -25,16 +25,16 @@ jobs:
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x64/doorstop_config.ini
           Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/release/x86/doorstop_config.ini
           Copy-Item -Path ./LICENSE -Destination ./artifacts/release/LICENSE
-      - name: Build Verbose
+      - name: Build Debug
         run: |
           ./build.ps1 -with_logging
-          Copy-Item -Path ./build/windows/x64/release/doorstop.dll -Destination ./artifacts/verbose/x64/winhttp.dll
-          Copy-Item -Path ./build/windows/x64/release/.doorstop_version -Destination ./artifacts/verbose/x64/.doorstop_version
-          Copy-Item -Path ./build/windows/x86/release/doorstop.dll -Destination ./artifacts/verbose/x86/winhttp.dll
-          Copy-Item -Path ./build/windows/x86/release/.doorstop_version -Destination ./artifacts/verbose/x86/.doorstop_version
-          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x64/doorstop_config.ini
-          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/verbose/x86/doorstop_config.ini
-          Copy-Item -Path ./LICENSE -Destination ./artifacts/verbose/LICENSE
+          Copy-Item -Path ./build/windows/x64/debug/doorstop.dll -Destination ./artifacts/debug/x64/winhttp.dll
+          Copy-Item -Path ./build/windows/x64/debug/.doorstop_version -Destination ./artifacts/debug/x64/.doorstop_version
+          Copy-Item -Path ./build/windows/x86/debug/doorstop.dll -Destination ./artifacts/debug/x86/winhttp.dll
+          Copy-Item -Path ./build/windows/x86/debug/.doorstop_version -Destination ./artifacts/debug/x86/.doorstop_version
+          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/debug/x64/doorstop_config.ini
+          Copy-Item -Path ./assets/windows/doorstop_config.ini -Destination ./artifacts/debug/x86/doorstop_config.ini
+          Copy-Item -Path ./LICENSE -Destination ./artifacts/debug/LICENSE
       - name: Upload Release
         uses: actions/upload-artifact@v7
         with:
@@ -44,8 +44,8 @@ jobs:
       - name: Upload Verbose
         uses: actions/upload-artifact@v7
         with:
-          name: doorstop_win_verbose
-          path: artifacts/verbose
+          name: doorstop_win_debug
+          path: artifacts/debug
           include-hidden-files: true
 
   build-linux:
@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Configure paths
         run: |
-          bash -c "mkdir -p artifacts/{verbose,release,debug}/{x86,x64}"
+          bash -c "mkdir -p artifacts/{release,debug}/{x86,x64}"
       - name: Install dependencies
         run: apt-get update && apt-get install -y git build-essential libreadline-dev ccache gcc-multilib g++-multilib clang curl
       - name: Build Release
@@ -73,19 +73,9 @@ jobs:
           cp assets/nix/run.sh artifacts/release/x86/run.sh
           cp assets/nix/run.sh artifacts/release/x64/run.sh
           cp LICENSE artifacts/release/LICENSE
-      - name: Build Verbose
-        run: |
-          ./build.sh -with_logging
-          cp build/linux/x86/release/libdoorstop.so artifacts/verbose/x86/libdoorstop.so
-          cp build/linux/x64/release/libdoorstop.so artifacts/verbose/x64/libdoorstop.so
-          cp build/linux/x64/release/.doorstop_version artifacts/verbose/x86/.doorstop_version
-          cp build/linux/x86/release/.doorstop_version artifacts/verbose/x64/.doorstop_version
-          cp assets/nix/run.sh artifacts/verbose/x86/run.sh
-          cp assets/nix/run.sh artifacts/verbose/x64/run.sh
-          cp LICENSE artifacts/verbose/LICENSE
       - name: Build Debug
         run: |
-          ./build.sh -with_logging -debug
+          ./build.sh -debug
           cp build/linux/x86/debug/libdoorstop.so artifacts/debug/x86/libdoorstop.so
           cp build/linux/x64/debug/libdoorstop.so artifacts/debug/x64/libdoorstop.so
           cp build/linux/x86/debug/.doorstop_version artifacts/debug/x86/.doorstop_version
@@ -98,12 +88,6 @@ jobs:
         with:
           name: doorstop_linux_release
           path: artifacts/release
-          include-hidden-files: true
-      - name: Upload Verbose
-        uses: actions/upload-artifact@v4
-        with:
-          name: doorstop_linux_verbose
-          path: artifacts/verbose
           include-hidden-files: true
       - name: Upload Debug
         uses: actions/upload-artifact@v7
@@ -120,7 +104,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Configure paths
         run: |
-          mkdir -p artifacts/{verbose,release,debug}/universal
+          mkdir -p artifacts/{release,debug}/universal
       - name: Build Release
         run: |
           ./build.sh
@@ -128,13 +112,6 @@ jobs:
           cp build/macosx/universal/release/.doorstop_version artifacts/release/universal/.doorstop_version
           cp assets/nix/run.sh artifacts/release/universal/run.sh
           cp LICENSE artifacts/release/LICENSE
-      - name: Build Verbose
-        run: |
-          ./build.sh -with_logging
-          cp build/macosx/universal/release/libdoorstop.dylib artifacts/verbose/universal/libdoorstop.dylib
-          cp build/macosx/universal/release/.doorstop_version artifacts/verbose/universal/.doorstop_version
-          cp assets/nix/run.sh artifacts/verbose/universal/run.sh
-          cp LICENSE artifacts/verbose/LICENSE
       - name: Build Debug
         run: |
           ./build.sh -with_logging -debug
@@ -147,12 +124,6 @@ jobs:
         with:
           name: doorstop_macos_release
           path: artifacts/release
-          include-hidden-files: true
-      - name: Upload Verbose
-        uses: actions/upload-artifact@v4
-        with:
-          name: doorstop_macos_verbose
-          path: artifacts/verbose
           include-hidden-files: true
       - name: Upload Debug
         uses: actions/upload-artifact@v7

@@ -54,7 +54,7 @@ if (!(Test-Path $XMAKE_DIR)) {
 
 $XMAKE_EXE = Join-Path $XMAKE_DIR "xmake.exe"
 foreach ($a in $Arch) {
-    $verbose_opt = if ($with_logging) { "--include_logging=y" } else { "--include_logging=n" }
-    Invoke-Expression "& $XMAKE_EXE f -a $a $verbose_opt"
+    $m = if ($with_logging) { "-m debug" } else { "-m release" }
+    Invoke-Expression "& $XMAKE_EXE f -a $a $m"
     Invoke-Expression "& $XMAKE_EXE $($ScriptArgs -join " ")"
 }

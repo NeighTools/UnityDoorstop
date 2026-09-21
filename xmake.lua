@@ -3,21 +3,14 @@ local info = build_info(info_lua)
 
 add_rules("mode.debug", "mode.release")
 
-option("include_logging")
-    set_showmenu(true)
-    set_description("Include verbose logging on run")
-    add_defines("VERBOSE")
-
-option("plthook_debug")
-    set_showmenu(true)
-    set_description("Dump Mach-O bind opcodes from plthook (very noisy)")
-    add_defines("PLTHOOK_DEBUG")
-
-
 target("doorstop")
     set_kind("shared")
     set_optimize("smallest")
-    add_options("include_logging")
+    if is_mode("debug") then
+        set_symbols("debug")
+        set_optimize("none")
+        add_defines("VERBOSE")
+    end
     local load_events = {}
 
     if is_os("windows") then
@@ -41,10 +34,6 @@ target("doorstop")
             add_files("src/nix/plthook/plthook_osx.c")
         end
         add_links("dl")
-        if is_mode("debug") then
-            set_symbols("debug")
-            set_optimize("none")
-        end
     end
 
     if is_plat("windows") then
@@ -85,7 +74,6 @@ target("doorstop")
         -- Build x86_64 binary
         target("doorstop_x86_64")
             add_options("include_logging")
-            add_options("plthook_debug")
             set_kind("shared")
             set_arch("x86_64")
             set_optimize("smallest")
@@ -109,7 +97,6 @@ target("doorstop")
         -- Build arm64 binary
         target("doorstop_arm64")
             add_options("include_logging")
-            add_options("plthook_debug")
             set_kind("shared")
             set_arch("arm64")
             set_optimize("smallest")
