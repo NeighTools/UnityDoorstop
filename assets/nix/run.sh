@@ -314,10 +314,11 @@ else
 fi
 
 export DYLD_LIBRARY_PATH="${doorstop_directory}:${DYLD_LIBRARY_PATH}"
+# Not exported: every child would inherit it, including arch, which is arm64e
 if [ -z "$DYLD_INSERT_LIBRARIES" ]; then
-    export DYLD_INSERT_LIBRARIES="${doorstop_name}"
+    doorstop_insert="${doorstop_name}"
 else
-    export DYLD_INSERT_LIBRARIES="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
+    doorstop_insert="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
 fi
 
 if [ -n "${is_apple_silicon}" ]; then
@@ -327,7 +328,7 @@ if [ -n "${is_apple_silicon}" ]; then
     # the executable is universal, supporting both x86_64 and arm64, MacOs will still run it as x86_64
     # if the parent process is running as x86.
     # arch also strips the DYLD_INSERT_LIBRARIES env var so we have to pass that in manually
-    exec arch -e DYLD_INSERT_LIBRARIES="${DYLD_INSERT_LIBRARIES}" "$executable_path" "$@"
+    exec arch -e DYLD_INSERT_LIBRARIES="${doorstop_insert}" "$executable_path" "$@"
 else
-    exec "$executable_path" "$@"
+    DYLD_INSERT_LIBRARIES="${doorstop_insert}" exec "$executable_path" "$@"
 fi
