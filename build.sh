@@ -68,10 +68,9 @@ commands_exist () {
 
 help () {
   echo "
-    ./build.sh [-with_logging] [-debug] [-arch=<arch>] [--help|-h] [...]
+    ./build.sh [-debug] [-arch=<arch>] [--help|-h] [...]
     Script that downloads xmake if it's missing and builds the project
       Parameters
-        -with_logging : enable logging
         -debug : enable debug
         -arch=<arch> : comma-separated list of architectures to build for
         -h, --help: show this help message
@@ -80,7 +79,6 @@ help () {
 }
 
 # Parse parameters into variables
-WITH_LOGGING="n"
 PROFILE="release"
 # Bash list of architectures to build for
 ARCHS=("x86" "x64")
@@ -90,10 +88,6 @@ fi
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        -with_logging)
-            WITH_LOGGING="y"
-            shift
-            ;;
         -debug)
             PROFILE="debug"
             shift
@@ -258,14 +252,14 @@ fi
 
 if [[ "$(uname)" == "Darwin" ]]; then
   log-8601-local "Building for macOS universal binary..."
-  "$xmake" f -m $PROFILE --include_logging=$WITH_LOGGING
+  "$xmake" f -m $PROFILE
   "$xmake" "$@"
 else
   # Build projects for each arch
   for arch in "${ARCHS[@]}"
   do
       log-8601-local "Building for $arch..."
-      "$xmake" f -a "$arch" -m $PROFILE --include_logging=$WITH_LOGGING
+      "$xmake" f -a "$arch" -m $PROFILE
       "$xmake" "$@"
   done
 fi

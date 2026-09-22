@@ -1,154 +1,131 @@
 includes("info.lua")
 local info = build_info(info_lua)
+set_project(build_info().name)
+set_version(build_info().version.major.."."..build_info().version.minor.."."..build_info().version.patch..build_info().version.release)
+
+local buildarches
+if is_os("windows") or is_os("linux") then
+    buildarches = {"x86", "x64"}
+elseif is_os("macosx") then
+    buildarches = {"arm64", "arm64e", "x86_64"}
+end
 
 add_rules("mode.debug", "mode.release")
 
-option("include_logging")
-    set_showmenu(true)
-    set_description("Include verbose logging on run")
-    add_defines("VERBOSE")
+includes("@builtin/xpack")
 
-option("plthook_debug")
-    set_showmenu(true)
-    set_description("Dump Mach-O bind opcodes from plthook (very noisy)")
-    add_defines("PLTHOOK_DEBUG")
-
-
-target("doorstop")
-    set_kind("shared")
-    set_optimize("smallest")
-    add_options("include_logging")
-    local load_events = {}
-
-    if is_os("windows") then
-        includes("src/windows/build_tools/proxygen.lua")
-        add_proxydef(load_events)
-
-        includes("src/windows/build_tools/rcgen.lua")
-        add_rc(load_events, info)
-
-        add_files("src/windows/*.c")
-        add_defines("UNICODE")
-        add_links("shell32", "kernel32", "user32")
-    end
-
-    if is_os("linux") or is_os("macosx") then
-        add_files("src/nix/*.c")
-        -- Add platform-specific plthook files
-        if is_os("linux") then
-            add_files("src/nix/plthook/plthook_elf.c")
-        elseif is_os("macosx") then
-            add_files("src/nix/plthook/plthook_osx.c")
-        end
-        add_links("dl")
+for _, arch in ipairs(buildarches) do
+    target("doorstop_"..arch)
+        set_basename("doorstop")
+        set_arch(arch)
+        set_default(is_arch(arch))
+        set_kind("shared")
+        set_optimize("smallest")
         if is_mode("debug") then
             set_symbols("debug")
             set_optimize("none")
+            add_defines("VERBOSE")
         end
-    end
+        local load_events = {}
 
-    if is_plat("windows") then
-        add_cxflags("-GS-", "-Ob2", "-MT", "-GL-", "-FS")
-        add_shflags("-nodefaultlib",
-                    "-entry:DllEntry",
-                    "-dynamicbase:no",
-                    {force=true})
-    end
+        if is_os("windows") then
+            includes("src/windows/build_tools/proxygen.lua")
+            add_proxydef(load_events)
 
-    if is_plat("mingw") then
-        add_shflags("-nostdlib", "-nolibc", {force=true})
+            includes("src/windows/build_tools/rcgen.lua")
+            add_rc(load_events, info)
 
-        if is_arch("i386") then
-            add_shflags("-e _DllEntry", "-Wl,--enable-stdcall-fixup", {force=true})
-        elseif is_arch("x64", "x86_64") then
-            add_shflags("-e DllEntry", {force=true})
+            add_files("src/windows/*.c")
+            add_defines("UNICODE")
+            add_links("shell32", "kernel32", "user32")
         end
-    end
 
-    add_files("src/*.c")
-    add_files("src/config/*.c")
-    add_files("src/util/*.c")
-    add_files("src/runtimes/*.c")
-
-    on_load(function(target)
-        for i, event in ipairs(load_events) do
-            event(target, import, io)
-        end
-    end)
-
-    after_build(function(target)
-        io.writefile(path.join(target:targetdir(), ".doorstop_version"),
-            info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
-    end)
-
-    if is_os("macosx") then
-        -- Build x86_64 binary
-        target("doorstop_x86_64")
-            add_options("include_logging")
-            add_options("plthook_debug")
-            set_kind("shared")
-            set_arch("x86_64")
-            set_optimize("smallest")
-            add_files("src/*.c")
-            add_files("src/config/*.c")
-            add_files("src/util/*.c")
-            add_files("src/runtimes/*.c")
+        if is_os("linux") or is_os("macosx") then
             add_files("src/nix/*.c")
-            add_files("src/nix/plthook/plthook_osx.c")  -- macOS-specific
-            add_links("dl")
-            if is_mode("debug") then
-                set_symbols("debug")
-                set_optimize("none")
+            -- Add platform-specific plthook files
+            if is_os("linux") then
+                add_files("src/nix/plthook/plthook_elf.c")
+            elseif is_os("macosx") then
+                add_files("src/nix/plthook/plthook_osx.c")
             end
-            
-            after_build(function(target)
-                io.writefile(path.join(target:targetdir(), ".doorstop_version"),
-                    info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
-            end)
-
-        -- Build arm64 binary
-        target("doorstop_arm64")
-            add_options("include_logging")
-            add_options("plthook_debug")
-            set_kind("shared")
-            set_arch("arm64")
-            set_optimize("smallest")
-            add_files("src/*.c")
-            add_files("src/config/*.c")
-            add_files("src/util/*.c")
-            add_files("src/runtimes/*.c")
-            add_files("src/nix/*.c")
-            add_files("src/nix/plthook/plthook_osx.c")  -- macOS-specific
             add_links("dl")
-            if is_mode("debug") then
-                set_symbols("debug")
-                set_optimize("none")
-            end
+        end
 
-            
-            after_build(function(target)
-                local build_mode = is_mode("debug") and "debug" or "release"
-                local targetdir = target:targetdir()
-                
-                -- Write version file for this target
-                io.writefile(path.join(targetdir, ".doorstop_version"),
-                    info.version.major.."."..info.version.minor.."."..info.version.patch..info.version.release)
-                
-                -- Give time for both builds to finish (workaround)
-                os.execv("sleep", {"5"})
-                
-                -- Create universal binary directory
-                local universal_dir = path.join(targetdir, "..", "..", "universal", build_mode)
-                os.mkdir(universal_dir)
-                
-                -- Combine the binaries into a Universal Binary
-                os.execv("lipo", {"-create", "-output", 
-                    path.join(universal_dir, "libdoorstop.dylib"), 
-                    path.join(targetdir, "..", "..", "x86_64", build_mode, "libdoorstop_x86_64.dylib"), 
-                    path.join(targetdir, "libdoorstop_arm64.dylib")})
-                
-                -- Copy version file to universal directory
-                os.cp(path.join(targetdir, ".doorstop_version"), 
-                      path.join(universal_dir, ".doorstop_version"))
-            end)
+        if is_plat("windows") then
+            add_cxflags("-GS-", "-Ob2", "-MT", "-GL-", "-FS")
+            add_shflags("-nodefaultlib",
+                        "-entry:DllEntry",
+                        "-dynamicbase:no",
+                        {force=true})
+        end
+
+        if is_plat("mingw") then
+            add_shflags("-nostdlib", "-nolibc", {force=true})
+
+            if is_arch("i386") then
+                add_shflags("-e _DllEntry", "-Wl,--enable-stdcall-fixup", {force=true})
+            elseif is_arch("x64", "x86_64") then
+                add_shflags("-e DllEntry", {force=true})
+            end
+        end
+
+        add_files("src/*.c")
+        add_files("src/config/*.c")
+        add_files("src/util/*.c")
+        add_files("src/runtimes/*.c")
+
+        on_load(function(target)
+            for i, event in ipairs(load_events) do
+                event(target, import, io)
+            end
+        end)
+
+        after_build(function(target)
+            io.writefile(path.join(target:targetdir(), ".doorstop_version"), target:get("version"))
+        end)
+end
+
+xpack("doorstop")
+    set_formats("zip")
+    set_basename("doorstop_$(plat)_$(mode)")
+
+    for _, arch in ipairs(buildarches) do
+        add_targets("doorstop_"..arch)
     end
+
+    on_installcmd(function (package, batchcmds)
+        local lipoargs = nil
+        local targetfile
+        for _, target in ipairs(package:targets()) do
+            local installdir
+            if package:is_plat("macosx") then
+                installdir = package:installdir("universal")
+            else
+                installdir = package:installdir(target:get("arch"))
+            end
+
+            batchcmds:mkdir(installdir)
+            batchcmds:cp(path.join(path.directory(target:targetfile()), ".doorstop_version"), installdir)
+
+            if package:is_plat("windows") then
+                batchcmds:cp("assets/windows/doorstop_config.ini", installdir)
+            else
+                batchcmds:cp("assets/nix/run.sh", installdir)
+            end
+
+            if package:is_plat("macosx") then
+                lipoargs = format("%s -arch %s %s", lipoargs or "-create", target:get("arch"), target:targetfile())
+                targetfile = target:targetfile()
+            elseif package:is_plat("windows") then
+                batchcmds:cp(target:targetfile(), path.join(installdir, "winhttp.dll"))
+            else
+                batchcmds:cp(target:targetfile(), installdir)
+            end
+        end
+        if lipoargs then
+            lipoargs = format("%s -output %s/%s", lipoargs, package:installdir("universal"), path.filename(targetfile))
+            --batchcmds:vlua("lipo", lipoargs)
+            batchcmds:execv(os.programfile(), {"l", "lipo", lipoargs})
+        end
+        batchcmds:cp("LICENSE", package:installdir())
+    end)
