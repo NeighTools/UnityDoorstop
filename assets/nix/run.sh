@@ -15,7 +15,8 @@ executable_name=""
 # MACOS: architectures to run the game as, most preferred first
 # Only used on Apple Silicon. The default runs the game natively where it can.
 # Set this to "x86_64" or "x86_64,arm64" for a game or a loader whose native
-# dependencies have no arm64 build. Leave it empty to let macOS choose.
+# dependencies have no arm64 build. It must name at least one architecture:
+# arch exits with "Can't find any plists" on an empty value.
 archpreference="arm64,x86_64"
 
 # All of the below can be overriden with command line args
