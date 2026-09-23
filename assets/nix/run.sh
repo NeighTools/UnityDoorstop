@@ -12,6 +12,12 @@
 # MACOS: name of the .app directory
 executable_name=""
 
+# MACOS: architectures to run the game as, most preferred first
+# Only used on Apple Silicon. The default runs the game natively where it can.
+# Set this to "x86_64" or "x86_64,arm64" for a game or a loader whose native
+# dependencies have no arm64 build. Leave it empty to let macOS choose.
+archpreference="arm64,x86_64"
+
 # All of the below can be overriden with command line args
 
 # General Config Options
@@ -321,13 +327,24 @@ else
 fi
 
 if [ -n "${is_apple_silicon}" ]; then
-    export ARCHPREFERENCE="arm64,x86_64"
+    export ARCHPREFERENCE="${archpreference}"
 
     # We need to use arch for Apple Silicon to allow the executable to be run natively as otherwise if
     # the executable is universal, supporting both x86_64 and arm64, MacOs will still run it as x86_64
     # if the parent process is running as x86.
-    # arch also strips the DYLD_INSERT_LIBRARIES env var so we have to pass that in manually
-    exec arch -e DYLD_INSERT_LIBRARIES="${DYLD_INSERT_LIBRARIES}" "$executable_path" "$@"
+    # arch is a platform binary, so dyld drops every DYLD_* variable before arch
+    # runs and the game never sees them. Copy them out, take them off our own
+    # environment, and hand them to the game on the exec instead. The unset has
+    # to be the shell builtin: env is a platform binary too, and an inherited
+    # DYLD_INSERT_LIBRARIES makes dyld kill it before it can unset anything.
+    doorstop_dyld_library_path="${DYLD_LIBRARY_PATH}"
+    doorstop_dyld_insert_libraries="${DYLD_INSERT_LIBRARIES}"
+    unset DYLD_LIBRARY_PATH DYLD_INSERT_LIBRARIES
+
+    exec arch \
+        -e DYLD_LIBRARY_PATH="${doorstop_dyld_library_path}" \
+        -e DYLD_INSERT_LIBRARIES="${doorstop_dyld_insert_libraries}" \
+        "$executable_path" "$@"
 else
     exec "$executable_path" "$@"
 fi
