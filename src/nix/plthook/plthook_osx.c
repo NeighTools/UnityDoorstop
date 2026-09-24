@@ -166,6 +166,7 @@ typedef struct {
     struct segment_command_64 *segments[MAX_SEGMENTS];
     struct linkedit_data_command *chained_fixups;
     size_t got_addr;
+    size_t got_size;
 } data_t;
 
 static int plthook_open_real(plthook_t **plthook_out, uint32_t image_idx, const struct mach_header *mh, const char *image_name);
@@ -397,6 +398,7 @@ static int plthook_open_real(plthook_t **plthook_out, uint32_t image_idx, const 
                               sec->reserved3);
                     if (strcmp(sec->segname, "__DATA_CONST") == 0 && strcmp(sec->sectname, "__got") == 0) {
                         data.got_addr = sec->addr + data.slide;
+                        data.got_size = sec->size;
                     }
                     sec++;
                 }
@@ -613,9 +615,34 @@ static void set_bind_addr(data_t *data, unsigned int *idx, const char *sym_name,
     (*idx)++;
 }
 
+
+/* Chained fixups bind every slot before the image runs, so a slot can be
+   identified by what it holds. The import list order is not the __got layout
+   order, so index arithmetic picks the wrong slot. */
+static void **chained_slot_for(data_t *d, const char *name, uint32_t index)
+{
+    size_t nslots = d->got_size / sizeof(void *);
+    const char *sym = (name[0] == '_') ? name + 1 : name;
+    size_t i;
+
+    for (i = 0; i < nslots; i++) {
+        void **slot = (void **)(d->got_addr + i * sizeof(void *));
+        Dl_info info;
+        if (dladdr(*slot, &info) && info.dli_sname != NULL
+            && strcmp(info.dli_sname, sym) == 0) {
+            return slot;
+        }
+    }
+    /* Not bound to a named symbol; fall back to the old arithmetic. */
+    return (void **)(d->got_addr + index * sizeof(void *));
+}
+
 static int read_chained_fixups(data_t *d, const struct mach_header *mh, const char *image_name)
 {
-    const uint8_t *ptr = (const uint8_t *)mh + d->chained_fixups->dataoff;
+    const struct segment_command_64 *linkedit = d->segments[d->linkedit_segment_idx];
+    /* dataoff is a file offset; linkedit is mapped at a different delta */
+    const uint8_t *ptr = (const uint8_t *)(linkedit->vmaddr - linkedit->fileoff
+                                           + d->slide + d->chained_fixups->dataoff);
     const uint8_t *end = ptr + d->chained_fixups->datasize;
     const struct dyld_chained_fixups_header *header = (const struct dyld_chained_fixups_header *)ptr;
     const struct dyld_chained_import *import = (const struct dyld_chained_import *)(ptr + header->imports_offset);
@@ -712,7 +739,7 @@ static int read_chained_fixups(data_t *d, const struct mach_header *mh, const ch
         DEBUG_FIXUPS("  lib_ordinal %u, weak_import %u, name_offset %u (%s), addend %llu\n",
                      imp.lib_ordinal, imp.weak_import, imp.name_offset, name, imp.addend);
         d->plthook->entries[i].name = name;
-        d->plthook->entries[i].addr = (void**)(d->got_addr + i * sizeof(void*));
+        d->plthook->entries[i].addr = chained_slot_for(d, name, i);
     }
 
 #ifdef PLTHOOK_DEBUG_FIXUPS
