@@ -64,7 +64,7 @@ char_t *default_boot_config_path = NULL;
 FILE *fopen64_hook(char *filename, char *mode) {
     char *actual_file_name = filename;
 
-    if (strcmp(filename, default_boot_config_path) == 0) {
+    if (filename && strcmp(filename, default_boot_config_path) == 0) {
         actual_file_name = config.boot_config_override;
         LOG("Overriding boot.config to %s", actual_file_name);
     }
@@ -76,7 +76,7 @@ FILE *fopen64_hook(char *filename, char *mode) {
 FILE *fopen_hook(char *filename, char *mode) {
     char *actual_file_name = filename;
 
-    if (strcmp(filename, default_boot_config_path) == 0) {
+    if (filename && strcmp(filename, default_boot_config_path) == 0) {
         actual_file_name = config.boot_config_override;
         LOG("Overriding boot.config to %s", actual_file_name);
     }
@@ -92,6 +92,50 @@ int dup2_hook(int od, int nd) {
     return dup2(od, nd);
 }
 
+#if defined(__APPLE__)
+#define main_module_is_unity_player() TRUE
+#else
+static bool_t data_folder_exists(const char_t *dir, const char_t *name) {
+    size_t size = strlen(dir) + strlen(name) + STR_LEN(TEXT("/_Data"));
+    char_t *data_dir = (char_t *)malloc(size * sizeof(char_t));
+    if (!data_dir)
+        return FALSE;
+
+    snprintf(data_dir, size, TEXT("%s/%s_Data"), dir, name);
+    bool_t result = folder_exists(data_dir);
+
+    free(data_dir);
+    return result;
+}
+
+// LD_PRELOAD reaches every child, so the stdio hooks above would land in the
+// launcher shells too. A player is identified by its data folder; anything we
+// cannot determine keeps the hooks, as before. (macOS bundles differ --
+// unchanged there.)
+static bool_t main_module_is_unity_player(void) {
+    char_t *exe = program_path();
+    if (!exe || !*exe) {
+        free(exe);
+        return TRUE;
+    }
+
+    char_t *dir = get_folder_name(exe);
+    // get_file_name() strips at the last dot: Game.Client needs
+    // Game.Client_Data.
+    char_t *full_name = get_file_name(exe, TRUE);
+    char_t *base_name = get_file_name(exe, FALSE);
+
+    bool_t result = data_folder_exists(dir, full_name) ||
+                    data_folder_exists(dir, base_name);
+
+    free(base_name);
+    free(full_name);
+    free(dir);
+    free(exe);
+    return result;
+}
+#endif
+
 __attribute__((constructor)) void doorstop_ctor() {
     init_logger();
     load_config();
@@ -105,6 +149,8 @@ __attribute__((constructor)) void doorstop_ctor() {
 
     void *unity_player = plthook_handle_by_name("UnityPlayer");
 
+    bool_t hook_unity_stdio = TRUE;
+
     if (unity_player &&
         PLTHOOK_OPEN_BY_HANDLE_OR_ADDRESS(&hook, unity_player) == 0) {
         LOG("Found UnityPlayer, hooking into it instead");
@@ -114,6 +160,12 @@ __attribute__((constructor)) void doorstop_ctor() {
             "%s\n",
             plthook_error());
         return;
+    } else {
+        // UnityPlayer is mapped but unhookable -- still a player.
+        hook_unity_stdio =
+            unity_player != NULL || main_module_is_unity_player();
+        if (!hook_unity_stdio)
+            LOG("Main module is not a Unity player; skipping stdio hooks");
     }
 
     if (plthook_replace(hook, "dlsym", &dlsym_hook, NULL) != 0)
@@ -145,13 +197,14 @@ __attribute__((constructor)) void doorstop_ctor() {
         }
     }
 
-    if (plthook_replace(hook, "fclose", &fclose_hook, NULL) != 0)
-        LOG("Failed to hook fclose, ignoring it. Error: %s",
-               plthook_error());
+    if (hook_unity_stdio) {
+        if (plthook_replace(hook, "fclose", &fclose_hook, NULL) != 0)
+            LOG("Failed to hook fclose, ignoring it. Error: %s",
+                plthook_error());
 
-    if (plthook_replace(hook, "dup2", &dup2_hook, NULL) != 0)
-        LOG("Failed to hook dup2, ignoring it. Error: %s",
-               plthook_error());
+        if (plthook_replace(hook, "dup2", &dup2_hook, NULL) != 0)
+            LOG("Failed to hook dup2, ignoring it. Error: %s", plthook_error());
+    }
 
 #if defined(__APPLE__)
     /*
