@@ -319,10 +319,17 @@ case ${os_type} in
     ;;
     Darwin*)
         dyld_library_path="${doorstop_directory}:${DYLD_LIBRARY_PATH}"
-        if [ -z "$DYLD_INSERT_LIBRARIES" ]; then
+
+        # This script runs under /bin/sh, which is a platform binary, so a
+        # DYLD_INSERT_LIBRARIES that Steam sets for the game (its loader and
+        # overlay) is stripped before we get here. Steam passes the same list
+        # as STEAM_DYLD_INSERT_LIBRARIES for launch scripts like this one; keep
+        # it after Doorstop so the Steam overlay still works.
+        inherited_libraries="${DYLD_INSERT_LIBRARIES:-${STEAM_DYLD_INSERT_LIBRARIES}}"
+        if [ -z "$inherited_libraries" ]; then
             dyld_insert_libraries="${doorstop_name}"
         else
-            dyld_insert_libraries="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
+            dyld_insert_libraries="${doorstop_name}:${inherited_libraries}"
         fi
 
         # Always go through arch. A universal executable runs as x86_64 whenever
