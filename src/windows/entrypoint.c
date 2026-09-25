@@ -284,6 +284,11 @@ BOOL WINAPI DllEntry(HINSTANCE hInstDll, DWORD reasonForDllLoad,
 
     load_config();
     LOG("Config loaded");
+    if (config.ignore_disabled_env) {
+        SetEnvironmentVariableW(L"DOORSTOP_INITIALIZED", NULL);
+        SetEnvironmentVariableW(L"DOORSTOP_DISABLE", NULL);
+        LOG("Cleared inherited DOORSTOP_INITIALIZED / DOORSTOP_DISABLE");
+    }
 
     redirect_output_log(paths);
 

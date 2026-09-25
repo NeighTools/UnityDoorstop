@@ -10,12 +10,22 @@
 
 bool_t mono_debug_init_called = FALSE;
 bool_t mono_is_net35 = FALSE;
+static bool_t doorstop_bootstrapped = FALSE;
 
 void mono_doorstop_bootstrap(void *mono_domain) {
-    if (getenv(TEXT("DOORSTOP_INITIALIZED"))) {
+    if (doorstop_bootstrapped) {
+        LOG("Doorstop already bootstrapped in this process, skipping!");
+        return;
+    }
+    // Steam (and other launchers) can leak DOORSTOP_INITIALIZED into a new
+    // game process, the same env-isolation issue ignore_disable_switch already
+    // covers for DOORSTOP_DISABLE. Honor that switch here; use the static flag
+    // above for genuine in-process re-entry.
+    if (getenv(TEXT("DOORSTOP_INITIALIZED")) && !config.ignore_disabled_env) {
         LOG("DOORSTOP_INITIALIZED is set! Skipping!");
         return;
     }
+    doorstop_bootstrapped = TRUE;
     setenv(TEXT("DOORSTOP_INITIALIZED"), TEXT("TRUE"), TRUE);
 
     mono.thread_set_main(mono.thread_current());
