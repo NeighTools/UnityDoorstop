@@ -3,10 +3,12 @@
 #
 # Run the script to start the game with Doorstop enabled
 #
-# There are two ways to use this script
+# There are three ways to use this script
 #
 # 1. Via CLI: Run ./run.sh <path to game> [doorstop arguments] [game arguments]
 # 2. Via config: edit the options below and run ./run.sh without any arguments
+# 3. Via Game Launcher: Set the launcher to use the script and pass the game
+#      executable and arguemnts. Steam example: ./run.sh %command%
 
 # LINUX: name of Unity executable
 # MACOS: name of the .app directory
@@ -69,33 +71,6 @@ corlib_dir=""
 ################################################################################
 # Everything past this point is the actual script
 set -e
-
-# Special case: program is launched via Steam on Linux
-# In that case rerun the script via their bootstrapper to delay adding Doorstop to LD_PRELOAD
-# This is required until https://github.com/NeighTools/UnityDoorstop/issues/88 is resolved
-for a in "$@"; do
-    if [ "$a" = "SteamLaunch" ]; then
-        rotated=0; max=$#
-        while [ $rotated -lt $max ]; do
-            # Test if argument is prefixed with the value of $PWD
-            if [ "$1" != "${1#"${PWD%/}/"}" ]; then
-                to_rotate=$(($# - rotated))
-                set -- "$@" "$0"
-                while [ $((to_rotate-=1)) -ge 0 ]; do
-                    set -- "$@" "$1"
-                    shift
-                done
-                exec "$@"
-            else
-                set -- "$@" "$1"
-                shift
-                rotated=$((rotated+1))
-            fi
-        done
-        echo "Could not determine game executable launched by Steam" 1>&2
-        exit 1
-    fi
-done
 
 # Handle first param being executable name
 if [ -x "$1" ] ; then
