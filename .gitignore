@@ -8,6 +8,6 @@ build/
 # MacOS Cache
 .DS_Store
 
+# IDEs
+.vs/
 .vscode/compile_commands.json
-
-
