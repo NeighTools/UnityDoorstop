@@ -336,7 +336,14 @@ int init_il2cpp(const char *domain_name) {
 #define MONO_DEBUG_NO_SUSPEND_NET35 TEXT(",suspend=n,defer=y")
 
 void hook_mono_jit_parse_options(int argc, char **argv) {
-    char_t *debug_options = getenv(TEXT("DNSPY_UNITY_DBG2"));
+    char_t *debug_options = NULL;
+
+    if (mono_is_net35) {
+        debug_options = getenv(TEXT("DNSPY_UNITY_DBG"));
+    } else {
+        debug_options = getenv(TEXT("DNSPY_UNITY_DBG2"));
+    }
+
     if (debug_options) {
         config.mono_debug_enabled = TRUE;
     }
